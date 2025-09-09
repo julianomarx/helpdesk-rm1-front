@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR" x-data x-init="$store.app.init()">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Helpdesk SPA</title>
+  <link rel="stylesheet" href="/css/style.css">
+
+  <!-- Scripts na ordem correta -->
+  <script src="/js/main.js"></script>
+  <script src="/js/login.js"></script>
+  <script src="/js/dashboard.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+
+<body class="bg-gray-900">
+
+  <!-- LOGIN -->
+  <div x-show="$store.app.currentView === 'login'" class="login-container">
+    <form id="login-form">
+      <div class="container">
+        <img class="login-logo" src="/assets/images/logo-banner.png" alt="Logo">
+        <input type="text" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Senha">
+        <button id="login-btn">Entrar</button>
+        <p id="login-error" class="error"></p>
+        <p>Ainda não tem conta? <a>Solicitar acesso!</a></p>
+      </div>
+    </form>
+  </div>
+
+  <!-- DASHBOARD admin -->
+  <div x-show="$store.app.currentView === 'dashboard'" x-data="dashboard()" class="dashboard-container flex h-screen">
+
+    <!-- SIDEBAR -->
+    <div class="dashboard-sidebar bg-gray-800 p-4 flex flex-col justify-between">
+      <div>
+        <div id="logo-container" class=" mb-8">
+          <img id="logo" src="/assets/images/logo-branco.png" alt="Logo" class="ml-2">
+        </div>
+        <ul>
+          <template x-for="item in menus[$store.app.role]" :key="item.page">
+            <li>
+              <a href="#" class="menu-item" :class="{ 'bg-gray-700 text-red-500': currentPage === item.page }"
+                @click.prevent="goTo(item.page, item.css)" x-text="item.label">
+              </a>
+            </li>
+          </template>
+        </ul>
+      </div>
+      <div>
+        <button @click="logout()" class=" logout-btn w-full py-2 px-3 bg-red-600 rounded hover:bg-red-500">
+          Logout
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="page-container" class="flex-1 p-6 bg-gray-900">
+
+      <div x-show="currentPage === 'dashboard'">
+        <h1 class="">Dashboard</h1>
+        <p>Bem-vindo ao painel!</p>
+      </div>
+
+      <div x-show="currentPage === 'users'">
+        <h1 class="">Usuários</h1>
+        <p>Gerencie os usuários aqui.</p>
+      </div>
+
+
+
+      <div x-show="currentPage === 'tickets'" x-init="getTickets()" class="flex flex-col h-screen gap-4 overflow-auto">
+
+        <h1 class="  font-bold text-white">Chamados</h1>
+
+        <div class="flex space-x-2 border-b border-gray-700">
+          <button @click="activeTab = 'aguardando'"
+            :class="activeTab === 'aguardando' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
+            class="px-4 py-2 text-sm font-medium transition-colors duration-200">
+            Aguardando atendimento
+          </button>
+
+          <button @click="activeTab = 'atendimento'"
+            :class="activeTab === 'atendimento' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
+            class="px-4 py-2 text-sm font-medium transition-colors duration-200">
+            Em atendimento
+          </button>
+
+          <button @click="activeTab = 'menu3'"
+            :class="activeTab === 'menu3' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
+            class="px-4 py-2 text-sm font-medium transition-colors duration-200">
+            Com resposta do solicitante
+          </button>
+
+          <button @click="activeTab = 'menu4'"
+            :class="activeTab === 'menu4' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
+            class="px-4 py-2 text-sm font-medium transition-colors duration-200">
+            Aguardando confirmação de encerramento
+          </button>
+
+          <button @click="activeTab = 'menu4'"
+            :class="activeTab === 'menu4' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
+            class="px-4 py-2 text-sm font-medium transition-colors duration-200">
+            Encerrados hoje
+          </button>
+        </div>
+
+
+        <!-- Lista de tickets -->
+        <template x-for="ticket in ticketList" :key="ticket.id">
+          <div class="menu-item p-20 bg-gray-800 rounded shadow flex justify-between items-center">
+            <div>
+
+              <p class="inline text-sm text-gray-400" x-text="ticket.id + ' |'"></p>
+              <p class=" inline text-sm text-gray-400">Hotel Ibis Joinville</p>
+
+              <h2 class="text-white font-bold" x-text="ticket.title"></h2>
+              <p class=" italic text-sm text-gray-300" x-text="ticket.description"></p>
+            </div>
+            <div class="text-right">
+              <span class="text-red-500 font-semibold" x-show="ticket.status === 'open'" x-text="'Aberto'"></span>
+              <span class="text-green-500 font-semibold" x-show="ticket.status === 'closed'" x-text="'Fechado'"></span>
+            </div>
+          </div>
+        </template>
+
+        <!-- Mensagem quando não há tickets -->
+        <p x-show="ticketList.length === 0" class="text-gray-400">Nenhum chamado encontrado</p>
+
+      </div>
+
+      </template>
+
+      <p x-show="ticketList.length === 0" class="text-gray-400">Nenhum chamado encontrado</p>
+    </div>
+
+  </div>
+
+  </div>
+
+</body>
+
+</html>
