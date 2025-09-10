@@ -108,6 +108,7 @@ button:hover {
 .menu-item:hover {
   background-color: #3e3e3e;
   color: #fff;
+  cursor: pointer;
 }
 
 /* Item ativo: será controlado dinamicamente pelo Alpine.js */
@@ -115,6 +116,19 @@ button:hover {
   background-color: #444;
   color: #ff5555;
   font-weight: 600;
+}
+
+/* Abas de navegação */
+.tab-btn {
+  font-size: small;
+  
+  /* font-weight: bold; */
+  transition: background 0.3s;
+}
+
+.tab-btn:hover {
+  background-color: #3e3e3e;
+  cursor: pointer;
 }
 
 /* Logout button */
@@ -126,7 +140,7 @@ button:hover {
   background-color: #b91c1c;
   color: #fff;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.3s;
 }
 
 /* Main content */
@@ -144,6 +158,12 @@ button:hover {
 #page-container p {
   color: #ccc;
 }
+
+/* =======================
+   CREATE TICKET 
+======================= */
+
+
 
 /* =======================
    UTILIDADES

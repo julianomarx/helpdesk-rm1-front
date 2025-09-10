@@ -27,12 +27,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const payload = JSON.parse(atob(token.split(".")[1]));
 
+      //aqui iremos guardar as informações de hoteis e permissões em localstorage
+
       // Atualiza store do Alpine
       Alpine.store("app").role = payload.role;
       Alpine.store("app").currentView = "dashboard";
 
-    } catch (err) {
-      console.error("Erro no login:", err);
+    } catch (e) {
+      console.error("Erro no login:", e);
       document.getElementById("login-error").textContent =
         "Erro de conexão..";
     }
