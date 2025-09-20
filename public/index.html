@@ -12,6 +12,12 @@
   <script src="/js/dashboard.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/locale/pt-br.js"></script>
+  <script>
+    dayjs.locale('pt-br')
+  </script>
+
 </head>
 
 <body class="bg-gray-900">
@@ -73,7 +79,7 @@
 
         <!-- cabeçalho -->
         <div class="p-1 rounded-t-lg ">
-          <h1 class="mr-1 ml-1 font-bold text-white border-b border-gray-400">Abrir chamado</h1>
+          <h1 class="mr-1 font-bold text-white border-b border-gray-400">Abrir chamado</h1>
         </div>
 
         <!-- Conteúdo -->
@@ -111,52 +117,52 @@
           }" class=" mt-5 mx-auto bg-gray-800 p-6 rounded-md shadow-md text-gray-200">
 
 
-          <!-- Título -->
-          <div class="mb-4">
-            <label class="block text-sm mb-1">Título *</label>
-            <input type="text" x-model="title" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 
+            <!-- Título -->
+            <div class="mb-4">
+              <label class="block text-sm mb-1">Título *</label>
+              <input type="text" x-model="title" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 
              focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Digite o título do chamado" />
-          </div>
+            </div>
 
-          <!-- Descrição -->
-          <div class="mb-4">
-            <label class="block text-sm mb-1">Descrição *</label>
-            <textarea x-model="description" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 
+            <!-- Descrição -->
+            <div class="mb-4">
+              <label class="block text-sm mb-1">Descrição *</label>
+              <textarea x-model="description" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 
              focus:ring-2 focus:ring-blue-500 focus:outline-none" rows="4"
-              placeholder="Descreva o problema..."></textarea>
-          </div>
+                placeholder="Descreva o problema..."></textarea>
+            </div>
 
-          <!-- Prioridade -->
-          <div class="mb-4">
-            <label class="block text-sm mb-1">Prioridade *</label>
-            <select x-model="priority" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 
+            <!-- Prioridade -->
+            <div class="mb-4">
+              <label class="block text-sm mb-1">Prioridade *</label>
+              <select x-model="priority" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 
              focus:ring-2 focus:ring-blue-500 focus:outline-none">
-              <option value="low">Baixa</option>
-              <option value="medium">Média</option>
-              <option value="high">Alta</option>
-            </select>
-          </div>
+                <option value="low">Baixa</option>
+                <option value="medium">Média</option>
+                <option value="high">Alta</option>
+              </select>
+            </div>
 
-          <!-- Hotel -->
-          <div class="mb-4">
-            <label class="block text-sm mb-1">Hotel *</label>
-            <select x-model="hotelId" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 
+            <!-- Hotel -->
+            <div class="mb-4">
+              <label class="block text-sm mb-1">Hotel *</label>
+              <select x-model="hotelId" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 
              focus:ring-2 focus:ring-blue-500 focus:outline-none">
-              <option value="" selected>Selecione um hotel</option>
-              <option value="1">H8273 - Ibis Canoas Shopping</option>
-              <option value="2">H6665 - Novotel Porto Alegre Aeroporto</option>
-              <option value="3">H3258 - Novotel Porto Alegre Três Figueiras</option>
-              <option value="4">H9087 - Novotel Porto Alegre Assis Brasil</option>
-              <option value="5">H5670 - Ibis Porto Alegre Assis Aeroporto</option>
-            </select>
-          </div>
+                <option value="" selected>Selecione um hotel</option>
+                <option value="1">H8273 - Ibis Canoas Shopping</option>
+                <option value="2">H6665 - Novotel Porto Alegre Aeroporto</option>
+                <option value="3">H3258 - Novotel Porto Alegre Três Figueiras</option>
+                <option value="4">H9087 - Novotel Porto Alegre Assis Brasil</option>
+                <option value="5">H5670 - Ibis Porto Alegre Assis Aeroporto</option>
+              </select>
+            </div>
 
-          <!-- Botão -->
-          <button @click="submitForm" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 
+            <!-- Botão -->
+            <button @click="submitForm" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 
            rounded-lg transition-colors">
-            Abri Chamado
-          </button>
-        </div>
+              Abri Chamado
+            </button>
+          </div>
 
         </div>
 
@@ -168,9 +174,16 @@
         <!-- Cabeçalho FIXO AO TOPO  -->
         <div class=" p-1 rounded-t-lg  sticky top-0 z-10">
 
-          <h1 class=" mr-1 ml-1 font-bold text-white">Chamados</h1>
+          <h1 class=" mr-1 font-bold text-white">Chamados</h1>
 
           <div class="flex space-x-2 border-b border-gray-400">
+
+            <button class="tab-btn" @click="activeTab = 'aguardando'"
+              :class="activeTab === 'aguardando' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
+              class="">
+              Todos
+            </button>
+
             <button class="tab-btn" @click="activeTab = 'aguardando'"
               :class="activeTab === 'aguardando' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
               class="">
@@ -210,18 +223,36 @@
           <template x-for="ticket in ticketList" :key="ticket.id">
 
             <!-- Ticket -->
-            <div class="menu-item p-20 bg-gray-800 rounded shadow flex justify-between items-center">
-              <div>
+            <div class=" menu-item p-20 bg-gray-800 rounded shadow flex justify-between">
+
+              <!-- Esquerda -->
+              <div class=" content-center w-3/4">
                 <p class="inline text-sm text-gray-400" x-text="ticket.id + ' |'"></p>
                 <p class=" inline text-sm text-gray-400" x-text="ticket.hotel.name + ' - '"></p>
                 <p class=" inline text-sm text-gray-400" x-text="ticket.hotel.code"></p>
                 <h2 class="mt-1 text-white font-bold text-sm" x-text="ticket.title"></h2>
                 <p class=" italic text-sm text-gray-300" x-text="ticket.description"></p>
               </div>
-              <div class="text-right">
-                <span class="text-red-500 font-semibold" x-show="ticket.status === 'open'" x-text="'Aberto'"></span>
-                <span class="text-green-500 font-semibold" x-show="ticket.status === 'closed'"
-                  x-text="'Fechado'"></span>
+
+              <!-- Direita -->
+              <div class="min-h-20 flex flex-col justify-center w-1/4 text-right">
+
+                <div>
+                  <span class="text-red-500 font-semibold" x-show="ticket.progress === 'waiting'"
+                    x-text="'Aguardando atendimento'"></span>
+                  <span class="text-blue-500 font-semibold" x-show="ticket.progress === 'in_progress'"
+                    x-text="'Em atendimento'"></span>
+                </div>
+
+                <div>
+                  <p class="text-sm italic" x-text="'Aberto por ' + ticket.creator.name"></p>
+                </div>
+
+                <p class="text-sm" x-text="dayjs(ticket.created_at).format('DD/MM/YYYY HH:mm')"></p>
+
+                <p x-show="ticket.progress === 'waiting'" class="text-xs underline decoration-solid"
+                  x-text="'Clique para iniciar o atendimento'">
+                </p>
               </div>
             </div>
           </template>
