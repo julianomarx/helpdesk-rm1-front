@@ -23,7 +23,7 @@
 <body class="bg-gray-900">
 
   <!-- LOGIN -->
-  <div x-show="$store.app.currentView === 'login'" class="login-container">
+  <div id="login-view" x-show="$store.app.currentView === 'login'" class="login-container">
     <form id="login-form">
       <div class="container">
         <img class="login-logo" src="/assets/images/logo-banner.png" alt="Logo">
@@ -36,7 +36,7 @@
     </form>
   </div>
 
-  <!-- DASHBOARD admin -->
+  <!-- DASHBOARD view -->
   <div x-show="$store.app.currentView === 'dashboard'" x-data="dashboard()" class="dashboard-container flex h-screen">
 
     <!-- SIDEBAR -->
@@ -46,10 +46,10 @@
           <img id="logo" src="/assets/images/logo-branco.png" alt="Logo" class="ml-2">
         </div>
         <ul>
-          <template x-for="item in menus[$store.app.role]" :key="item.page">
+          <template x-for="item in $store.app.menus" :key="item.page">
             <li>
               <a href="#" class="menu-item" :class="{ 'bg-gray-700': currentPage === item.page }"
-                @click.prevent="goTo(item.page, item.css)" x-text="item.label">
+                @click.prevent="goTo(item.page)" x-text="item.label">
               </a>
             </li>
           </template>
@@ -64,207 +64,6 @@
 
     <!-- MAIN CONTENT -->
     <div id="page-container" class="flex-1 p-6 bg-gray-900">
-
-      <div x-show="currentPage === 'dashboard'">
-        <h1 class="">Dashboard</h1>
-        <p>Bem-vindo ao painel!</p>
-      </div>
-
-      <div x-show="currentPage === 'users'">
-        <h1 class="">Usuários</h1>
-        <p>Gerencie os usuários aqui.</p>
-      </div>
-
-      <div x-show="currentPage === 'create-ticket'">
-
-        <!-- cabeçalho -->
-        <div class="p-1 rounded-t-lg ">
-          <h1 class="mr-1 font-bold text-white border-b border-gray-400">Abrir chamado</h1>
-        </div>
-
-        <!-- Conteúdo -->
-        <div>
-
-
-          <div x-data="{
-            title: '',
-            description: '',
-            priority: 'low',
-            createdBy: 1,
-            assignedTo: null,
-            hotelId: null,
-            async submitForm() {
-              if (!this.title || !this.description || !this.hotelId) {
-
-                console.log(title, description, createdBy, assignedTo, hotelId)
-                alert('Preencha todos os campos obrigatórios.');
-                return;
-              }
-              await createTicket(
-                this.title,
-                this.description,
-                this.priority,
-                this.createdBy,
-                this.assignedTo,
-                this.hotelId
-              );
-              // limpa os campos depois de enviar
-              this.title = '';
-              this.description = '';
-              this.priority = 'low';
-              this.hotelId = null;
-            }
-          }" class=" mt-5 mx-auto bg-gray-800 p-6 rounded-md shadow-md text-gray-200">
-
-
-            <!-- Título -->
-            <div class="mb-4">
-              <label class="block text-sm mb-1">Título *</label>
-              <input type="text" x-model="title" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 
-             focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Digite o título do chamado" />
-            </div>
-
-            <!-- Descrição -->
-            <div class="mb-4">
-              <label class="block text-sm mb-1">Descrição *</label>
-              <textarea x-model="description" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 
-             focus:ring-2 focus:ring-blue-500 focus:outline-none" rows="4"
-                placeholder="Descreva o problema..."></textarea>
-            </div>
-
-            <!-- Prioridade -->
-            <div class="mb-4">
-              <label class="block text-sm mb-1">Prioridade *</label>
-              <select x-model="priority" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 
-             focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                <option value="low">Baixa</option>
-                <option value="medium">Média</option>
-                <option value="high">Alta</option>
-              </select>
-            </div>
-
-            <!-- Hotel -->
-            <div class="mb-4">
-              <label class="block text-sm mb-1">Hotel *</label>
-              <select x-model="hotelId" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 
-             focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                <option value="" selected>Selecione um hotel</option>
-                <option value="1">H8273 - Ibis Canoas Shopping</option>
-                <option value="2">H6665 - Novotel Porto Alegre Aeroporto</option>
-                <option value="3">H3258 - Novotel Porto Alegre Três Figueiras</option>
-                <option value="4">H9087 - Novotel Porto Alegre Assis Brasil</option>
-                <option value="5">H5670 - Ibis Porto Alegre Assis Aeroporto</option>
-              </select>
-            </div>
-
-            <!-- Botão -->
-            <button @click="submitForm" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 
-           rounded-lg transition-colors">
-              Abri Chamado
-            </button>
-          </div>
-
-        </div>
-
-
-      </div>
-
-      <div x-show="currentPage === 'tickets'" x-init="getTickets()" class="flex flex-col h-full gap-3">
-
-        <!-- Cabeçalho FIXO AO TOPO  -->
-        <div class=" p-1 rounded-t-lg  sticky top-0 z-10">
-
-          <h1 class=" mr-1 font-bold text-white">Chamados</h1>
-
-          <div class="flex space-x-2 border-b border-gray-400">
-
-            <button class="tab-btn" @click="activeTab = 'aguardando'"
-              :class="activeTab === 'aguardando' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
-              class="">
-              Todos
-            </button>
-
-            <button class="tab-btn" @click="activeTab = 'aguardando'"
-              :class="activeTab === 'aguardando' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
-              class="">
-              Aguardando atendimento
-            </button>
-
-            <button class="tab-btn" @click="activeTab = 'atendimento'"
-              :class="activeTab === 'atendimento' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
-              class="">
-              Em atendimento
-            </button>
-
-            <button class="tab-btn" @click="activeTab = 'menu3'"
-              :class="activeTab === 'menu3' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
-              class="">
-              Com resposta do solicitante
-            </button>
-
-            <button class="tab-btn" @click="activeTab = 'menu4'"
-              :class="activeTab === 'menu4' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
-              class="">
-              Aguardando confirmação de encerramento
-            </button>
-
-            <button class="tab-btn" @click="activeTab = 'menu4'"
-              :class="activeTab === 'menu4' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
-              class="">
-              Encerrados
-            </button>
-          </div>
-        </div>
-
-
-        <!-- Lista de tickets -->
-        <div class="overflow-auto">
-
-          <template x-for="ticket in ticketList" :key="ticket.id">
-
-            <!-- Ticket -->
-            <div class=" menu-item p-20 bg-gray-800 rounded shadow flex justify-between">
-
-              <!-- Esquerda -->
-              <div class=" content-center w-3/4">
-                <p class="inline text-sm text-gray-400" x-text="ticket.id + ' |'"></p>
-                <p class=" inline text-sm text-gray-400" x-text="ticket.hotel.name + ' - '"></p>
-                <p class=" inline text-sm text-gray-400" x-text="ticket.hotel.code"></p>
-                <h2 class="mt-1 text-white font-bold text-sm" x-text="ticket.title"></h2>
-                <p class=" italic text-sm text-gray-300" x-text="ticket.description"></p>
-              </div>
-
-              <!-- Direita -->
-              <div class="min-h-20 flex flex-col justify-center w-1/4 text-right">
-
-                <div>
-                  <span class="text-red-500 font-semibold" x-show="ticket.progress === 'waiting'"
-                    x-text="'Aguardando atendimento'"></span>
-                  <span class="text-blue-500 font-semibold" x-show="ticket.progress === 'in_progress'"
-                    x-text="'Em atendimento'"></span>
-                </div>
-
-                <div>
-                  <p class="text-sm italic" x-text="'Aberto por ' + ticket.creator.name"></p>
-                </div>
-
-                <p class="text-sm" x-text="dayjs(ticket.created_at).format('DD/MM/YYYY HH:mm')"></p>
-
-                <p x-show="ticket.progress === 'waiting'" class="text-xs underline decoration-solid"
-                  x-text="'Clique para iniciar o atendimento'">
-                </p>
-              </div>
-            </div>
-          </template>
-
-          <!-- Mensagem quando não há tickets -->
-          <p x-show="ticketList.length === 0" class="text-gray-400">Nenhum chamado encontrado</p>
-
-        </div>
-
-      </div>
-
-      </template>
 
     </div>
 

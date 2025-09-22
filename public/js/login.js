@@ -31,6 +31,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Atualiza store do Alpine
       Alpine.store("app").role = payload.role;
+      Alpine.store("app").menus = payload.menus;
+      Alpine.store("app").hotels = payload.hotels;
       Alpine.store("app").currentView = "dashboard";
 
     } catch (e) {

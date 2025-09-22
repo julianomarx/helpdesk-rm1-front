@@ -1,0 +1,46 @@
+<div id="create-user-template" class="bg-gray-800 p-6 rounded-md shadow-md text-gray-200 w-full max-w-lg mx-auto">
+
+    <h2 class="text-xl font-bold mb-4">Criar Usuário</h2>
+
+    <div class="mb-4">
+        <label class="block text-sm mb-1">Nome *</label>
+        <input type="text" id="user-name" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+    </div>
+
+    <div class="mb-4">
+        <label class="block text-sm mb-1">Email *</label>
+        <input type="email" id="user-email" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+    </div>
+
+    <div class="mb-4">
+        <label class="block text-sm mb-1">Senha *</label>
+        <input type="password" id="user-password" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+    </div>
+
+    <div class="mb-4">
+        <label class="block text-sm mb-1">Função *</label>
+        <select id="user-role" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <option value="admin">Admin</option>
+            <option value="agent">Atendente</option>
+            <option value="client_manager">Gerente do Cliente</option>
+            <option value="client_receptionist">Recepcionista</option>
+        </select>
+    </div>
+
+    <div class="mb-4">
+        <label class="block text-sm mb-1">Hotéis (opcional)</label>
+        <select multiple id="user-hotels" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <option value="1">H8273 - Ibis Canoas Shopping</option>
+            <option value="2">H6665 - Novotel Porto Alegre Aeroporto</option>
+            <option value="3">H3258 - Novotel Porto Alegre Três Figueiras</option>
+            <option value="4">H9087 - Novotel Porto Alegre Assis Brasil</option>
+            <option value="5">H5670 - Ibis Porto Alegre Assis Aeroporto</option>
+        </select>
+        <p class="text-xs text-gray-400 mt-1">Segure Ctrl/Cmd para selecionar múltiplos hotéis</p>
+    </div>
+
+    <button id="create-user-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors">
+        Criar Usuário
+    </button>
+
+</div>
