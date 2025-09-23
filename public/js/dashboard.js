@@ -14,7 +14,10 @@ function dashboard() {
 
       const container = document.getElementById("page-container");
       try {
-        const res = await fetch(`/templates/dashboard/${page}.html`);
+        console.log(Alpine.store("app").role)
+
+        let role = Alpine.store("app").role
+        const res = await fetch(`/templates/${role}/${page}.html`);
         if (!res.ok) throw new Error("Template não encontrado");
         const html = await res.text();
         container.innerHTML = html;
