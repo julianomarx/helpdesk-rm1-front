@@ -5,7 +5,7 @@ function dashboard() {
     ticketList: [],
 
     //esses menus serão carregados dinamicamente depois quando eu implementar o token
-  
+
     async goTo(page, cssPath) {
       if (this.currentPage === page) return
       this.currentPage = page;
@@ -21,10 +21,10 @@ function dashboard() {
 
         Alpine.initTree(container)
 
-         if (page === "create-user") {
+        if (page === "create-user") {
           this.initCreateUser(); // ex: função dentro do dashboard.js
         }
-        
+
       } catch (error) {
         container.innerHTML = `<p class="text-red-500">Erro ao carregar a página: ${e.message}</p>`;
       }
@@ -50,6 +50,14 @@ function dashboard() {
     logout() {
       localStorage.removeItem("access_token");
       Alpine.store("app").currentView = "login";
+      Alpine.store("app").role = '';
+      Alpine.store("app").menus = '';
+      Alpine.store("app").hotels = '';
+
+      // reset do estado do dashboard
+      this.currentPage = "dashboard";
+      this.currentTab = "all";
+      this.ticketList = [];
     },
 
     async getTickets() {
@@ -86,7 +94,7 @@ function dashboard() {
       return this.ticketList.filter(ticket => ticket.progress === this.currentTab);
     },
 
-    
+
     async createTicket(title, description, priority, createdBy, assignedTo, hotelId) {
       const token = localStorage.getItem("access_token");
       if (token) {

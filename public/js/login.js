@@ -27,12 +27,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const payload = JSON.parse(atob(token.split(".")[1]));
 
+      console.log(payload)
+
+
       //aqui iremos guardar as informações de hoteis e permissões em localstorage
 
       // Atualiza store do Alpine
       Alpine.store("app").role = payload.role;
       Alpine.store("app").menus = payload.menus;
       Alpine.store("app").hotels = payload.hotels;
+      console.log(Alpine.store("app"))
       Alpine.store("app").currentView = "dashboard";
 
     } catch (e) {
