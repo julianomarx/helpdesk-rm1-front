@@ -14,9 +14,8 @@ function dashboard() {
 
       const container = document.getElementById("page-container");
       try {
-        console.log(Alpine.store("app").role)
 
-        let role = Alpine.store("app").role
+        const role = Alpine.store("app").role
         const res = await fetch(`/templates/${role}/${page}.html`);
         if (!res.ok) throw new Error("Template não encontrado");
         const html = await res.text();
@@ -136,4 +135,30 @@ function dashboard() {
       }
     }
   };
+}
+
+function hotelSelector(allHotels) {
+  return {
+    search: '',
+    selectedHotels: [],
+    get filteredHotels() {
+      if (!allHotels) return []; // se ainda não veio nada, retorna lista vazia
+      return allHotels.filter(hotel => {
+        const query = this.search.toLowerCase();
+        const notSelected = !this.selectedHotels.find(h => h.id === hotel.id);
+        return notSelected && (
+          hotel.name.toLowerCase().includes(query) ||
+          hotel.code.toLowerCase().includes(query)
+        );
+      });
+    },
+    addHotel(hotel) {
+      if (!this.selectedHotels.find(h => h.id === hotel.id)) {
+        this.selectedHotels.push(hotel);
+      }
+    },
+    removeHotel(hotel) {
+      this.selectedHotels = this.selectedHotels.filter(h => h.id !== hotel.id);
+    }
+  }
 }
