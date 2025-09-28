@@ -1,15 +1,15 @@
 <div>
 
-        <!-- cabeçalho -->
-        <div class="p-1 rounded-t-lg ">
-          <h1 class="mr-1  font-bold text-white border-b border-gray-400">Abrir chamado</h1>
-        </div>
+  <!-- cabeçalho -->
+  <div class="p-1 rounded-t-lg ">
+    <h1 class="mr-1  font-bold text-white border-b border-gray-400">Abrir chamado</h1>
+  </div>
 
-        <!-- Conteúdo -->
-        <div>
+  <!-- Conteúdo -->
+  <div>
 
 
-          <div x-data="{
+    <div x-data="{
             title: '',
             description: '',
             priority: 'low',
@@ -40,51 +40,53 @@
           }" class=" mt-5 mx-auto bg-gray-800 p-6 rounded-md shadow-md text-gray-200">
 
 
-            <!-- Título -->
-            <div class="mb-4">
-              <label class="block text-sm mb-1">Título *</label>
-              <input type="text" x-model="title" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 
+      <!-- Título -->
+      <div class="mb-4">
+        <label class="block text-sm mb-1">Título *</label>
+        <input type="text" x-model="title" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 
              focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Digite o título do chamado" />
-            </div>
-
-            <!-- Descrição -->
-            <div class="mb-4">
-              <label class="block text-sm mb-1">Descrição *</label>
-              <textarea x-model="description" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 
-             focus:ring-2 focus:ring-blue-500 focus:outline-none" rows="4"
-                placeholder="Descreva o problema..."></textarea>
-            </div>
-
-            <!-- Prioridade -->
-            <div class="mb-4">
-              <label class="block text-sm mb-1">Prioridade *</label>
-              <select x-model="priority" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 
-             focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                <option value="low">Baixa</option>
-                <option value="medium">Média</option>
-                <option value="high">Alta</option>
-              </select>
-            </div>
-
-            <!-- Hotel -->
-            <div class="mb-4">
-              <label class="block text-sm mb-1">Hotel *</label>
-              <select x-model="hotelId" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 
-             focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                <option value="" selected>Selecione um hotel</option>
-                <option value="1">H8273 - Ibis Canoas Shopping</option>
-                <option value="64">H6665 - Novotel Porto Alegre Aeroporto</option>
-              </select>
-            </div>
-
-            <!-- Botão -->
-            <button @click="submitForm" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 
-           rounded-lg transition-colors">
-              Abri Chamado
-            </button>
-          </div>
-
-        </div>
-
-
       </div>
+
+      <!-- Descrição -->
+      <div class="mb-4">
+        <label class="block text-sm mb-1">Descrição *</label>
+        <textarea x-model="description" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 
+             focus:ring-2 focus:ring-blue-500 focus:outline-none" rows="4"
+          placeholder="Descreva o problema..."></textarea>
+      </div>
+
+      <!-- Prioridade -->
+      <div class="mb-4">
+        <label class="block text-sm mb-1">Prioridade *</label>
+        <select x-model="priority" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 
+             focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          <option value="low">Baixa</option>
+          <option value="medium">Média</option>
+          <option value="high">Alta</option>
+        </select>
+      </div>
+
+      <!-- Hotel -->
+      <div class="mb-4">
+        <label class="block text-sm mb-1">Hotel *</label>
+        <select x-model="hotelId" size="5" class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600
+       focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          <option value="" selected>Selecione um hotel</option>
+          <template x-for="hotel in $store.app.hotels">
+            <option :value="hotel.id" x-text="hotel.code + ' - ' + hotel.name"></option>
+          </template>
+        </select>
+      </div>
+
+
+      <!-- Botão -->
+      <button @click="submitForm" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 
+           rounded-lg transition-colors">
+        Abri Chamado
+      </button>
+    </div>
+
+  </div>
+
+
+</div>

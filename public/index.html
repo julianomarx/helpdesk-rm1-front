@@ -48,7 +48,7 @@
         <ul>
           <template x-for="item in $store.app.menus" :key="item.page">
             <li>
-              <a href="#" class="menu-item" :class="{ 'bg-gray-700': currentPage === item.page }"
+              <a href="#" class="menu-item text-sm" :class="{ 'bg-gray-700': currentPage === item.page }"
                 @click.prevent="goTo(item.page)" x-text="item.label">
               </a>
             </li>
