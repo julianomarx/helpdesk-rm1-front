@@ -29,7 +29,9 @@
             return;
           }
 
-          const hotel_ids = this.selectedHotels.map(h => h.id);
+          const hotel_ids = (this.role === 'admin' || this.role === 'agent')
+            ? $store.app.hotels.map(h => h.id)
+            : this.selectedHotels.map(h => h.id);
 
           await createUser({
             name: this.name,
@@ -99,7 +101,8 @@
   </div>
 
   <!-- Hotéis (dual list) -->
-  <div class="mb-3">
+  <div class="mb-3"
+        x-show="!(role === 'admin' || role === 'agent')">
     <label class="block text-xs mb-2">Hotéis (opcional)</label>
 
     <input type="text" placeholder="Buscar por nome ou código..." x-model="hotelSearch"
