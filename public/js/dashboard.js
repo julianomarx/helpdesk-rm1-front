@@ -141,21 +141,19 @@ function dashboard() {
       console.log(userData)
       if (token) {
         try {
+          const body = userData
           const res = await fetch("http://127.0.0.1:8000/users", {
             method: "POST",
             headers: { 
               "Content-Type" : "application/json",
               "Authorization": "Bearer " + token
             },
-
-            // body: JSON.stringify({
-              
-            // })
-
+            body: JSON.stringify(userData)
+           
           });
 
         } catch (error) {
-          
+          console.Error("Erro nessa merda :", error)
         }
       }
     }
