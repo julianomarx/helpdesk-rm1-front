@@ -15,7 +15,7 @@
         hotelId: null,
         async submitForm() {
           if (!this.title || !this.description || !this.hotelId) {
-            alert('Preencha todos os campos obrigatórios.');
+            showToast('Preencha todos os campos obrigatórios.', 'error');
             return;
           }
           await createTicket(

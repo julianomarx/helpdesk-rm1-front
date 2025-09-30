@@ -21,7 +21,7 @@
         },
         async submitUser() {
           if (!this.name || !this.email || !this.password) {
-            alert('Preencha todos os campos obrigatórios.');
+            showToast('Preencha todos os campos obrigatórios.', 'error');
             return;
           }
           if (this.password !== this.confirmPassword) {

@@ -39,6 +39,12 @@
   <!-- DASHBOARD view -->
   <div x-show="$store.app.currentView === 'dashboard'" x-data="dashboard()" class="dashboard-container flex h-screen">
 
+
+    <!-- TOAST CONTAINER pop-up -->
+     <div id="toast-container"
+          class="fixed top-4 right-4 space-y-2 z-50 pointer-events-none">
+     </div>
+
     <!-- SIDEBAR -->
     <div class="dashboard-sidebar bg-gray-800 p-4 flex flex-col justify-between">
       <div>
