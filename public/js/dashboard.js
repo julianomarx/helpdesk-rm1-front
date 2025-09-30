@@ -133,6 +133,31 @@ function dashboard() {
         console.log("Token não loclaizado, redirecionando para o login");
         Alpine.store.currentView = "login";
       }
+    },
+
+    async createUser(userData) {
+      const token = localStorage.getItem("access_token");
+
+      console.log(userData)
+      if (token) {
+        try {
+          const res = await fetch("http://127.0.0.1:8000/users", {
+            method: "POST",
+            headers: { 
+              "Content-Type" : "application/json",
+              "Authorization": "Bearer " + token
+            },
+
+            // body: JSON.stringify({
+              
+            // })
+
+          });
+
+        } catch (error) {
+          
+        }
+      }
     }
   };
 }
