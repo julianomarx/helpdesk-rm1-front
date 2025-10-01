@@ -36,8 +36,15 @@ document.addEventListener("DOMContentLoaded", () => {
       Alpine.store("app").role = payload.role;
       Alpine.store("app").menus = payload.menus;
       Alpine.store("app").hotels = payload.hotels;
-      console.log(Alpine.store("app"))
+
+      Alpine.store("app").currentPage = "dashboard";  
+      Alpine.store("app").currentTab = "all";
+      Alpine.store("app").selectedTicket = "null";
+
+      //muda a view para dashboard
       Alpine.store("app").currentView = "dashboard";
+
+      console.log(Alpine.store("app"))
 
     } catch (e) {
       console.error("Erro no login:", e);

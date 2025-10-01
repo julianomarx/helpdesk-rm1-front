@@ -3,6 +3,7 @@ function dashboard() {
     currentPage: "dashboard",
     currentTab: "all",
     ticketList: [],
+    selectedTicket: null,
 
     //esses menus serão carregados dinamicamente depois quando eu implementar o token
 
@@ -21,7 +22,7 @@ function dashboard() {
         const html = await res.text();
         container.innerHTML = html;
 
-        Alpine.initTree(container)
+        Alpine.initTree(container);
 
         if (page === "create-user") {
           this.initCreateUser(); // ex: função dentro do dashboard.js
@@ -60,6 +61,11 @@ function dashboard() {
       this.currentPage = "dashboard";
       this.currentTab = "all";
       this.ticketList = [];
+      this.selectedTicket = null;
+
+      //limpa a DOM 
+      const container = document.getElementById("page-container");
+      if (container) container.innerHTML = "";
     },
 
     async getTickets() {
@@ -79,7 +85,7 @@ function dashboard() {
           }
 
           const data = await res.json();
-          console.log("Tickets recebidos: ", data)
+
           this.ticketList = data;
         } catch (e) {
 
@@ -96,6 +102,38 @@ function dashboard() {
       return this.ticketList.filter(ticket => ticket.progress === this.currentTab);
     },
 
+    viewTicket(ticket) {
+      //busca o ticket completo
+      this.getTicketById(ticket.id);
+      this.goTo("ticket-view")
+    },
+
+    async getTicketById(ticketId) {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        Alpine.store("app").currentView = "login";
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/tickets/${ticketId}`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+
+        if (!res.ok) {
+          throw new Error("Erro ao buscar ticket");
+        }
+
+        const data = await res.json();
+        this.selectedTicket = data; // já inclui comments
+
+        console.log("Ticket carregado:", data);
+      } catch (error) {
+        console.error("Não foi possível buscar o ticket:", error);
+        this.showToast("Erro ao carregar ticket", "error");
+      }
+    },
+
     // showToast função 
     showToast(message, type = "success") {
       const container = document.getElementById("toast-container");
@@ -107,10 +145,10 @@ function dashboard() {
         flex items-center gap-2 px-4 py-2 mb-2 rounded-md shadow-lg text-sm
         transform translate-x-full opacity-0 transition-all duration-500 ease-out
           ${type === "success" ? "bg-gray-800 border border-green-500 text-green-400" :
-            type === "error" ? "bg-gray-800 border border-red-500 text-red-400" :
+          type === "error" ? "bg-gray-800 border border-red-500 text-red-400" :
             "bg-gray-800 border border-blue-500 text-blue-400"}
-      `; 
-       
+      `;
+
       // ícone bonitinho por tipo
       const icon = document.createElement("span");
       icon.innerHTML = type === "success" ? "✅" : type === "error" ? "❌" : "ℹ️";
@@ -165,7 +203,7 @@ function dashboard() {
             return;
           }
 
-          
+
           const data = await res.json();
           console.log("Chamado aberto: ", data)
 
@@ -190,8 +228,8 @@ function dashboard() {
           const body = userData
           const res = await fetch("http://127.0.0.1:8000/users", {
             method: "POST",
-            headers: { 
-              "Content-Type" : "application/json",
+            headers: {
+              "Content-Type": "application/json",
               "Authorization": "Bearer " + token
             },
             body: JSON.stringify(userData)

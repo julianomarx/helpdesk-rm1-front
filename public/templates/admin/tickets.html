@@ -52,7 +52,7 @@
     <template x-for="ticket in filteredTickets" :key="ticket.id">
 
       <!-- Ticket -->
-      <div class=" menu-item p-20 bg-gray-800 rounded shadow flex justify-between">
+      <div @click="viewTicket(ticket)" class=" menu-item p-20 bg-gray-800 rounded shadow flex justify-between">
 
         <!-- Esquerda -->
         <div class=" content-center w-3/4">
@@ -89,9 +89,6 @@
 
           <p class="text-sm" x-text="dayjs(ticket.created_at).format('DD/MM/YYYY HH:mm')"></p>
 
-          <p x-show="ticket.progress === 'waiting'" class="text-xs underline decoration-solid"
-            x-text="'Iiniciar atendimento'">
-          </p>
         </div>
       </div>
     </template>
