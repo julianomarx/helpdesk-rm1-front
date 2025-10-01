@@ -3,7 +3,7 @@ function dashboard() {
     currentPage: "dashboard",
     currentTab: "all",
     ticketList: [],
-    selectedTicket: null,
+    selectedTicket: { comments: [] },
 
     //esses menus serão carregados dinamicamente depois quando eu implementar o token
 
@@ -56,12 +56,13 @@ function dashboard() {
       Alpine.store("app").role = '';
       Alpine.store("app").menus = '';
       Alpine.store("app").hotels = '';
+      Alpine.store("app").userId = '';
 
       // reset do estado do dashboard
       this.currentPage = "dashboard";
       this.currentTab = "all";
       this.ticketList = [];
-      this.selectedTicket = null;
+      // this.selectedTicket = null;
 
       //limpa a DOM 
       const container = document.getElementById("page-container");

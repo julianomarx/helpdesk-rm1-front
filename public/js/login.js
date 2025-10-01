@@ -33,13 +33,14 @@ document.addEventListener("DOMContentLoaded", () => {
       //aqui iremos guardar as informações de hoteis e permissões em localstorage
 
       // Atualiza store do Alpine
+      Alpine.store("app").userId = payload.sub
       Alpine.store("app").role = payload.role;
       Alpine.store("app").menus = payload.menus;
       Alpine.store("app").hotels = payload.hotels;
 
       Alpine.store("app").currentPage = "dashboard";  
       Alpine.store("app").currentTab = "all";
-      Alpine.store("app").selectedTicket = "null";
+      // Alpine.store("app").selectedTicket = "null";
 
       //muda a view para dashboard
       Alpine.store("app").currentView = "dashboard";

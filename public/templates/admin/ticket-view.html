@@ -1,31 +1,39 @@
-<div class="p-4 bg-gray-800 rounded text-gray-200">
-  <h1 class="text-lg font-bold mb-2" x-text="selectedTicket.title"></h1>
-  <p class="mb-2 text-sm" x-text="selectedTicket.description"></p>
-  <p class="text-xs text-gray-400">
-    Prioridade: <span x-text="selectedTicket.priority"></span>
-  </p>
+<div class="text-gray-200">
 
-  <hr class="my-4 border-gray-600">
+    <h1 class="text-lg font-bold mb-2" x-text="selectedTicket.title"></h1>
+    <p x-text="' - ' + (selectedTicket?.id ?? '')"></p>
+    <hr class="my-4 border-gray-600">
 
-  <div>
-    <h2 class="text-md font-semibold mb-2">Comentários</h2>
+    <div class="p-4 bg-gray-800 rounded text-gray-200">
+        <p class="mb-2 text-sm" x-text="selectedTicket.description"></p>
 
-    <template x-for="comment in selectedTicket.comments" :key="comment.id">
-      <div class="mb-2 p-2 rounded bg-gray-700 text-sm">
-        <p x-text="comment.comment"></p>
         <p class="text-xs text-gray-400">
-          por <span x-text="comment.author.name"></span>
+            Prioridade: <span x-text="selectedTicket.priority"></span>
         </p>
-      </div>
-    </template>
 
-    <template x-if="!selectedTicket.comments || selectedTicket.comments.length === 0">
-      <p class="text-gray-400 text-sm">Nenhum comentário ainda.</p>
-    </template>
-  </div>
 
-  <button @click="goTo('tickets')"
-          class="mt-4 px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded">
-    Voltar
-  </button>
+        <div>
+            <h2 class="text-md font-semibold mb-2">Comentários</h2>
+
+            <template x-for="comment in (selectedTicket?.comments || [])" :key="comment.id">
+                <div class="mb-2 p-2 rounded bg-gray-700 text-sm">
+                    <p x-text="comment.comment"></p>
+                    <p class="text-xs text-gray-400">
+                        por <span x-text="comment.author.name"></span>
+                    </p>
+                </div>
+            </template>
+
+            <template x-if="!selectedTicket.comments || selectedTicket.comments.length === 0">
+                <p class="text-gray-400 text-sm">Nenhum comentário ainda.</p>
+            </template>
+        </div>
+
+        <button @click="goTo('tickets')" class="mt-4 px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded">
+            Voltar
+        </button>
+    </div>
+
+
+
 </div>
