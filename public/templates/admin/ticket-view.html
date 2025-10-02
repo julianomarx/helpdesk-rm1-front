@@ -1,11 +1,42 @@
 <div class="text-gray-200">
 
-    <h1 class="text-lg font-bold mb-2" x-text="selectedTicket.title"></h1>
-    <p x-text="' - ' + (selectedTicket?.id ?? '')"></p>
-    <hr class="my-4 border-gray-600">
+    <h1 class="font-bold mb-2" x-text=" selectedTicket.id + ' | ' + selectedTicket.title"></h1>
 
-    <div class="p-4 bg-gray-800 rounded text-gray-200">
-        <p class="mb-2 text-sm" x-text="selectedTicket.description"></p>
+
+    <div class="flex space-x-2 border-b border-gray-400">
+
+      <button class="tab-btn" @click="currentTab = 'waiting'"
+        :class="currentTab === 'waiting' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
+        class="">
+        Visualizar anexos
+      </button>
+
+      <button class="tab-btn" @click="currentTab = 'in_progress'"
+        :class="currentTab === 'in_progress' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
+        class="">
+        Transferir chamado
+      </button>
+
+      <button class="tab-btn" @click="currentTab = 'feedback'"
+        :class="currentTab === 'feedback' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
+        class="">
+        Concluir chamado
+      </button>
+
+      <button class="tab-btn" @click="currentTab = 'awaiting_confirmation'"
+        :class="currentTab === 'awaiting_confirmation' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
+        class="">
+        Time log
+      </button>
+
+    </div>
+  </div>
+
+    <!-- <hr class="my-4 border-gray-600"> -->
+
+
+    <div class=" mt-3   p-4 bg-gray-800 rounded text-gray-200">
+        <p class="mb-1 text-sm" x-text="selectedTicket.description"></p>
 
         <p class="text-xs text-gray-400">
             Prioridade: <span x-text="selectedTicket.priority"></span>
