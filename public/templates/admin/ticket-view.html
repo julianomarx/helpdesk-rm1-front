@@ -1,4 +1,4 @@
-<div class="text-gray-200 flex space-x-4">
+<div class="text-gray-200 h-screen flex space-x-4">
 
     <!-- Lado Esquerdo (Chamado) -->
     <div class="flex-1">
@@ -45,44 +45,40 @@
 
         <!-- TAB DETALHES -->
         <div x-show="ticketViewTab === 'details'">
-            <div class="mt-3 p-4 bg-gray-800 rounded text-gray-200 space-y-6">
+            <div class="h-[calc(89vh-50px)] mt-3 p-4 bg-gray-800 rounded text-gray-200 space-y-6">
 
-                <!-- Descrição com "Ver mais" -->
-                <div x-data="{ expandDesc: false }">
-                    <h2 class="text-md font-semibold mb-2">Descrição</h2>
-                    <p x-show="!expandDesc" class="text-sm line-clamp-5" x-text="selectedTicket.description"></p>
-                    <p x-show="expandDesc" class="text-sm" x-text="selectedTicket.description"></p>
-                    <button @click="expandDesc = !expandDesc" class="text-blue-400 text-xs mt-1 hover:underline">
-                        <span x-show="!expandDesc">Ver mais</span>
-                        <span x-show="expandDesc">Ver menos</span>
-                    </button>
+                <!-- Descrição como gaveta -->
+                <div x-data="{ open: false }"
+                    class="relative bg-gray-800 rounded p-3 transition-all duration-300 ease-in-out"
+                    :class="open ? 'h-[calc(100vh-150px)] overflow-y-auto' : 'h-22 overflow-hidden'">
+
+                    <div class="flex justify-between items-center cursor-pointer"
+                         @click="open = !open">
+                        <h2 class="text-md font-semibold">Descrição</h2>
+                        <span class="text-blue-400 text-xs hover:underline select-none">
+                            <span x-text="open ? 'Fechar ↑' : 'Expandir ↓'"></span>
+                        </span>
+                    </div>
+
+                    <p class="mt-2 text-sm whitespace-pre-line leading-relaxed"
+                       x-text="selectedTicket.description"></p>
                 </div>
 
-                <!-- Prioridade -->
-                <p class="text-xs text-gray-400">
-                    Prioridade: <span x-text="selectedTicket.priority"></span>
-                </p>
+                <hr class="m-1 border-gray-400">
 
-                <hr class="text-gray-400">
-
-                <!-- Comentários (Timeline com scroll) -->
-                <div class="flex flex-col h-80">
+                <!-- Comentários fixos -->
+                <div class="flex flex-col h-98 bg-gray-800 rounded p-3">
                     <h2 class="text-md font-semibold mb-2">Comentários</h2>
 
-                    <!-- Lista de comentários -->
                     <div class="flex-1 overflow-y-auto pr-2 space-y-4 custom-scroll">
-                        <template x-for="comment in (selectedTicket?.comments || [])" :key="comment.id">
+                        <template x-for="comment in (selectedTicket.comments || [])" :key="comment.id">
                             <div class="flex space-x-3 items-start">
-                                <!-- Avatar -->
                                 <div class="w-8 h-8 bg-gray-600 rounded-full"></div>
                                 <div>
                                     <p class="text-sm text-gray-200" x-text="comment.comment"></p>
                                     <p class="text-xs text-gray-400">
                                         por <span x-text="comment.author.name"></span>
                                     </p>
-                                    <template x-if="comment.hasAttachment">
-                                        <p class="text-xs text-blue-400 mt-1">📎 Anexo disponível</p>
-                                    </template>
                                 </div>
                             </div>
                         </template>
@@ -107,11 +103,11 @@
 
     </div>
 
-
-    <div class="w-72 bg-gray-800 rounded p-4 flex flex-col space-y-4">
+    <!-- Painel à direita -->
+    <div class="w-60 bg-gray-800 rounded p-4 flex flex-col space-y-4">
         <h2 class="text-lg font-semibold">Solicitante</h2>
 
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-3">   
             <div class="w-12 h-12 bg-gray-600 rounded-full"></div>
             <div>
                 <p class="font-semibold text-gray-100" x-text="selectedTicket.creator.name"></p>
@@ -126,10 +122,9 @@
             <p><span class="font-semibold">Empresa:</span> <span x-text="selectedTicket.hotel.name"></span></p>
         </div>
     </div>
-
 </div>
 
-<!-- Custom scrollbar minimalista -->
+<!-- Scrollbar customizada -->
 <!-- <style>
     .custom-scroll::-webkit-scrollbar {
         width: 6px;
@@ -140,13 +135,11 @@
     }
 
     .custom-scroll::-webkit-scrollbar-thumb {
-        background-color: #4B5563;
-        /* gray-600 */
+        background-color: #4B5563; /* gray-600 */
         border-radius: 9999px;
     }
 
     .custom-scroll::-webkit-scrollbar-thumb:hover {
-        background-color: #9CA3AF;
-        /* gray-400 */
+        background-color: #9CA3AF; /* gray-400 */
     }
 </style> -->
