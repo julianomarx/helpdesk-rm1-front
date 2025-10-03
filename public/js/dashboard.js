@@ -2,6 +2,7 @@ function dashboard() {
   return {
     currentPage: "dashboard",
     currentTab: "all",
+    ticketViewTab: 'details',
     ticketList: [],
     selectedTicket: { comments: [] },
 
