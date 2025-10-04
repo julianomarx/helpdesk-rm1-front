@@ -157,7 +157,7 @@ input {
 /* Main content */
 #page-container {
   flex: 1;
-  padding: 20px;
+  /* padding: 20px; */
   overflow-y: hidden;
   background-color: #1f1f1f;
 }
