@@ -1,7 +1,8 @@
-<div class="text-gray-200 pl-4 h-screen flex flex space-x-4">
+<div class="text-gray-200 h-screen w-full flex space-x-4">
 
-    <!-- centro -->
-    <div class="flex flex-col">
+    <!-- Esquerdo -->
+    <div class="flex flex-10 flex-col">
+
         <!-- Header com título e tabs -->
         <div class="border-b border-gray-400 flex items-center mb-2">
             <div>
@@ -44,13 +45,13 @@
 
         <!-- TAB DETALHES -->
         <div>
-            <div x-show="ticketViewTab === 'details'">
-                <div class="h-[calc(89vh-50px)] mt-3 p-4 bg-gray-800 rounded text-gray-200 space-y-6">
+            <div class="" x-show="ticketViewTab === 'details'">
+                <div class="mt-3 p-4 bg-gray-800  rounded text-gray-200 space-y-6">
 
                     <!-- Descrição como gaveta -->
                     <div x-data="{ open: false }"
                         class="relative bg-gray-800 rounded p-3 transition-all duration-300 ease-in-out"
-                        :class="open ? 'h-[calc(100vh-150px)] overflow-y-auto' : 'h-22 overflow-hidden'">
+                        :class="open ? 'h-full overflow-y-auto' : 'h-22 overflow-hidden'">
 
                         <div class="flex justify-between items-center cursor-pointer" @click="open = !open">
                             <h2 class="text-md font-semibold">Descrição</h2>
@@ -103,8 +104,8 @@
 
     </div>
 
-    <!-- Painel à direita -->
-    <div class="w-60 bg-gray-800 rounded p-4 flex flex-col space-y-4">
+    <!-- Direito -->
+    <div class="flex flex-2 flex-col bg-gray-800 rounded p-4 space-y-4">
         <h2 class="text-lg font-semibold">Solicitante</h2>
 
         <div class="flex items-center space-x-3">
@@ -123,24 +124,5 @@
         </div>
 
     </div>
+
 </div>
-
-<!-- Scrollbar customizada -->
-<!-- <style>
-    .custom-scroll::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .custom-scroll::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    .custom-scroll::-webkit-scrollbar-thumb {
-        background-color: #4B5563; /* gray-600 */
-        border-radius: 9999px;
-    }
-
-    .custom-scroll::-webkit-scrollbar-thumb:hover {
-        background-color: #9CA3AF; /* gray-400 */
-    }
-</style> -->

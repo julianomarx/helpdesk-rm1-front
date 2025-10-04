@@ -74,9 +74,9 @@ input {
    DASHBOARD LAYOUT
 ======================= */
 
-.dashboard-sidebar {
+/* .dashboard-sidebar {
   width: 190px;
-}
+} */
 
 .dashboard-container {
   display: flex;
