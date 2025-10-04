@@ -1,7 +1,7 @@
 <div class="text-gray-200 h-screen w-full flex space-x-4">
 
     <!-- Esquerdo -->
-    <div class="flex flex-10 flex-col">
+    <div class="flex flex-10 flex-col mb-2">
 
         <!-- Header com título e tabs -->
         <div class="border-b border-gray-400 flex items-center mb-2">
@@ -44,9 +44,9 @@
         </div>
 
         <!-- TAB DETALHES -->
-        <div>
-            <div class="" x-show="ticketViewTab === 'details'">
-                <div class="mt-3 p-4 bg-gray-800  rounded text-gray-200 space-y-6">
+        <div class="flex flex-1 flex-col">
+            <div class="flex flex-1 flex-col" x-show="ticketViewTab === 'details'">
+                <div class="flex flex-1 flex-col mt-3 p-4 bg-gray-800  rounded text-gray-200 space-y-6">
 
                     <!-- Descrição como gaveta -->
                     <div x-data="{ open: false }"
