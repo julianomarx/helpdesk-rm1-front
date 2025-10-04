@@ -36,19 +36,19 @@
   </div>
 
   <!-- DASHBOARD view -->
-  <div x-show="$store.app.currentView === 'dashboard'" x-data="dashboard()" class="dashboard-container flex h-screen">
-
-
-    <!-- TOAST CONTAINER pop-up -->
-    <div id="toast-container" class="fixed top-4 right-4 space-y-2 z-50 pointer-events-none">
-    </div>
+  <div x-show="$store.app.currentView === 'dashboard'" x-data="dashboard()"
+    class="dashboard-container flex flex-1 h-screen">
 
     <!-- SIDEBAR -->
-    <div class="dashboard-sidebar w-45 bg-gray-800 p-4 mr-4 flex flex-col justify-between">
-      <div>
+    <div class="dashboard-sidebar flex flex-col justify-between bg-gray-800 p-4 mr-4 ">
+
+      <!-- Menus na metade de cima -->
+      <div class="flex flex-col">
+
         <div id="logo-container" class=" mb-8">
           <img id="logo" src="/assets/images/logo-branco.png" alt="Logo" class="ml-2">
         </div>
+
         <ul>
           <template x-for="item in $store.app.menus" :key="item.page">
             <li>
@@ -58,22 +58,30 @@
             </li>
           </template>
         </ul>
+
       </div>
+
+      <!-- Botão logout na metade de baixo -->
       <div>
         <button @click="logout()" class=" logout-btn w-full py-2 px-3 bg-red-600 rounded hover:bg-red-500">
           Logout
         </button>
       </div>
-    </div>
 
-    <!-- MAIN CONTENT -->
-    <div id="page-container" class="flex flex-1 bg-gray-900">
 
     </div>
 
-  </div>
+    <div class="flex flex-10">
+      <!-- MAIN CONTENT -->
+      <div id="page-container" class="flex flex-1 flex-col bg-gray-900">
+
+      </div>
+
+    </div>
+
 
   </div>
+
 
 </body>
 
