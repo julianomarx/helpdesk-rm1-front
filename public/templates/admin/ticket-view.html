@@ -1,128 +1,178 @@
-<div class="text-gray-200 h-screen w-full flex space-x-4">
+<div
+  class="text-gray-200 h-screen w-full flex space-x-4"
+  x-data="{ showDescriptionModal: false, showCommentsModal: false, maxDescLength: 400 }"
+>
+  <!-- ESQUERDO -->
+  <div class="flex flex-10 flex-col mb-2">
+    <!-- Header -->
+    <div class="border-b border-gray-400 flex items-center mb-2">
+      <div>
+        <h1
+          class="font-bold break-words whitespace-normal"
+          x-text="selectedTicket.id + ' | ' + selectedTicket.title"
+        ></h1>
 
-    <!-- Esquerdo -->
-    <div class="flex flex-10 flex-col mb-2">
+        <div class="flex w-full space-x-2">
+          <button
+            @click="goTo('tickets')"
+            class="tab-btn border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500"
+          >
+            ← Voltar
+          </button>
 
-        <!-- Header com título e tabs -->
-        <div class="border-b border-gray-400 flex items-center mb-2">
-            <div>
-                <h1 class="font-bold break-words whitespace-normal"
-                    x-text="selectedTicket.id + ' | ' + selectedTicket.title"></h1>
-
-                <div class="flex w-full space-x-2">
-                    <button @click="goTo('tickets')" class="tab-btn"
-                        :class="'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'">
-                        ← Voltar
-                    </button>
-
-                    <button class="tab-btn" @click="ticketViewTab = 'details'"
-                        :class="ticketViewTab === 'details' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'">
-                        Detalhes
-                    </button>
-
-                    <button class="tab-btn" @click="ticketViewTab = 'ticketHistory'"
-                        :class="ticketViewTab === 'ticketHistory' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'">
-                        Histórico
-                    </button>
-
-                    <button class="tab-btn" @click="ticketViewTab = 'transferTicket'"
-                        :class="ticketViewTab === 'transferTicket' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'">
-                        Transferir chamado
-                    </button>
-
-                    <button class="tab-btn" @click="ticketViewTab = 'finishTicket'"
-                        :class="ticketViewTab === 'finishTicket' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'">
-                        Finalizar atendimento
-                    </button>
-
-                    <button class="tab-btn" @click="ticketViewTab = 'timeLog'"
-                        :class="ticketViewTab === 'timeLog' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'">
-                        Time log
-                    </button>
-                </div>
-            </div>
+          <button
+            class="tab-btn"
+            @click="ticketViewTab = 'details'"
+            :class="ticketViewTab === 'details' ? 'border-b-2 border-gray-400 text-white' :
+                      'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
+          >
+            Detalhes
+          </button>
         </div>
-
-        <!-- TAB DETALHES -->
-        <div class="flex flex-1 flex-col">
-            <div class="flex flex-1 flex-col" x-show="ticketViewTab === 'details'">
-                <div class="flex flex-1 flex-col mt-3 p-4 bg-gray-800  rounded text-gray-200 space-y-6">
-
-                    <!-- Descrição como gaveta -->
-                    <div x-data="{ open: false }"
-                        class="relative bg-gray-800 rounded p-3 transition-all duration-300 ease-in-out"
-                        :class="open ? 'h-full overflow-y-auto' : 'h-22 overflow-hidden'">
-
-                        <div class="flex justify-between items-center cursor-pointer" @click="open = !open">
-                            <h2 class="text-md font-semibold">Descrição</h2>
-                            <span class="text-blue-400 text-xs hover:underline select-none">
-                                <span x-text="open ? 'Fechar ↑' : 'Expandir ↓'"></span>
-                            </span>
-                        </div>
-
-                        <p class="mt-2 text-sm whitespace-pre-line leading-relaxed" x-text="selectedTicket.description">
-                        </p>
-                    </div>
-
-                    <hr class="m-1 border-gray-400">
-
-                    <!-- Comentários fixos -->
-                    <div class="flex flex-col h-98 bg-gray-800 rounded p-3">
-                        <h2 class="text-md font-semibold mb-2">Comentários</h2>
-
-                        <div class="flex-1 overflow-y-auto pr-2 space-y-4 custom-scroll">
-                            <template x-for="comment in (selectedTicket.comments || [])" :key="comment.id">
-                                <div class="flex space-x-3 items-start">
-                                    <div class="w-8 h-8 bg-gray-600 rounded-full"></div>
-                                    <div>
-                                        <p class="text-sm text-gray-200" x-text="comment.comment"></p>
-                                        <p class="text-xs text-gray-400">
-                                            por <span x-text="comment.author.name"></span>
-                                        </p>
-                                    </div>
-                                </div>
-                            </template>
-
-                            <template x-if="!selectedTicket.comments || selectedTicket.comments.length === 0">
-                                <p class="text-gray-400 text-sm">Nenhum comentário ainda.</p>
-                            </template>
-                        </div>
-
-                        <!-- Adicionar comentário -->
-                        <div class="mt-3 border-t border-gray-600 pt-2">
-                            <textarea class="w-full p-2 rounded bg-gray-700 text-gray-200 text-sm resize-none"
-                                placeholder="Escreva um comentário..."></textarea>
-                            <div class="flex justify-between items-center mt-2">
-                                <button class="text-sm text-blue-400 hover:underline">📎 Anexar arquivo</button>
-                                <button class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm">Enviar</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+      </div>
     </div>
 
-    <!-- Direito -->
-    <div class="flex flex-2 flex-col bg-gray-800 rounded p-4 space-y-4">
-        <h2 class="text-lg font-semibold">Solicitante</h2>
+    <!-- TAB DETALHES -->
+    <div class="flex flex-1 flex-col">
+      <div class="flex flex-1 flex-col" x-show="ticketViewTab === 'details'">
+        <div class="flex flex-1 flex-col mt-3 p-4 bg-gray-800 rounded text-gray-200 space-y-6">
 
-        <div class="flex items-center space-x-3">
-            <div class="w-12 h-12 bg-gray-600 rounded-full"></div>
-            <div>
-                <p class="font-semibold text-gray-100" x-text="selectedTicket.creator.name"></p>
-                <p class="text-xs text-gray-400" x-text="selectedTicket.creator.email"></p>
+          <!-- DESCRIÇÃO -->
+          <div class="bg-gray-800 rounded p-3 relative">
+            <div class="flex justify-between items-center">
+              <h2 class="text-md font-semibold">Descrição</h2>
             </div>
+
+            <!-- Conteúdo reduzido -->
+            <template x-if="selectedTicket.description && selectedTicket.description.length > maxDescLength">
+              <p class="m-2 text-sm text-gray-300 leading-relaxed line-clamp-4">
+                <span x-text="selectedTicket.description.substring(0, maxDescLength) + '...'"></span>
+              </p>
+            </template>
+
+            <!-- Conteúdo curto -->
+            <template x-if="selectedTicket.description && selectedTicket.description.length <= maxDescLength">
+              <p class="m-2 text-sm text-gray-300 leading-relaxed" x-text="selectedTicket.description"></p>
+            </template>
+
+            <!-- Botão “Ver completo” -->
+            <template x-if="selectedTicket.description && selectedTicket.description.length > maxDescLength">
+              <button
+                @click="showDescriptionModal = true"
+                class="text-blue-400 hover:underline text-xs ml-2"
+              >
+                Ver completo →
+              </button>
+            </template>
+          </div>
+
+          <!-- COMENTÁRIOS -->
+          <div class="flex flex-1 flex-col bg-gray-800 rounded p-3">
+            <div class="flex justify-between items-center mb-2">
+              <h2 class="text-md font-semibold">Comentários</h2>
+              <button
+                class="text-xs text-blue-400 hover:underline"
+                @click="showCommentsModal = true"
+              >
+                Ver todos
+              </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto pr-2 space-y-4 custom-scroll max-h-[30vh]">
+              <template x-for="comment in (selectedTicket.comments || []).slice(0, 2)" :key="comment.id">
+                <div class="flex space-x-3 items-start">
+                  <div class="w-8 h-8 bg-gray-600 rounded-full"></div>
+                  <div>
+                    <p class="text-sm text-gray-200" x-text="comment.comment"></p>
+                    <p class="text-xs text-gray-400">
+                      por <span x-text="comment.author.name"></span>
+                    </p>
+                  </div>
+                </div>
+              </template>
+
+              <template x-if="!selectedTicket.comments || selectedTicket.comments.length === 0">
+                <p class="text-gray-400 text-sm">Nenhum comentário ainda.</p>
+              </template>
+            </div>
+
+            <!-- Adicionar comentário -->
+            <div class="mt-3 border-t border-gray-600 pt-2">
+              <textarea
+                class="w-full p-2 rounded bg-gray-700 text-gray-200 text-sm resize-none"
+                placeholder="Escreva um comentário..."
+              ></textarea>
+              <div class="flex justify-between items-center mt-2">
+                <button class="text-sm text-blue-400 hover:underline">📎 Anexar arquivo</button>
+                <button class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm">
+                  Enviar
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+    </div>
+  </div>
 
-        <hr class="border-gray-700">
+  <!-- DIREITO -->
+  <div class="flex flex-2 flex-col bg-gray-800 rounded p-4 space-y-4">
+    <h2 class="text-lg font-semibold">Solicitante</h2>
 
-        <div class="space-y-2 text-sm">
-            <p><span class="font-semibold">Cargo:</span> <span x-text="selectedTicket.creator.role"></span></p>
-            <p><span class="font-semibold">Empresa:</span> <span x-text="selectedTicket.hotel.name"></span></p>
-        </div>
-
+    <div class="flex items-center space-x-3">
+      <div class="w-12 h-12 bg-gray-600 rounded-full"></div>
+      <div>
+        <p class="font-semibold text-gray-100" x-text="selectedTicket.creator.name"></p>
+        <p class="text-xs text-gray-400" x-text="selectedTicket.creator.email"></p>
+      </div>
     </div>
 
+    <hr class="border-gray-700">
+
+    <div class="space-y-2 text-sm">
+      <p><span class="font-semibold">Cargo:</span> <span x-text="selectedTicket.creator.role"></span></p>
+      <p><span class="font-semibold">Empresa:</span> <span x-text="selectedTicket.hotel.name"></span></p>
+    </div>
+  </div>
+
+  <!-- 🔳 MODAL DESCRIÇÃO -->
+  <div
+    x-show="showDescriptionModal"
+    class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+    x-transition
+  >
+    <div class="bg-gray-900 w-11/12 max-w-3xl rounded-xl p-6 shadow-lg overflow-y-auto max-h-[80vh]">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold">Descrição completa</h3>
+        <button @click="showDescriptionModal = false" class="text-gray-400 hover:text-gray-200">✕</button>
+      </div>
+      <p class="text-gray-200 text-sm whitespace-pre-line leading-relaxed" x-text="selectedTicket.description"></p>
+    </div>
+  </div>
+
+  <!-- 🔳 MODAL COMENTÁRIOS -->
+  <div
+    x-show="showCommentsModal"
+    class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+    x-transition
+  >
+    <div class="bg-gray-900 w-11/12 max-w-4xl rounded-xl p-6 shadow-lg overflow-y-auto max-h-[80vh]">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold">Todos os comentários</h3>
+        <button @click="showCommentsModal = false" class="text-gray-400 hover:text-gray-200">✕</button>
+      </div>
+
+      <div class="space-y-4 custom-scroll pr-2">
+        <template x-for="comment in (selectedTicket.comments || [])" :key="comment.id">
+          <div class="flex space-x-3 items-start">
+            <div class="w-8 h-8 bg-gray-600 rounded-full"></div>
+            <div>
+              <p class="text-sm text-gray-200" x-text="comment.comment"></p>
+              <p class="text-xs text-gray-400">por <span x-text="comment.author.name"></span></p>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
 </div>
