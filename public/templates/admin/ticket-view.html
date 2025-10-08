@@ -1,12 +1,10 @@
 <div x-data="{
         showDescription: false,
         maxDescLength: 400
-    }" 
-    class="text-gray-200 h-screen w-full flex space-x-4"
->
+    }" class="text-gray-200 h-screen w-full flex">
 
   <!-- Esquerdo -->
-  <div class="flex flex-12 flex-col mb-2">
+  <div class="flex flex-12 flex-col mr-2">
 
     <!-- Header com título e tabs -->
     <div class="border-b border-gray-400 flex items-center mb-2">
@@ -51,16 +49,15 @@
     <!-- TAB DETALHES -->
     <div class="flex flex-1 flex-col">
       <div class="flex flex-1 flex-col" x-show="ticketViewTab === 'details'">
-        <div class="flex flex-col mt-3 p-4 bg-gray-800 rounded text-gray-200 space-y-6">
+        <div class="flex flex-col mt-3 p-4 bg-gray-800 rounded text-gray-200 space-y-1">
 
           <!-- Descrição -->
-          <div class="relative h-[20vh] bg-gray-800 rounded p-3">
+          <div class="relative h-[18vh] bg-gray-800 rounded p-3">
             <h2 class="text-md font-semibold mb-2">Descrição</h2>
 
             <!-- Texto curto -->
             <template x-if="selectedTicket.description && selectedTicket.description.length <= maxDescLength">
-              <p class="mt-2 text-sm whitespace-pre-line leading-relaxed" 
-                 x-text="selectedTicket.description"></p>
+              <p class="mt-2 text-sm whitespace-pre-line leading-relaxed" x-text="selectedTicket.description"></p>
             </template>
 
             <!-- Texto truncado -->
@@ -72,9 +69,8 @@
 
             <!-- Botão Exibir completo -->
             <template x-if="selectedTicket.description && selectedTicket.description.length > maxDescLength">
-              <button 
-                @click="showDescription = true"
-                class="absolute bottom-2 right-3 text-xs text-blue-400 hover:underline">
+              <button @click="showDescription = true"
+                class="absolute top-25 right-3 text-xs text-blue-400 hover:underline">
                 Exibir completo →
               </button>
             </template>
@@ -82,17 +78,29 @@
 
           <hr class="m-1 border-gray-400">
 
+
           <!-- Comentários fixos -->
-          <div class="flex flex-col h-[50vh] bg-gray-800 rounded p-3">
+
+          <!-- Adicionar comentário -->
+          <div class="">
+            <textarea class="w-full p-2 mt-2 rounded bg-gray-700 text-gray-200 text-sm resize-none"
+              placeholder="Escreva um comentário..."></textarea>
+            <div class="flex justify-between items-center mt-2">
+              <button class="text-sm text-blue-400 hover:underline">📎 Anexar arquivo</button>
+              <button class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm">Enviar</button>
+            </div>
+          </div>
+
+          <div class="flex flex-col h-[42vh] bg-gray-800 rounded p-3">
             <h2 class="text-md font-semibold mb-2">Comentários</h2>
 
             <div class="flex-1 overflow-y-auto pr-2 space-y-4 custom-scroll">
               <template x-for="comment in (selectedTicket.comments || [])" :key="comment.id">
                 <div class="flex space-x-3 items-start">
-                  <div class="w-8 h-8 bg-gray-600 rounded-full"></div>
+                  <div class="w-8 h-8 bg-gray-600 rounded-full flex-shrink-0"></div>
                   <div class="p-1">
                     <p class="text-sm text-gray-200" x-text="comment.comment"></p>
-                    <p class="text-xs text-gray-400">
+                    <p class="text-xs mt-1 text-gray-400">
                       por <span x-text="comment.author.name"></span>
                     </p>
                   </div>
@@ -102,16 +110,6 @@
               <template x-if="!selectedTicket.comments || selectedTicket.comments.length === 0">
                 <p class="text-gray-400 text-sm">Nenhum comentário ainda.</p>
               </template>
-            </div>
-
-            <!-- Adicionar comentário -->
-            <div class="mt-3 border-t border-gray-600 pt-2">
-              <textarea class="w-full p-2 rounded bg-gray-700 text-gray-200 text-sm resize-none"
-                placeholder="Escreva um comentário..."></textarea>
-              <div class="flex justify-between items-center mt-2">
-                <button class="text-sm text-blue-400 hover:underline">📎 Anexar arquivo</button>
-                <button class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm">Enviar</button>
-              </div>
             </div>
           </div>
         </div>
@@ -142,21 +140,15 @@
   </div>
 
   <!-- 🔳 MODAL DE DESCRIÇÃO -->
-  <div 
-    x-show="showDescription"
-    x-transition.opacity
-    class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50"
-  >
-    <div 
-      @click.outside="showDescription = false"
-      class="bg-gray-900 w-11/12 max-w-3xl rounded-xl p-6 shadow-lg overflow-y-auto max-h-[80vh]"
-    >
+  <div x-show="showDescription" x-transition.opacity
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+    <div @click.outside="showDescription = false"
+      class="bg-gray-900 w-11/12 max-w-3xl rounded-xl p-6 shadow-lg overflow-y-auto max-h-[80vh]">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-lg font-semibold">Descrição completa</h3>
         <button @click="showDescription = false" class="text-gray-400 hover:text-gray-200">✕</button>
       </div>
-      <p class="text-gray-200 text-sm whitespace-pre-line leading-relaxed"
-         x-text="selectedTicket.description"></p>
+      <p class="text-gray-200 text-sm whitespace-pre-line leading-relaxed" x-text="selectedTicket.description"></p>
     </div>
   </div>
 
