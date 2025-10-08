@@ -60,10 +60,26 @@
           <p class=" inline text-sm text-gray-400" x-text="ticket.hotel.name + ' - '"></p>
           <p class=" inline text-sm text-gray-400" x-text="ticket.hotel.code"></p>
           <h2 class="mt-1 text-white font-bold text-sm" x-text="ticket.title"></h2>
-          <p class="  text-sm text-gray-300" x-text="ticket.description"></p>
+
+
+          <!-- Texto curto -->
+            <template x-if="ticket.description && ticket.description.length <= 400">
+              <p class="mt-2 text-xs" x-text="ticket.description"></p>
+            </template>
+
+            <!-- Texto truncado -->
+            <template x-if="ticket.description && ticket.description.length > 400">
+              <p class="mt-2 text-xs text-gray-300">
+                <span x-text="ticket.description.substring(0, 400) + '...'"></span>
+              </p>
+            </template>
+
+          <!-- <p class="  text-sm text-gray-300" x-text="ticket.description"></p> -->
+
+
         </div>
 
-        <!-- Direita -->
+        <!-- Direita --> 
         <div class="min-h-20 flex flex-col justify-center w-1/4 text-right">
 
           <div>
