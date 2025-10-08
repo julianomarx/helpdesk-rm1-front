@@ -1,4 +1,9 @@
-<div class="text-gray-200 h-screen w-full flex space-x-4">
+<div x-data="{
+        showDescription: false,
+        maxDescLength: 400
+    }" 
+    class="text-gray-200 h-screen w-full flex space-x-4"
+>
 
   <!-- Esquerdo -->
   <div class="flex flex-12 flex-col mb-2">
@@ -46,13 +51,33 @@
     <!-- TAB DETALHES -->
     <div class="flex flex-1 flex-col">
       <div class="flex flex-1 flex-col" x-show="ticketViewTab === 'details'">
-        <div class="flex  flex-col mt-3 p-4 bg-gray-800  rounded text-gray-200 space-y-6">
+        <div class="flex flex-col mt-3 p-4 bg-gray-800 rounded text-gray-200 space-y-6">
 
-          <!-- Descrição como gaveta -->
-          <div class="bg-gray-800 rounded p-3">
-            <p class="mt-2 text-sm whitespace-pre-line leading-relaxed" x-text="selectedTicket.description">
-            </p>
+          <!-- Descrição -->
+          <div class="relative h-[20vh] bg-gray-800 rounded p-3">
+            <h2 class="text-md font-semibold mb-2">Descrição</h2>
 
+            <!-- Texto curto -->
+            <template x-if="selectedTicket.description && selectedTicket.description.length <= maxDescLength">
+              <p class="mt-2 text-sm whitespace-pre-line leading-relaxed" 
+                 x-text="selectedTicket.description"></p>
+            </template>
+
+            <!-- Texto truncado -->
+            <template x-if="selectedTicket.description && selectedTicket.description.length > maxDescLength">
+              <p class="mt-2 text-sm text-gray-300 leading-relaxed line-clamp-4">
+                <span x-text="selectedTicket.description.substring(0, maxDescLength) + '...'"></span>
+              </p>
+            </template>
+
+            <!-- Botão Exibir completo -->
+            <template x-if="selectedTicket.description && selectedTicket.description.length > maxDescLength">
+              <button 
+                @click="showDescription = true"
+                class="absolute bottom-2 right-3 text-xs text-blue-400 hover:underline">
+                Exibir completo →
+              </button>
+            </template>
           </div>
 
           <hr class="m-1 border-gray-400">
@@ -65,7 +90,7 @@
               <template x-for="comment in (selectedTicket.comments || [])" :key="comment.id">
                 <div class="flex space-x-3 items-start">
                   <div class="w-8 h-8 bg-gray-600 rounded-full"></div>
-                  <div class="p-2">
+                  <div class="p-1">
                     <p class="text-sm text-gray-200" x-text="comment.comment"></p>
                     <p class="text-xs text-gray-400">
                       por <span x-text="comment.author.name"></span>
@@ -114,6 +139,25 @@
       <p><span class="font-semibold">Empresa:</span> <span x-text="selectedTicket.hotel.name"></span></p>
     </div>
 
+  </div>
+
+  <!-- 🔳 MODAL DE DESCRIÇÃO -->
+  <div 
+    x-show="showDescription"
+    x-transition.opacity
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50"
+  >
+    <div 
+      @click.outside="showDescription = false"
+      class="bg-gray-900 w-11/12 max-w-3xl rounded-xl p-6 shadow-lg overflow-y-auto max-h-[80vh]"
+    >
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold">Descrição completa</h3>
+        <button @click="showDescription = false" class="text-gray-400 hover:text-gray-200">✕</button>
+      </div>
+      <p class="text-gray-200 text-sm whitespace-pre-line leading-relaxed"
+         x-text="selectedTicket.description"></p>
+    </div>
   </div>
 
 </div>
