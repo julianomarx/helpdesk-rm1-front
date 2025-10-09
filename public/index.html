@@ -4,6 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Helpdesk SPA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="/css/style.css">
 
   <!-- Scripts na ordem correta -->
@@ -21,6 +23,7 @@
 </head>
 
 <body class="bg-gray-900">
+
 
   <!-- LOGIN -->
   <div id="login-view" x-show="$store.app.currentView === 'login'" class="login-container">
@@ -40,7 +43,11 @@
     class="dashboard-container flex flex-1 h-screen">
 
     <!-- SIDEBAR -->
-    <div class="dashboard-sidebar flex flex-2 flex-col justify-between bg-gray-800 p-4 mr-2">
+    <div class="relative dashboard-sidebar flex flex-2.2 flex-col justify-between 
+            bg-gray-800/40 backdrop-blur-2xl backdrop-saturate-150
+            border border-white/10 rounded-2xl shadow-xl p-4 m-2 overflow-hidden">
+
+      <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/5 to-transparent pointer-events-none"></div>
 
       <!-- Menus na metade de cima -->
       <div class="flex flex-col">
@@ -71,7 +78,7 @@
 
     </div>
 
-    <div class="flex flex-17">
+    <div class="flex flex-17 bg-gray-900">
       <!-- MAIN CONTENT -->
       <div id="page-container" class="flex flex-1 flex-col bg-gray-900">
 
@@ -82,6 +89,7 @@
 
   </div>
 
+  <div id="toast-container" class="fixed top-4 right-4 z-[9999] space-y-2"></div>
 
 </body>
 

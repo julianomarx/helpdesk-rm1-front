@@ -199,12 +199,12 @@ function dashboard() {
             })
           })
 
+
           if (!res.ok) {
             this.showToast("Erro ao criar usuário", "error");
             console.log("Não foi possível criar o chamado", res.status);
             return;
           }
-
 
           const data = await res.json();
           console.log("Chamado aberto: ", data)

@@ -1,146 +1,162 @@
 <div class="flex flex-1 flex-col mr-2">
 
-  <div class=" p-1 rounded-t-lg">
-    <h1 class="mr-1 font-bold text-gray-200 border-b border-gray-400">Criar usuário</h1>
+  <!-- Cabeçalho -->
+  <div class="p-1 rounded-t-lg">
+    <h1 class="mr-1 font-bold text-gray-200 border-b border-gray-400">Criar Usuário</h1>
   </div>
 
-  <form id="create-user-template" autocomplete="off" x-data="{
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        role: 'agent',
-        selectedHotels: [],
-        hotelSearch: '',
-        get filteredHotels() {
-          const query = this.hotelSearch.toLowerCase();
-          return ($store.app.hotels || []).filter(hotel =>
-            !this.selectedHotels.find(h => h.id === hotel.id) &&
-            (hotel.name.toLowerCase().includes(query) || hotel.code.toLowerCase().includes(query))
-          );
-        },
-        async submitUser() {
-          if (!this.name || !this.email || !this.password) {
-            showToast('Preencha todos os campos obrigatórios.', 'error');
-            return;
-          }
-          if (this.password !== this.confirmPassword) {
-            alert('As senhas não coincidem.');
-            return;
-          }
-
-          const hotel_ids = (this.role === 'admin' || this.role === 'agent')
-            ? $store.app.hotels.map(h => h.id)
-            : this.selectedHotels.map(h => h.id);
-
-          await createUser({
-            name: this.name,
-            email: this.email,
-            password: this.password,
-            role: this.role,
-            hotel_ids
-          });
-
-          // Resetar campos
-          this.name = '';
-          this.email = '';
-          this.password = '';
-          this.confirmPassword = '';
-          this.role = 'agent';
-          this.selectedHotels = [];
-          this.hotelSearch = '';
+  <!-- FORM CARD -->
+  <form id="create-user-template" autocomplete="off"
+    x-data="{
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      role: 'agent',
+      selectedHotels: [],
+      hotelSearch: '',
+      get filteredHotels() {
+        const query = this.hotelSearch.toLowerCase();
+        return ($store.app.hotels || []).filter(hotel =>
+          !this.selectedHotels.find(h => h.id === hotel.id) &&
+          (hotel.name.toLowerCase().includes(query) || hotel.code.toLowerCase().includes(query))
+        );
+      },
+      async submitUser() {
+        if (!this.name || !this.email || !this.password) {
+          showToast('Preencha todos os campos obrigatórios.', 'error');
+          return;
         }
-      }" class="mt-5 bg-gray-800 p-3 rounded-md shadow-md text-gray-200 text-sm">
+        if (this.password !== this.confirmPassword) {
+          alert('As senhas não coincidem.');
+          return;
+        }
 
-    <!-- Nome + Email lado a lado -->
-    <div class="flex gap-3">
-      <div class="flex-1 mb-3">
-        <label class="block text-xs mb-1">Nome *</label>
-        <input type="text" x-model="name" class="w-full p-1.5 rounded-md bg-gray-700 border border-gray-600 
-                    focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm" />
-      </div>
+        const hotel_ids = (this.role === 'admin' || this.role === 'agent')
+          ? $store.app.hotels.map(h => h.id)
+          : this.selectedHotels.map(h => h.id);
 
-      <div class="flex-1 mb-3">
-        <label class="block text-xs mb-1">Email *</label>
-        <input type="email" x-model="email" autocomplete="new-email" class="w-full p-1.5 rounded-md bg-gray-700 border border-gray-600 
-                    focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm" />
-      </div>
-    </div>
+        await createUser({
+          name: this.name,
+          email: this.email,
+          password: this.password,
+          role: this.role,
+          hotel_ids
+        });
 
-    <!-- Senha + Confirmar Senha lado a lado -->
-    <div class="flex gap-3">
-      <div class="flex-1 mb-3">
-        <label class="block text-xs mb-1">Senha *</label>
-        <input type="password" x-model="password" autocomplete="new-password" class="w-full p-1.5 rounded-md bg-gray-700 border border-gray-600 
-                    focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm" />
-      </div>
+        // Reset
+        this.name = '';
+        this.email = '';
+        this.password = '';
+        this.confirmPassword = '';
+        this.role = 'agent';
+        this.selectedHotels = [];
+        this.hotelSearch = '';
+      }
+    }"
+    class="relative mt-5 p-5
+           bg-gray-900/40 backdrop-blur-xl backdrop-saturate-150
+           border border-white/10 rounded-2xl shadow-xl text-gray-200 text-sm">
 
-      <div class="flex-1 mb-3">
-        <label class="block text-xs mb-1">Confirmar Senha *</label>
-        <input type="password" x-model="confirmPassword" autocomplete="off" class="w-full p-1.5 rounded-md bg-gray-700 border border-gray-600 
-                    focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm" />
-      </div>
-    </div>
+    <!-- Reflexo de vidro -->
+    <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 to-transparent pointer-events-none"></div>
 
-    <!-- Função -->
-    <div class="mb-3">
-      <label class="block text-xs mb-1">Função *</label>
-      <select x-model="role" class="w-full p-1.5 rounded-md bg-gray-700 border border-gray-600 
-                   focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm">
-        <option value="admin">Admin</option>
-        <option value="agent">Atendente</option>
-        <option value="client_manager">Gerente do Cliente</option>
-        <option value="client_receptionist">Recepcionista</option>
-      </select>
-    </div>
+    <!-- Conteúdo real -->
+    <div class="relative z-10">
 
-    <!-- Hotéis (dual list) -->
-    <div class="mb-3" x-show="!(role === 'admin' || role === 'agent')">
-      <label class="block text-xs mb-2">Hotéis (opcional)</label>
-
-      <input type="text" placeholder="Buscar por nome ou código..." x-model="hotelSearch" class="w-full mb-2 p-1.5 rounded-md bg-gray-700 border border-gray-600 
-                  focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm" />
-
+      <!-- Nome + Email -->
       <div class="flex gap-3">
-        <!-- Disponíveis -->
-        <div class="flex-1 bg-gray-700 rounded-md p-2">
-          <h2 class="font-semibold text-xs mb-2 text-gray-300">Disponíveis</h2>
-          <div class="max-h-40 overflow-y-auto space-y-1">
-            <template x-for="hotel in filteredHotels" :key="hotel.id">
-              <div
-                class="flex items-center justify-between bg-gray-800 px-2 py-1 rounded cursor-pointer hover:bg-gray-600">
-                <span class="text-xs" x-text="hotel.code + ' - ' + hotel.name"></span>
-                <button type="button" @click="selectedHotels.push(hotel)"
-                  class="text-green-400 hover:text-green-600 text-xs">➕</button>
-              </div>
-            </template>
-          </div>
+        <div class="flex-1 mb-3">
+          <label class="block text-xs mb-1">Nome *</label>
+          <input type="text" x-model="name"
+            class="w-full p-2 rounded-md bg-gray-800/50 border border-white/10
+                   focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm placeholder-gray-400" />
         </div>
 
-        <!-- Selecionados -->
-        <div class="flex-1 bg-gray-700 rounded-md p-2">
-          <h2 class="font-semibold text-xs mb-2 text-gray-300">Selecionados</h2>
-          <div class="max-h-40 overflow-y-auto space-y-1">
-            <template x-for="(hotel, index) in selectedHotels" :key="hotel.id">
-              <div
-                class="flex items-center justify-between bg-gray-800 px-2 py-1 rounded cursor-pointer hover:bg-gray-600">
-                <span class="text-xs" x-text="hotel.code + ' - ' + hotel.name"></span>
-                <button type="button" @click="selectedHotels.splice(index, 1)"
-                  class="text-red-400 hover:text-red-600 text-xs">❌</button>
-              </div>
-            </template>
+        <div class="flex-1 mb-3">
+          <label class="block text-xs mb-1">Email *</label>
+          <input type="email" x-model="email" autocomplete="new-email"
+            class="w-full p-2 rounded-md bg-gray-800/50 border border-white/10
+                   focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm placeholder-gray-400" />
+        </div>
+      </div>
+
+      <!-- Senhas -->
+      <div class="flex gap-3">
+        <div class="flex-1 mb-3">
+          <label class="block text-xs mb-1">Senha *</label>
+          <input type="password" x-model="password" autocomplete="new-password"
+            class="w-full p-2 rounded-md bg-gray-800/50 border border-white/10
+                   focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm placeholder-gray-400" />
+        </div>
+
+        <div class="flex-1 mb-3">
+          <label class="block text-xs mb-1">Confirmar Senha *</label>
+          <input type="password" x-model="confirmPassword" autocomplete="off"
+            class="w-full p-2 rounded-md bg-gray-800/50 border border-white/10
+                   focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm placeholder-gray-400" />
+        </div>
+      </div>
+
+      <!-- Função -->
+      <div class="mb-3">
+        <label class="block text-xs mb-1">Função *</label>
+        <select x-model="role"
+          class="w-full p-2 rounded-md bg-gray-800/90 border border-white/10
+                 focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm">
+          <option value="admin">Admin</option>
+          <option value="agent">Atendente</option>
+          <option value="client_manager">Gerente do Cliente</option>
+          <option value="client_receptionist">Recepcionista</option>
+        </select>
+      </div>
+
+      <!-- Hotéis -->
+      <div class="mb-3" x-show="!(role === 'admin' || role === 'agent')">
+        <label class="block text-xs mb-2">Hotéis</label>
+
+        <input type="text" placeholder="Buscar por nome ou código..." x-model="hotelSearch"
+          class="w-full mb-2 p-2 rounded-md bg-gray-800/50 border border-white/10
+                 focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm placeholder-gray-400" />
+
+        <div class="flex gap-3">
+          <!-- Disponíveis -->
+          <div class="flex-1 bg-gray-900/40 backdrop-blur-sm border border-white/5 rounded-xl p-2">
+            <h2 class="font-semibold text-xs mb-2 text-gray-300">Disponíveis</h2>
+            <div class="max-h-40 overflow-y-auto space-y-1 custom-scroll">
+              <template x-for="hotel in filteredHotels" :key="hotel.id">
+                <div
+                  class="flex items-center justify-between bg-gray-800/50 px-2 py-1 rounded cursor-pointer hover:bg-gray-700/50 transition">
+                  <span class="text-xs" x-text="hotel.code + ' - ' + hotel.name"></span>
+                  <button type="button" @click="selectedHotels.push(hotel)"
+                    class="text-green-400 hover:text-green-600 text-xs">➕</button>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- Selecionados -->
+          <div class="flex-1 bg-gray-900/40 backdrop-blur-sm border border-white/5 rounded-xl p-2">
+            <h2 class="font-semibold text-xs mb-2 text-gray-300">Selecionados</h2>
+            <div class="max-h-40 overflow-y-auto space-y-1 custom-scroll">
+              <template x-for="(hotel, index) in selectedHotels" :key="hotel.id">
+                <div
+                  class="flex items-center justify-between bg-gray-800/50 px-2 py-1 rounded cursor-pointer hover:bg-gray-700/50 transition">
+                  <span class="text-xs" x-text="hotel.code + ' - ' + hotel.name"></span>
+                  <button type="button" @click="selectedHotels.splice(index, 1)"
+                    class="text-red-400 hover:text-red-600 text-xs">❌</button>
+                </div>
+              </template>
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- Botão -->
+      <button @click.prevent="submitUser"
+        class="mt-4 w-full bg-blue-600/90 hover:bg-blue-700 transition-colors py-2 rounded-lg text-sm font-semibold shadow-md">
+        Criar Usuário
+      </button>
     </div>
-
-    <!-- Botão -->
-    <button @click.prevent="submitUser" class="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 px-3 
-                 rounded-md text-sm transition-colors">
-      Criar Usuário
-    </button>
   </form>
-
-
-
 </div>
