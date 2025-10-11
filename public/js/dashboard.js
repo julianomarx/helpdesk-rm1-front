@@ -323,6 +323,7 @@ function dashboard() {
   };
 }
 
+
 function hotelSelector(allHotels) {
   return {
     search: '',
