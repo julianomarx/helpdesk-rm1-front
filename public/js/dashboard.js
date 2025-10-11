@@ -5,8 +5,9 @@ function dashboard() {
     ticketViewTab: 'details',
     ticketList: [],
     selectedTicket: { comments: [] },
-
-    //esses menus serão carregados dinamicamente depois quando eu implementar o token
+    newComment: '',
+    showDescription: false,
+    maxDescLength: 400,
 
     async goTo(page, cssPath) {
       if (this.currentPage === page) return
@@ -238,7 +239,7 @@ function dashboard() {
           });
 
           if (!res.ok) {
-            console.Error("Erro ao criar usuário: ", res.status);
+            console.error("Erro ao criar usuário: ", res.status);
             this.showToast("Erro ao criar usuário", "error");
           }
 
@@ -247,10 +248,78 @@ function dashboard() {
           this.showToast("Usuário criado com sucesso!", "success");
 
         } catch (error) {
-          console.Error("Erro nessa merda :", error)
+          console.error("Erro nessa merda :", error)
         }
       }
+    },
+
+    async submitComment() {
+      // valida
+      if (!this.newComment || !this.newComment.trim()) {
+        this.showToast('Comentário vazio!', 'error');
+        return;
+      }
+
+      const ticketId = this.selectedTicket?.id;
+      if (!ticketId) {
+        this.showToast('Nenhum ticket selecionado', 'error');
+        return;
+      }
+
+      try {
+        // tentamos criar o comentário via método já existente
+        await this.createComment({
+          ticket_id: ticketId,
+          // pega userId do store (ajuste conforme sua store)
+          user_id: (Alpine.store('app')?.user?.userId ?? Alpine.store('app')?.userId ?? null),
+          comment: this.newComment
+        });
+
+        // limpa texto local
+        this.newComment = '';
+
+        // recarrega o ticket com os comentários atualizados
+        await this.getTicketById(ticketId);
+
+      } catch (err) {
+        console.error('Erro em submitComment:', err);
+        this.showToast('Erro ao enviar comentário', 'error');
+      }
+    },
+
+
+    async createComment(commentData) {
+      const token = localStorage.getItem("access_token");
+
+      console.log(commentData)
+
+      if (token) {
+        try {
+          const res = await fetch("http://127.0.0.1:8000/comments", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify(commentData)
+          })
+
+          if (!res.ok) {
+            console.error("Erro ao criar comentário!", res.status)
+          }
+
+          const data = await res.json();
+          this.showToast("Comentário criado com sucesso!", "success");
+
+          return data;
+
+        } catch (error) {
+          console.error("Erro ao criar comentário", error)
+        }
+
+      }
     }
+
   };
 }
 
