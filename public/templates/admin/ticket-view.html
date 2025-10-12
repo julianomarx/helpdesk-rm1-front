@@ -7,8 +7,9 @@
     <!-- Header com título e tabs -->
     <div class="border-b border-gray-400 flex items-center mb-2">
       <div>
-        <h1 class="font-bold break-words whitespace-normal" x-text="selectedTicket.id + ' | ' + selectedTicket.title">
-        </h1>
+        <h1 class="font-bold text-xl sm:text-2xl md:text-3xl break-words whitespace-normal truncate max-w-[70vw]"
+          x-text="selectedTicket.id + ' | ' + selectedTicket.title">
+        </h1> 
 
         <div class="flex w-full space-x-2">
           <button @click="goTo('tickets')" class="tab-btn"
@@ -91,17 +92,17 @@
           <!-- Adicionar comentário -->
           <form @submit.prevent="submitComment">
 
-            <textarea x-model="newComment" class="w-full p-2 mt-2 rounded text-gray-100 text-sm resize-none"
+            <textarea x-model="newComment"
+              class="w-full p-2 mt-2 rounded text-gray-100 text-sm resize-none focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm placeholder-gray-400"
               placeholder="Escreva um comentário..."></textarea>
             <div class="flex justify-between items-center mt-2">
               <button class="text-sm text-blue-400 hover:underline">📎 Anexar arquivo</button>
-              <button type="submit"
-                class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm">Enviar</button>
+              <button type="submit" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm">Enviar</button>
             </div>
 
           </form>
 
-          <div class="flex flex-col h-[35vh] rounded p-3">
+          <div class="flex flex-col h-[38vh] rounded p-3">
             <h2 class="text-md font-semibold mb-2">Comentários</h2>
 
             <div class="flex-1 overflow-y-auto pr-2 space-y-4 custom-scroll">
@@ -110,8 +111,9 @@
                   <img src="/assets/images/profile-pic.png" class="w-10 h-10 bg-gray-600 rounded-full flex-shrink-0">
                   <div class="p-1">
                     <p class="text-sm text-gray-200" x-text="comment.comment"></p>
-                    <p class="text-xs mt-1 text-gray-400">
+                    <p class=" italic text-xs mt-1 text-gray-400">
                       por <span class="text-blue-400 cursor-pointer" x-text="comment.author.name"></span>
+                      em <span x-text="dayjs(comment.created_at).format('DD/MM/YYYY HH:mm')"></span>
                     </p>
                   </div>
                 </div>
