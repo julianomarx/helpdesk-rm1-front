@@ -7,9 +7,8 @@
     <!-- Header com título e tabs -->
     <div class="border-b border-gray-400 flex items-center mb-2">
       <div>
-        <h1 class="font-bold text-xl sm:text-2xl md:text-3xl break-words whitespace-normal truncate max-w-[70vw]"
-          x-text="selectedTicket.id + ' | ' + selectedTicket.title">
-        </h1> 
+        <h1 class="font-bold break-words whitespace-normal" x-text="selectedTicket.id + ' | ' + selectedTicket.title">
+        </h1>
 
         <div class="flex w-full space-x-2">
           <button @click="goTo('tickets')" class="tab-btn"
@@ -45,8 +44,9 @@
       </div>
     </div>
 
-    <!-- TAB DETALHES -->
     <div class="flex flex-1 flex-col">
+
+      <!-- TAB DETALHES -->
       <div class="flex flex-1 flex-col" x-show="ticketViewTab === 'details'">
 
         <div class="relative flex flex-col mt-1 p-4 
@@ -126,6 +126,93 @@
           </div>
         </div>
       </div>
+
+      <!-- TAB HISTÓRICO -->
+      <div class="flex flex-1 flex-col" x-show="ticketViewTab === 'ticketHistory'">
+
+        <div class="relative flex flex-col mt-1 p-4 
+              bg-gray-900/40 backdrop-blur-xl backdrop-saturate-150 
+              border border-white/10 rounded-2xl shadow-xl">
+
+          <!-- Reflexo de vidro -->
+          <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 to-transparent pointer-events-none">
+          </div>
+
+          <h2 class="text-md font-semibold mb-4">Histórico do chamado</h2>
+
+          <div class="flex-1 overflow-y-auto custom-scroll pr-2 space-y-4">
+
+            <p>Listar logs aqui</p>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB Transferir chamado -->
+      <div class="flex flex-1 flex-col" x-show="ticketViewTab === 'transferTicket'">
+
+        <div class="relative flex flex-col mt-1 p-4 
+              bg-gray-900/40 backdrop-blur-xl backdrop-saturate-150 
+              border border-white/10 rounded-2xl shadow-xl">
+
+          <!-- Reflexo de vidro -->
+          <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 to-transparent pointer-events-none">
+          </div>
+
+          <h2 class="text-md font-semibold mb-4">Transferir chamado</h2>
+
+          <div class="flex-1 overflow-y-auto custom-scroll pr-2 space-y-4">
+
+            <p>Tela de transferir chamado aqui</p>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB ENCERRAR ATENDIMENTO -->
+      <div class="flex flex-1 flex-col" x-show="ticketViewTab === 'finishTicket'">
+
+        <div class="relative flex flex-col mt-1 p-4 
+              bg-gray-900/40 backdrop-blur-xl backdrop-saturate-150 
+              border border-white/10 rounded-2xl shadow-xl">
+
+          <!-- Reflexo de vidro -->
+          <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 to-transparent pointer-events-none">
+          </div>
+
+          <h2 class="text-md font-semibold mb-4">Finalizar atendimento</h2>
+
+          <div class="flex-1 overflow-y-auto custom-scroll pr-2 space-y-4">
+
+            <p>Tela para finalizar o atendimento aqui</p>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB TIME LOG -->
+      <div class="flex flex-1 flex-col" x-show="ticketViewTab === 'timeLog'">
+
+        <div class="relative flex flex-col mt-1 p-4 
+              bg-gray-900/40 backdrop-blur-xl backdrop-saturate-150 
+              border border-white/10 rounded-2xl shadow-xl">
+
+          <!-- Reflexo de vidro -->
+          <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 to-transparent pointer-events-none">
+          </div>
+
+          <h2 class="text-md font-semibold mb-4">Time log</h2>
+
+          <div class="flex-1 overflow-y-auto custom-scroll pr-2 space-y-4">
+
+            <p>Tela de timelogs aqui</p>
+
+          </div>
+        </div>
+      </div>
+
+
+
     </div>
 
   </div>
@@ -154,9 +241,27 @@
     <div class="text-sm mt-2">
 
       <p><span class="font-semibold"></span> <span x-text="selectedTicket.hotel.name"></span></p>
+
+      <p><span class="font-semibold">Data de abertura: </span><span
+          x-text="dayjs(selectedTicket.created_at).format('DD/MM/YYYY HH:mm')"></span></p>
+
       <p><span class="font-semibold">Cargo:</span> <span x-text="selectedTicket.creator.role"></span></p>
 
     </div>
+
+    <div class="mt-6 flex flex-col items-center space-y-3">
+      <button
+        class=" w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium text-white text-center shadow-md transition">
+        📞 Contatar solicitante
+      </button>
+
+      <button
+        class="w-full px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium text-white text-center shadow-md transition">
+        📅 Agendar atendimento
+      </button>
+    </div>
+
+
 
   </div>
 

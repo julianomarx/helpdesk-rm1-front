@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
       Alpine.store("app").role = payload.role;
       Alpine.store("app").menus = payload.menus;
       Alpine.store("app").hotels = payload.hotels;
+      Alpine.store("app").tokenExpire = payload.exp;
 
       Alpine.store("app").currentPage = "dashboard";  
       Alpine.store("app").currentTab = "all";
@@ -45,7 +46,10 @@ document.addEventListener("DOMContentLoaded", () => {
       //muda a view para dashboard
       Alpine.store("app").currentView = "dashboard";
 
+      //chama inicializa função stay alive para monitorar expire do token
+
       console.log(Alpine.store("app"))
+
 
     } catch (e) {
       console.error("Erro no login:", e);
