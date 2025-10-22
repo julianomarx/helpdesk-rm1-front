@@ -8,9 +8,6 @@ function dashboard() {
     newComment: '',
     showDescription: false,
     maxDescLength: 400,
-    tokenExpire: '',
-    now: '',
-
 
     async goTo(page, cssPath) {
       if (this.currentPage === page) return
@@ -38,12 +35,7 @@ function dashboard() {
       }
     },
 
-    initCreateUser() {
-      // Aqui você pode inicializar os x-data ou eventos do create-user
-      console.log("Tela de criar usuário inicializada");
-    },
-
-    loadCss(href) {
+    loadCss(href) { // não to usando isso nesse momento
       // Remove todos os CSS dinâmicos anteriores
       document.querySelectorAll('link[data-dynamic="true"]').forEach(link => link.remove());
 
@@ -56,20 +48,18 @@ function dashboard() {
     },
 
     logout() {
-      localStorage.removeItem("access_token");
+      window.AppService.clearToken();
       Alpine.store("app").currentView = "login";
       Alpine.store("app").role = '';
-      Alpine.store("app").menus = '';
-      Alpine.store("app").hotels = '';
+      Alpine.store("app").menus = [];
+      Alpine.store("app").hotels = [];
       Alpine.store("app").userId = '';
 
       // reset do estado do dashboard
       this.currentPage = "dashboard";
       this.currentTab = "all";
       this.ticketList = [];
-      // this.selectedTicket = null;
 
-      //limpa a DOM 
       const container = document.getElementById("page-container");
       if (container) container.innerHTML = "";
     },
@@ -290,7 +280,6 @@ function dashboard() {
       }
     },
 
-
     async createComment(commentData) {
       const token = localStorage.getItem("access_token");
 
@@ -321,11 +310,16 @@ function dashboard() {
         }
 
       }
+    },
+
+    async InitStayAlive() {
+
+      stayAlive(this.tokenExpire);
+
     }
 
   };
 }
-
 
 function hotelSelector(allHotels) {
   return {
@@ -342,79 +336,20 @@ function hotelSelector(allHotels) {
         );
       });
     },
+
     addHotel(hotel) {
       if (!this.selectedHotels.find(h => h.id === hotel.id)) {
         this.selectedHotels.push(hotel);
       }
     },
+
     removeHotel(hotel) {
       this.selectedHotels = this.selectedHotels.filter(h => h.id !== hotel.id);
-    }
+    },
+
+
   }
 }
 
-function stayAlive(expireTimestamp) {
-
-  const expireAt = expireTimestamp * 1000;
-  const now = Date.now();
-  const timeleft = expireAt - now;
 
 
-  //mostrar alerta 2 min antes
-  const alertBefore = 2 * 60 * 1000;
-  const showAlertAt = timeleft - alertBefore
-
-  if (showAlertAt <= 0) {
-    logout();
-    return;
-  }
-
-  console.log(`⏱ Sessão ativa. Mostrará alerta em ${(showAlertAt / 1000 / 60).toFixed(1)} min`);
-
-  setTimeout(async () => {
-    const keep = confirm("Sua sessão irá expirar em breve. Deseja manter ativa?");
-    if (keep) {
-      console.log("Sessão mantida pelo usuário.");
-
-      //lógica para renovar o token e atualizar o payload
-      console.log("Renovando o token...");
-      const token = localStorage.getItem("access_token");
-
-      if (!token) {
-        return logout();
-      }
-
-      try {
-        //chama o back pra renovar o token
-        const res = await fetch("http://127.0.0.1:8000/auth/refresh", {
-          method: "POST",
-          headers: {
-            "Authorization": "Bearer " + token,
-            "Content-Type": "application/json"
-          },
-        });
-
-        if (!res.ok) {
-          console.error("Erro ao renovar token!", res.status)
-        }
-
-        const data = await res.json();
-        const newToken = data.access_token;
-        localStorage.setItem("access_token", newToken);
-
-        const payload = JSON.parse(atob(newToken.split(".")[1]));
-
-        console.log("Token renovado com sucesso!");
-        stayAlive(payload.exp)
-
-
-      } catch (error) {
-        console.error("Erro na renovação do token", error);
-      }
-
-    } else {
-      logout();
-    }
-  }, showAlertAt)
-
-}

@@ -47,6 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
       Alpine.store("app").currentView = "dashboard";
 
       //chama inicializa função stay alive para monitorar expire do token
+      //initStayAlive(Alpine.store("app").tokenExpire);
 
       console.log(Alpine.store("app"))
 
