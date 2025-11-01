@@ -48,11 +48,11 @@ function dashboard() {
     },
 
     logout() {
-      window.AppService.clearToken();
+      localStorage.removeItem("access_token");
       Alpine.store("app").currentView = "login";
       Alpine.store("app").role = '';
-      Alpine.store("app").menus = [];
-      Alpine.store("app").hotels = [];
+      Alpine.store("app").menus = '';
+      Alpine.store("app").hotels = '';
       Alpine.store("app").userId = '';
 
       // reset do estado do dashboard
@@ -60,6 +60,7 @@ function dashboard() {
       this.currentTab = "all";
       this.ticketList = [];
 
+      //limpa a DOM 
       const container = document.getElementById("page-container");
       if (container) container.innerHTML = "";
     },
@@ -321,6 +322,7 @@ function dashboard() {
   };
 }
 
+
 function hotelSelector(allHotels) {
   return {
     search: '',
@@ -351,5 +353,76 @@ function hotelSelector(allHotels) {
   }
 }
 
+function stayAlive(expireTimestamp) {
+
+  const expireAt = expireTimestamp * 1000;
+  const now = Date.now();
+  const timeleft = expireAt - now;
+
+  //mostrar alerta 2 min antes
+  const alertBefore = 2 * 60 * 1000;
+  const showAlertAt = timeleft - alertBefore
+
+  if (showAlertAt <= 0) {
+    logout();
+    return;
+  }
+
+  console.log(`⏱ Sessão ativa. Mostrará alerta em ${(showAlertAt / 1000 / 60).toFixed(1)} min`);
+
+  setTimeout(async () => {
+    const keep = confirm("Sua sessão irá expirar em breve. Deseja manter ativa?");
+    if (keep) {
+
+      console.log("Sessão mantida pelo usuário.");
 
 
+      //lógica para renovar o token e atualizar o payload
+      console.log("Renovando o token...");
+      const token = localStorage.getItem("access_token");
+
+      if (!token) {
+        return logout();
+      }
+
+      try {
+
+        //chama o back pra renovar o token
+        const res = await fetch("http://127.0.0.1:8000/auth/refresh", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json"
+          },
+        });
+
+        if (!res.ok) {
+          console.error("Erro ao renovar token!", res.status)
+        }
+
+        const data = await res.json();
+        const newToken = data.access_token;
+        localStorage.setItem("access_token", newToken);
+
+        const payload = JSON.parse(atob(newToken.split(".")[1]));
+
+        //atualiza dados 
+        Alpine.store("app").userId = payload.sub
+        Alpine.store("app").role = payload.role;
+        Alpine.store("app").menus = payload.menus;
+        Alpine.store("app").hotels = payload.hotels;
+        Alpine.store("app").tokenExpire = payload.exp;
+
+        console.log("Token renovado com sucesso!");
+
+        stayAlive(Alpine.store("app".tokenExpire)); // passa os token renovado pra função pra extender o tempo.
+
+      } catch (error) {
+        console.error("Erro na renovação do token", error);
+      }
+
+    } else {
+      logout();
+    }
+  }, showAlertAt)
+}
