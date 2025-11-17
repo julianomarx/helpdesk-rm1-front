@@ -38,6 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
       Alpine.store("app").menus = payload.menus;
       Alpine.store("app").hotels = payload.hotels;
       Alpine.store("app").tokenExpire = payload.exp;
+      Alpine.store("app").categories = payload.categories;
+      Alpine.store("app").subcategories = payload.subcategories
 
       Alpine.store("app").currentPage = "dashboard";  
       Alpine.store("app").currentTab = "all";

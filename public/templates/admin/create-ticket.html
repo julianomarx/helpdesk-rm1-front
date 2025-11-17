@@ -1,20 +1,22 @@
-  <div class="flex flex-1 flex-col mr-2">
-    <!-- cabeçalho -->
-    <div class="p-1 rounded-t-lg">
-      <h1 class="mr-1 font-semibold text-gray-200 border-b border-gray-400 text-sm">Abrir chamado</h1>
-    </div>
+<div class="flex flex-1 flex-col mr-2">
+  <!-- cabeçalho -->
+  <div class="p-1 rounded-t-lg">
+    <h1 class="mr-1 font-semibold text-gray-200 border-b border-gray-400 text-sm">Abrir chamado</h1>
+  </div>
 
-    <!-- Conteúdo -->
-    <div>
-      <div x-data="{
+  <!-- Conteúdo -->
+  <div>
+    <div x-data="{
           title: '',
           description: '',
           priority: 'low',
           createdBy: $store.app.userId,
           assignedTo: null,
           hotelId: null,
+          categoryId: null,
+          subcategoryId: null,
           async submitForm() {
-            if (!this.title || !this.description || !this.hotelId) {
+            if (!this.title || !this.description || !this.hotelId || !this.categoryId || !this.subcategoryId) {
               showToast('Preencha todos os campos obrigatórios.', 'error');
               return;
             }
@@ -22,67 +24,92 @@
               this.title,
               this.description,
               this.priority,
-              this.createdBy,
-              this.assignedTo,
-              this.hotelId
+              this.hotelId,
+              this.categoryId,
+              this.subcategoryId
             );
             this.title = '';
             this.description = '';
             this.priority = 'low';
             this.hotelId = null;
+            this.categoryId = null;
+            this.subcategoryId = null;
           }
-        }" 
-        class="mt-4 mx-auto bg-gray-800 p-3 rounded-md shadow-md text-gray-200 text-sm">
+        }" class="mt-4 mx-auto bg-gray-800 p-3 rounded-md shadow-md text-gray-200 text-sm">
 
-        <!-- Título -->
-        <div class="mb-3">
-          <label class="block text-xs mb-1">Título *</label>
-          <input type="text" x-model="title"
-            class="w-full p-1.5 rounded-md bg-gray-700 border border-gray-600 
+      <!-- Título -->
+      <div class="mb-3">
+        <label class="block text-xs mb-1">Título *</label>
+        <input type="text" x-model="title" class="w-full p-1.5 rounded-md bg-gray-700 border border-gray-600 
                   focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm"
-            placeholder="Digite o título do chamado" />
-        </div>
+          placeholder="Digite o título do chamado" />
 
-        <!-- Descrição -->
-        <div class="mb-3">
-          <label class="block text-xs mb-1">Descrição *</label>
-          <textarea x-model="description"
-            class="w-full p-1.5 rounded-md bg-gray-700 border border-gray-600 
-                  focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm"
-            rows="3" placeholder="Descreva o problema..."></textarea>
+        <div class="flex justify-end  text-xs mt-1" :class="100 - title.length < 0 ? 'text-red-500' : 'text-gray-400'">
+          <span class="font-mono" x-text="100 - title.length + ' caracteres restantes'"></span>
         </div>
-
-        <!-- Prioridade -->
-        <div class="mb-3">
-          <label class="block text-xs mb-1">Prioridade *</label>
-          <select x-model="priority"
-            class="w-full p-1.5 rounded-md bg-gray-700 border border-gray-600 
-                  focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm">
-            <option value="low">Baixa</option>
-            <option value="medium">Média</option>
-            <option value="high">Alta</option>
-          </select>
-        </div>
-
-        <!-- Hotel -->
-        <div class="mb-3">
-          <label class="block text-xs mb-1">Hotel *</label>
-          <select x-model="hotelId" size="4"
-            class="w-full p-1.5 rounded-md bg-gray-700 border border-gray-600
-                  focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm">
-            <option value="" selected>Selecione um hotel</option>
-            <template x-for="hotel in $store.app.hotels">
-              <option :value="hotel.id" x-text="hotel.code + ' - ' + hotel.name"></option>
-            </template>
-          </select>
-        </div>
-
-        <!-- Botão -->
-        <button @click="submitForm"
-          class="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 px-3 
-                rounded-md text-sm transition-colors">
-          Abrir Chamado
-        </button>
       </div>
+
+      <!-- Categoria -->
+      <div class="mb-3">
+        <label class="block text-xs mb-1">Categoria *</label>
+        <select x-model="categoryId" class="w-full p-1.5 rounded-md bg-gray-700 border border-gray-600 
+            focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm">
+          <option value="" selected>Selecione uma categoria</option>
+          <template x-for="cat in $store.app.categories">
+            <option :value="cat.id" x-text="cat.name"></option>
+          </template>
+        </select>
+      </div>
+
+      <!-- Subcategoria -->
+      <div class="mb-3">
+        <label class="block text-xs mb-1">Subcategoria *</label>
+        <select x-model="subcategoryId" class="w-full p-1.5 rounded-md bg-gray-700 border border-gray-600 
+            focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm">
+          <option value="" selected>Selecione uma subcategoria</option>
+          <template x-for="sub in $store.app.subcategories" :key="sub.id">
+            <option x-show="sub.category_id === Number(categoryId)" :value="sub.id" x-text="sub.name">
+            </option>
+          </template>
+        </select>
+      </div>
+
+      <!-- Descrição -->
+      <div class="mb-3">
+        <label class="block text-xs mb-1">Descrição *</label>
+        <textarea x-model="description" class="w-full p-1.5 rounded-md bg-gray-700 border border-gray-600 
+                  focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm" rows="3"
+          placeholder="Descreva o problema..."></textarea>
+      </div>
+
+      <!-- Prioridade -->
+      <div class="mb-3">
+        <label class="block text-xs mb-1">Prioridade *</label>
+        <select x-model="priority" class="w-full p-1.5 rounded-md bg-gray-700 border border-gray-600 
+                  focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm">
+          <option value="low">Baixa</option>
+          <option value="medium">Média</option>
+          <option value="high">Alta</option>
+        </select>
+      </div>
+
+      <!-- Hotel -->
+      <div class="mb-3">
+        <label class="block text-xs mb-1">Hotel *</label>
+        <select x-model="hotelId" size="4" class="w-full p-1.5 rounded-md bg-gray-700 border border-gray-600
+                  focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm">
+          <option value="" selected>Selecione um hotel</option>
+          <template x-for="hotel in $store.app.hotels">
+            <option :value="hotel.id" x-text="hotel.code + ' - ' + hotel.name"></option>
+          </template>
+        </select>
+      </div>
+
+      <!-- Botão -->
+      <button @click="submitForm" class="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 px-3 
+                rounded-md text-sm transition-colors">
+        Abrir Chamado
+      </button>
     </div>
   </div>
+</div>

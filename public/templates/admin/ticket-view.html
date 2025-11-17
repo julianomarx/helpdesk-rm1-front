@@ -7,7 +7,9 @@
     <!-- Header com título e tabs -->
     <div class="border-b border-gray-400 flex items-center mb-2">
       <div>
-        <h1 class="font-bold break-words whitespace-normal" x-text="selectedTicket.id + ' | ' + selectedTicket.title">
+        <h1 class="font-bold leading-tight break-words whitespace-normal text-balance" x-text="(selectedTicket.id + ' | ' + selectedTicket.title.length > 100
+          ? (selectedTicket.id + ' | ' + selectedTicket.title).slice(0, 100) + '…'
+          : selectedTicket.id + ' | ' + selectedTicket.title)">
         </h1>
 
         <div class="flex w-full space-x-2">

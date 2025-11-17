@@ -26,12 +26,12 @@ function dashboard() {
 
         Alpine.initTree(container);
 
-        if (page === "create-user") {
-          this.initCreateUser(); // ex: função dentro do dashboard.js
-        }
+        // if (page === "create-user") {
+        //   this.initCreateUser(); // ex: função dentro do dashboard.js
+        // }
 
       } catch (error) {
-        container.innerHTML = `<p class="text-red-500">Erro ao carregar a página: ${e.message}</p>`;
+        container.innerHTML = `<p class="text-red-500">Erro ao carregar a página: ${error.message}</p>`;
       }
     },
 
@@ -54,6 +54,8 @@ function dashboard() {
       Alpine.store("app").menus = '';
       Alpine.store("app").hotels = '';
       Alpine.store("app").userId = '';
+      Alpine.store("app").categories = '';
+      Alpine.store("app").subcategories = '';
 
       // reset do estado do dashboard
       this.currentPage = "dashboard";
@@ -82,6 +84,8 @@ function dashboard() {
           }
 
           const data = await res.json();
+
+          console.log(data)
 
           this.ticketList = data;
         } catch (e) {
@@ -174,9 +178,15 @@ function dashboard() {
     },
 
 
-    async createTicket(title, description, priority, createdBy, assignedTo, hotelId) {
+    async createTicket(title, description, priority, hotelId, categoryId, subcategoryId) {
       const token = localStorage.getItem("access_token");
       if (token) {
+
+        if (title.length > 100) {
+          this.showToast("Título muito longo(max 100), seja mais breve!", "error");
+          return;
+        }
+
         try {
           const res = await fetch("http://127.0.0.1:8000/tickets", {
             method: "POST",
@@ -188,15 +198,15 @@ function dashboard() {
               title,
               description,
               priority,
-              created_by: createdBy,
-              assigned_to: assignedTo,
+              category_id: categoryId,
+              subcategory_id: subcategoryId,
               hotel_id: hotelId
             })
           })
 
 
           if (!res.ok) {
-            this.showToast("Erro ao criar usuário", "error");
+            this.showToast("Erro ao criar Ticket", "error");
             console.log("Não foi possível criar o chamado", res.status);
             return;
           }
