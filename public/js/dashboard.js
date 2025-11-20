@@ -129,11 +129,53 @@ function dashboard() {
         this.selectedTicket = data; // já inclui comments
 
         console.log("Ticket carregado:", data);
+
+        return data;
+
       } catch (error) {
         console.error("Não foi possível buscar o ticket:", error);
         this.showToast("Erro ao carregar ticket", "error");
       }
+
     },
+
+    async startTicket(userData) {
+      const token = localStorage.getItem("access_token");
+
+      // busca ticket ATUALIZADO antes de validar
+      const ticket = await this.getTicketById(this.selectedTicket.id);
+
+      console.log("Ticket atual:", ticket);
+
+      // valida antes de seguir
+      if (ticket.assignee != null) {
+        this.showToast(`Ticket já em atendimento por ${ticket.assignee.name}`, "error");
+        return; // <-- IMPEDIR DE CONTINUAR, SENÃO VOCÊ SOBRESCREVE!
+      }
+
+      // continua se não estiver atribuído
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/tickets/${ticket.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify(userData)
+        });
+
+        const json = await res.json();
+        console.log("Resposta:", json);
+
+        // Atualiza após alterar
+        await this.getTicketById(ticket.id);
+
+      } catch (error) {
+        console.error("Erro ao tentar iniciar o ticket!", error);
+        this.showToast("Erro ao tentar iniciar o ticket", "error");
+      }
+    },
+
 
     // showToast função 
     showToast(message, type = "success") {
@@ -173,7 +215,7 @@ function dashboard() {
         toast.classList.remove("translate-x-0", "opacity-100");
         toast.classList.add("opacity-0", "translate-x-full");
         setTimeout(() => toast.remove(), 500); // tempo da transição
-      }, 3000);
+      }, 4200);
 
     },
 

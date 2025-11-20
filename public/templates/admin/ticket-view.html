@@ -362,9 +362,19 @@
         </div>
 
         <!-- BOTÃO DE AÇÃO -->
-        <div class="">
+        <div x-data="{
+            data: {
+                progress: 'in_progress',
+                assigned_to: $store.app.userId
+            },
+
+            async submitDataToStartTicket() {
+                await startTicket(this.data)
+            }
+        }">
+
           <template x-if="selectedTicket.progress == 'waiting'">
-            <button
+            <button @click="submitDataToStartTicket()"
               class=" w-full mt-3 px-3 py-2 bg-red-800 hover:bg-red-900 rounded-lg text-sm font-medium text-white text-center shadow-md transition">
               Iniciar atendimento
             </button>
