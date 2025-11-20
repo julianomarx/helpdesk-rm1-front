@@ -7,7 +7,7 @@
     <!-- Header com título e tabs -->
     <div class="border-b border-gray-400 flex items-center mb-2">
       <div>
-        <h1 class="font-bold leading-tight break-words whitespace-normal text-balance" x-text="(selectedTicket.id + ' | ' + selectedTicket.title.length > 100
+        <h1 class="font-bold leading-tight break-words whitespace-normal" x-text="(selectedTicket.id + ' | ' + selectedTicket.title.length > 100
           ? (selectedTicket.id + ' | ' + selectedTicket.title).slice(0, 100) + '…'
           : selectedTicket.id + ' | ' + selectedTicket.title)">
         </h1>
@@ -92,17 +92,20 @@
           <!-- Comentários fixos -->
 
           <!-- Adicionar comentário -->
-          <form @submit.prevent="submitComment">
 
-            <textarea x-model="newComment"
-              class="w-full p-2 mt-2 rounded text-gray-100 text-sm resize-none focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm placeholder-gray-400"
-              placeholder="Escreva um comentário..."></textarea>
-            <div class="flex justify-between items-center mt-2">
-              <button class="text-sm text-blue-400 hover:underline">📎 Anexar arquivo</button>
-              <button type="submit" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm">Enviar</button>
-            </div>
+          <template x-if="selectedTicket.progress != 'waiting' && selectedTicket.progress != 'awaiting_confirmation' ">
+            <form @submit.prevent="submitComment">
 
-          </form>
+              <textarea x-model="newComment"
+                class="w-full p-2 mt-2 rounded text-gray-100 text-sm resize-none focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm placeholder-gray-400"
+                placeholder="Escreva um comentário..."></textarea>
+              <div class="flex justify-between items-center mt-2">
+                <button class="text-sm text-blue-400 hover:underline">📎 Anexar arquivo</button>
+                <button type="submit" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm">Enviar</button>
+              </div>
+
+            </form>
+          </template>
 
           <div class="flex flex-col h-[38vh] rounded p-3">
             <h2 class="text-md font-semibold mb-2">Comentários</h2>
@@ -126,6 +129,7 @@
               </template>
             </div>
           </div>
+
         </div>
       </div>
 
@@ -220,50 +224,162 @@
   </div>
 
   <!-- Direito -->
-  <div class="relative m-2 flex flex-2.2 flex-col 
+  <div class="relative m-2 flex flex-col w-80 max-w-xs pr-2 
               bg-gray-900/40 backdrop-blur-xl backdrop-saturate-150 
               border border-white/10 rounded-2xl shadow-xl p-4">
 
-    <!-- Reflexo de vidro -->
-    <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 to-transparent pointer-events-none"></div>
 
 
-    <h2 class="text-lg mb-2 text-center font-semibold">Solicitante</h2>
+    <!-- Metade de cima -->
+    <div class="flex flex-col flex">
 
-    <div class="flex items-center space-x-3">
-      <img src="/assets/images/profile-pic.png" class="w-10 h-10 bg-gray-600 rounded-full flex-shrink-0">
-      <div>
-        <p class="font-semibold text-gray-100" x-text="selectedTicket.creator.name"></p>
-        <p class="text-xs text-gray-400" x-text="selectedTicket.creator.email"></p>
+      <!-- Reflexo de vidro -->
+      <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 to-transparent pointer-events-none">
+      </div>
+
+
+      <h2 class="text-lg mb-2 text-center font-semibold">Solicitante</h2>
+
+      <div class="flex items-center space-x-3">
+        <img src="/assets/images/profile-pic.png" class="w-10 h-10 bg-gray-600 rounded-full flex-shrink-0">
+        <div>
+          <p class="font-semibold text-gray-100" x-text="selectedTicket.creator.name"></p>
+          <p class="text-xs text-gray-400" x-text="selectedTicket.creator.email"></p>
+        </div>
+      </div>
+
+      <hr class="mt-2 border-gray-700">
+
+      <div class="text-sm m-2 space-y-1">
+
+        <p><span class="font-semibold"></span> <span x-text="selectedTicket.hotel.name"></span></p>
+
+        <p><span class="font-semibold">Data de abertura: </span><span
+            x-text="dayjs(selectedTicket.created_at).format('DD/MM/YYYY HH:mm')"></span></p>
+
+        <p><span class="font-semibold">Cargo:</span> <span x-text="selectedTicket.creator.role"></span></p>
+
+      </div>
+
+      <template x-if="selectedTicket.progress != 'waiting' ">
+
+        <div class="mt-2 flex items-center justify-evenly">
+          <button
+            class=" w-30  bg-blue-600 hover:bg-blue-700 rounded-lg text-xs font-small text-white text-center shadow-md transition">
+            📞 Contatar
+          </button>
+
+          <button
+            class=" w-30 bg-green-600 hover:bg-emerald-700 rounded-lg text-xs font-small text-white text-center shadow-md transition">
+            📅 Agendar
+          </button>
+        </div>
+
+      </template>
+
+
+    </div>
+
+    <!-- metade de baixo -->
+    <div class="flex flex-col flex-1 text-center">
+      <div class="flex flex-col flex-1 w-70 justify-between">
+
+        <!-- MAPA DE TRADUÇÃO -->
+        <div class="flex flex-col" x-data="{
+        statusPT(status) {
+          return {
+            'open': 'Aberto',
+            'closed': 'Encerrado'
+          }[status] || status;
+        },
+        progressPT(progress) {
+          return {
+            'waiting': 'Aguardando atendimento',
+            'in_progress': 'Em atendimento',
+            'feedback': 'Retorno solicitante',
+            'awaiting_confirmation': 'Aguardando confirmação',
+            'done': 'Concluído'
+          }[progress] || progress;
+        }
+      }">
+
+          <div class="flex flex-col">
+            <h2 class="text-lg mt-4 text-center font-semibold">Andamento</h2>
+          </div>
+
+          <table class="text-sm mt-3 text-left">
+            <tbody class="text-gray-200">
+
+              <tr class="border-b border-gray-700/60">
+                <td class=" py-1 font-semibold">Status:</td>
+                <td x-text="statusPT(selectedTicket.status)"></td>
+              </tr>
+
+              <tr class="border-b border-gray-700/60">
+                <td class=" py-1 font-semibold">Progresso:</td>
+                <td x-text="progressPT(selectedTicket.progress)"></td>
+              </tr>
+
+              <tr class="border-b border-gray-700/60">
+                <td class=" py-1 font-semibold">Categoria:</td>
+                <td x-text="selectedTicket.category?.name || '-'"></td>
+              </tr>
+
+              <tr class="border-b border-gray-700/60">
+                <td class=" py-1 font-semibold">Subcategoria:</td>
+                <td x-text="selectedTicket.subcategory?.name || '-'"></td>
+              </tr>
+
+              <!-- FUTUROS CAMPOS / PLACEHOLDERS -->
+              <tr class="border-b border-gray-700/60">
+                <td class=" py-1 font-semibold">Atendente:</td>
+                <td x-text="selectedTicket.assignee?.name || '—'"></td>
+              </tr>
+
+              <tr class="border-b border-gray-700/60">
+                <td class=" py-1 font-semibold">Tempo em atendimento:</td>
+                <td>—</td>
+              </tr>
+
+              <tr class="border-b border-gray-700/60">
+                <td class=" py-1 font-semibold">Tempo parado:</td>
+                <td>—</td>
+              </tr>
+
+              <tr class="border-b border-gray-700/60">
+                <td class=" py-1 font-semibold">SLA restante:</td>
+                <td>—</td>
+              </tr>
+
+              <tr class="border-b border-gray-700/60">
+                <td class="py-1 font-semibold">Equipe responsável:</td>
+                <td x-text="selectedTicket.assigned_team?.name || '—'"></td>
+              </tr>
+
+            </tbody>
+          </table>
+
+        </div>
+
+        <!-- BOTÃO DE AÇÃO -->
+        <div class="">
+          <template x-if="selectedTicket.progress == 'waiting'">
+            <button
+              class=" w-full mt-3 px-3 py-2 bg-red-800 hover:bg-red-900 rounded-lg text-sm font-medium text-white text-center shadow-md transition">
+              Iniciar atendimento
+            </button>
+          </template>
+
+          <template x-if="selectedTicket.progress != 'waiting'">
+            <button
+              class=" w-full mt-3 px-3 py-2 bg-red-800 hover:bg-red-900 rounded-lg text-sm font-medium text-white text-center shadow-md transition">
+              Finalizar atendimento
+            </button>
+          </template>
+        </div>
+
       </div>
     </div>
-
-    <hr class="mt-2 border-gray-700">
-
-    <div class="text-sm mt-2">
-
-      <p><span class="font-semibold"></span> <span x-text="selectedTicket.hotel.name"></span></p>
-
-      <p><span class="font-semibold">Data de abertura: </span><span
-          x-text="dayjs(selectedTicket.created_at).format('DD/MM/YYYY HH:mm')"></span></p>
-
-      <p><span class="font-semibold">Cargo:</span> <span x-text="selectedTicket.creator.role"></span></p>
-
-    </div>
-
-    <div class="mt-6 flex flex-col items-center space-y-3">
-      <button
-        class=" w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium text-white text-center shadow-md transition">
-        📞 Contatar solicitante
-      </button>
-
-      <button
-        class="w-full px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium text-white text-center shadow-md transition">
-        📅 Agendar atendimento
-      </button>
-    </div>
-
-
 
   </div>
 
