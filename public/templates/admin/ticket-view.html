@@ -23,7 +23,10 @@
             Detalhes
           </button>
 
-          <button class="tab-btn" @click="ticketViewTab = 'ticketHistory'"
+          <button class="tab-btn" @click="
+            ticketViewTab = 'ticketHistory';
+            getSelectedTicketLogs(selectedTicket.id)
+            "
             :class="ticketViewTab === 'ticketHistory' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'">
             Histórico
           </button>
@@ -125,25 +128,53 @@
       </div>
 
       <!-- TAB HISTÓRICO -->
-      <div class="flex flex-1 flex-col" x-show="ticketViewTab === 'ticketHistory'">
+      <div class="flex-1 overflow-y-auto custom-scroll pr-2">
 
-        <div class="relative flex flex-col mt-1 p-4 
-              bg-gray-900/40 backdrop-blur-xl backdrop-saturate-150 
-              border border-white/10 rounded-2xl shadow-xl">
+        <div class="relative border-l border-gray-700 pl-6 space-y-6">
 
-          <!-- Reflexo de vidro -->
-          <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 to-transparent pointer-events-none">
-          </div>
+          <template x-for="log in selectedTicketLogs" :key="log.id">
+            <div class="relative">
 
-          <h2 class="text-md font-semibold mb-4">Histórico do chamado</h2>
+              <!-- bolinha da timeline -->
+              <div class="absolute -left-[9px] top-1 w-4 h-4 bg-blue-500 rounded-full border-2 border-gray-900"></div>
 
-          <div class="flex-1 overflow-y-auto custom-scroll pr-2 space-y-4">
+              <!-- card -->
+              <div class="bg-gray-800/60 border border-white/10 rounded-xl p-4 shadow-md">
 
-            <p>Listar logs aqui</p>
+                <!-- ACTION crua -->
+                <p class="text-sm font-semibold text-gray-200" x-text="log.action"></p>
 
-          </div>
+                <!-- VALUE cru -->
+                <p class="text-xs text-gray-400 mt-1">
+                  Valor: <span class="text-gray-300" x-text="log.value"></span>
+                </p>
+
+                <!-- USER -->
+                <p class="text-xs text-gray-400 mt-1">
+                  Usuário:
+                  <span class="text-blue-400" x-text="log.user?.name"></span>
+                  (<span x-text="log.user?.role"></span>)
+                </p>
+
+                <!-- DATA -->
+                <p class="text-xs text-gray-500 mt-2 italic">
+                  <span x-text="dayjs(log.created_at).format('DD/MM/YYYY HH:mm:ss')"></span>
+                </p>
+
+              </div>
+
+            </div>
+          </template>
+
+          <!-- vazio -->
+          <template x-if="!selectedTicketLogs || selectedTicketLogs.length === 0">
+            <p class="text-gray-400 text-sm">Nenhum log encontrado.</p>
+          </template>
+
         </div>
+
       </div>
+
 
       <!-- TAB Transferir chamado -->
       <div class="flex flex-1 flex-col" x-show="ticketViewTab === 'transferTicket'">

@@ -5,6 +5,7 @@ function dashboard() {
     ticketViewTab: 'details',
     ticketList: [],
     selectedTicket: { comments: [] },
+    selectedTicketLogs: [],
     newComment: '',
     showDescription: false,
     maxDescLength: 400,
@@ -103,10 +104,17 @@ function dashboard() {
       return this.ticketList.filter(ticket => ticket.progress === this.currentTab);
     },
 
-    viewTicket(ticket) {
+    async viewTicket(ticket) {
       //busca o ticket completo
       this.getTicketById(ticket.id);
-      this.goTo("ticket-view")
+
+      // limpa logs antigos
+      this.selectedTicketLogs = [];
+
+      await this.getSelectedTicketLogs(ticket.id)
+
+      this.goTo("ticket-view");
+
     },
 
     async getTicketById(ticketId) {
@@ -135,6 +143,38 @@ function dashboard() {
       } catch (error) {
         console.error("Não foi possível buscar o ticket:", error);
         this.showToast("Erro ao carregar ticket", "error");
+      }
+
+    },
+
+    async getSelectedTicketLogs(ticketId) {
+      const token = localStorage.getItem("access_token");
+
+      if (!token) {
+        Alpine.store("app").currentView = "login";
+        return
+      }
+
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/ticket-logs/${ticketId}`, {
+          headers: {
+            "Authorization": "Bearer " + token
+          }
+        });
+
+        if (!res.ok) {
+          throw new Error("Erro ao buscar logs")
+        }
+
+        const data = await res.json();
+
+        console.log(data)
+        this.selectedTicketLogs = data.reverse();
+
+
+      } catch (error) {
+        console.error("Erro ao buscar logs: ", error);
+        this.showToast("Erro ao carregar histórico", "error");
       }
 
     },
