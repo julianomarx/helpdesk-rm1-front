@@ -111,6 +111,9 @@ function dashboard() {
       // limpa logs antigos
       this.selectedTicketLogs = [];
 
+      //Define como details a tab para sempre abrir na aba detalhes
+      this.ticketViewTab = 'details';
+
       await this.getSelectedTicketLogs(ticket.id)
 
       this.goTo("ticket-view");
@@ -179,40 +182,52 @@ function dashboard() {
 
     },
 
-    async startTicket(userData) {
+    async startTicket() {
       const token = localStorage.getItem("access_token");
 
-      // busca ticket ATUALIZADO antes de validar
-      const ticket = await this.getTicketById(this.selectedTicket.id);
-
-      console.log("Ticket atual:", ticket);
-
-      // valida antes de seguir
-      if (ticket.assignee != null) {
-        this.showToast(`Ticket já em atendimento por ${ticket.assignee.name}`, "error");
-        return; // <-- IMPEDIR DE CONTINUAR, SENÃO VOCÊ SOBRESCREVE!
+      if (!token) {
+        Alpine.store("app").currentView = "login";
+        return;
       }
 
-      // continua se não estiver atribuído
+      const ticketId = this.selectedTicket?.id;
+
+      if (!ticketId) {
+        this.showToast("Nenhum ticket selecionado", "error");
+        return;
+      }
+
       try {
-        const res = await fetch(`http://127.0.0.1:8000/tickets/${ticket.id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
-          },
-          body: JSON.stringify(userData)
-        });
+        const res = await fetch(
+          `http://127.0.0.1:8000/tickets/start-ticket/${ticketId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Authorization": "Bearer " + token,
+              "Content-Type": "application/json"
+            }
+          }
+        );
 
-        const json = await res.json();
-        console.log("Resposta:", json);
+        if (!res.ok) {
+          const error = await res.json();
+          this.showToast(error.detail || "Erro ao iniciar ticket", "error");
+          return;
+        }
 
-        // Atualiza após alterar
-        await this.getTicketById(ticket.id);
+        const updatedTicket = await res.json();
+
+        // Atualiza ticket na tela
+        this.selectedTicket = updatedTicket;
+
+        // Atualiza logs
+        await this.getSelectedTicketLogs(ticketId);
+
+        this.showToast("Ticket iniciado com sucesso!", "success");
 
       } catch (error) {
-        console.error("Erro ao tentar iniciar o ticket!", error);
-        this.showToast("Erro ao tentar iniciar o ticket", "error");
+        console.error("Erro ao iniciar ticket:", error);
+        this.showToast("Erro inesperado ao iniciar ticket", "error");
       }
     },
 
@@ -225,12 +240,12 @@ function dashboard() {
       const toast = document.createElement("div");
 
       toast.className = `
-        flex items-center gap-2 px-4 py-2 mb-2 rounded-md shadow-lg text-sm
-        transform translate-x-full opacity-0 transition-all duration-500 ease-out
-          ${type === "success" ? "bg-gray-800 border border-green-500 text-green-400" :
+          flex items-center gap-2 px-4 py-2 mb-2 rounded-md shadow-lg text-sm
+          transform translate-x-full opacity-0 transition-all duration-500 ease-out
+            ${type === "success" ? "bg-gray-800 border border-green-500 text-green-400" :
           type === "error" ? "bg-gray-800 border border-red-500 text-red-400" :
             "bg-gray-800 border border-blue-500 text-blue-400"}
-      `;
+        `;
 
       // ícone bonitinho por tipo
       const icon = document.createElement("span");
