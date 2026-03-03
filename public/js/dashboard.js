@@ -399,7 +399,7 @@ function dashboard() {
       }
     },
 
-    async createComment(commentData) {
+    async createComment(commentData, showToast=true) {
       const token = localStorage.getItem("access_token");
 
       console.log(commentData)
@@ -420,7 +420,10 @@ function dashboard() {
           }
 
           const data = await res.json();
-          this.showToast("Comentário criado com sucesso!", "success");
+
+          if (showToast) {
+            this.showToast("Comentário criado com sucesso!", "success");
+          }
 
           return data;
 
@@ -456,7 +459,8 @@ function dashboard() {
           ticket_id: ticketId,
           user_id: Alpine.store("app").userId,
           comment: this.finishReason
-        });
+          }, false
+        );
 
         //cria o comentario 
         const res = await fetch(`http://127.0.0.1:8000/tickets/${ticketId}`, {
