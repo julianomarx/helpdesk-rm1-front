@@ -234,6 +234,11 @@ function dashboard() {
       }
     },
 
+    get orderedComments() {
+      if (!this.selectedTicket?.comments) return [];
+      return [...this.selectedTicket.comments].reverse();
+    },
+
 
     // showToast função 
     showToast(message, type = "success") {
@@ -430,8 +435,60 @@ function dashboard() {
 
       stayAlive(this.tokenExpire);
 
-    }
+    },
 
+    async confirmFinishTicket() {
+      if (!this.finishReason.trim()) {
+        alert("Informe a conclusão antes de encerrar.");
+        return;
+      }
+
+      const token = localStorage.getItem("access_token");
+      const ticketId = this.selectedTicket?.id;
+
+      if (!token || !ticketId) {
+        this.showToast("Erro ao localixar o ticket", "error");
+        return;
+      }
+
+      try {
+        await this.createComment({
+          ticket_id: ticketId,
+          user_id: Alpine.store("app").userId,
+          comment: this.finishReason
+        });
+
+        //cria o comentario 
+        const res = await fetch(`http://127.0.0.1:8000/tickets/${ticketId}`, {
+          method: "PUT",
+          headers: {
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            progress: "awaiting_confirmation"
+          })
+        });
+
+        if (!res.ok) {
+          const error = await res.json();
+          this.showToast(error.detail || "Erro ao atualizar o ticket", "error");
+          return;
+        }
+
+        await this.getTicketById(ticketId);
+
+        await this.getSelectedTicketLogs(ticketId);
+
+        this.showToast("Ticket enviado para encerramento", "success");
+
+        this.showFinishModal = false;
+        this.finishReason = '';
+
+      } catch (err) {
+        this.showToast("Erro ao adicionar mensagem de encerramento ao ticket", "error");
+      }
+    }
   };
 }
 
