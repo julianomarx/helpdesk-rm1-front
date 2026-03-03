@@ -340,7 +340,10 @@ function dashboard() {
           });
 
           if (!res.ok) {
-            console.error("Erro ao criar usuário: ", res.status);
+
+            const errorData = await res.json();
+            console.error("Erro detalhado:", errorData)
+
             this.showToast("Erro ao criar usuário", "error");
           }
 
@@ -522,7 +525,7 @@ function stayAlive(expireTimestamp) {
 
         console.log("Token renovado com sucesso!");
 
-        stayAlive(Alpine.store("app".tokenExpire)); // passa os token renovado pra função pra extender o tempo.
+        stayAlive(Alpine.store("app").tokenExpire);; // passa os token renovado pra função pra extender o tempo.
 
       } catch (error) {
         console.error("Erro na renovação do token", error);
