@@ -188,23 +188,6 @@
         </div>
       </div>
 
-      <!-- TAB ENCERRAR ATENDIMENTO -->
-      <div class="flex flex-1 flex-col" x-show="ticketViewTab === 'finishTicket'">
-
-        <div class="relative flex flex-col mt-1 p-4 
-              bg-gray-900/40 backdrop-blur-xl backdrop-saturate-150 
-              border border-white/10 rounded-2xl shadow-xl">
-
-          <h2 class="text-md font-semibold mb-4">Finalizar atendimento</h2>
-
-          <div class="flex-1 overflow-y-auto custom-scroll pr-2 space-y-4">
-
-            <p>Tela para finalizar o atendimento aqui</p>
-
-          </div>
-        </div>
-      </div>
-
       <!-- TAB TIME LOG -->
       <div class="flex flex-1 flex-col" x-show="ticketViewTab === 'timeLog'">
 
@@ -371,7 +354,7 @@
           </template>
 
           <template x-if="selectedTicket.progress != 'waiting'">
-            <button
+            <button @click="showFinishModal = true"
               class=" w-full mt-3 px-3 py-2 bg-red-800 hover:bg-red-900 rounded-lg text-sm font-medium text-white text-center shadow-md transition">
               Finalizar atendimento
             </button>
@@ -396,5 +379,38 @@
       <p class="text-gray-200 text-sm whitespace-pre-line leading-relaxed" x-text="selectedTicket.description"></p>
     </div>
   </div>
+
+  <!-- MODAL FINALIZAR ATENDIMENTO -->
+  <div x-show="showFinishModal" x-transition.opacity
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+
+    <div @click.outside="showFinishModal = false" class="bg-gray-800/40 backdrop-blur-2xl border border-white/10 
+           w-11/12 max-w-lg rounded-2xl p-6 shadow-2xl 
+           backdrop-saturate-150">
+
+      <h3 class="text-lg font-semibold mb-4">
+        Finalizar atendimento
+      </h3>
+
+      <textarea x-model="finishReason" placeholder="Descreva a conclusão ou motivo do encerramento..." class="w-full p-3 rounded-lg bg-gray-900/60 border border-gray-700 
+             text-sm text-gray-200 resize-none focus:outline-none 
+             focus:ring-2 focus:ring-blue-500" rows="4">
+    </textarea>
+
+      <div class="flex justify-end space-x-3 mt-6">
+
+        <button @click="showFinishModal = false; finishReason = ''"
+          class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-sm">
+          Voltar
+        </button>
+
+        <button @click="confirmFinishTicket()"
+          class="px-4 py-2 rounded-lg bg-red-800 hover:bg-red-900 text-sm font-medium">
+          Enviar para encerramento
+        </button>
+
+      </div>
+    </div>
+  </div>  
 
 </div>

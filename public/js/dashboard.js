@@ -10,6 +10,9 @@ function dashboard() {
     showDescription: false,
     maxDescLength: 400,
 
+    showFinishModal: false,
+    finishReason: '',
+
     async goTo(page, cssPath) {
       if (this.currentPage === page) return
       this.currentPage = page;
