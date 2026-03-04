@@ -81,7 +81,8 @@
 
           <!-- Adicionar comentário -->
 
-          <template x-if="selectedTicket.progress != 'waiting' && selectedTicket.progress != 'awaiting_confirmation' ">
+          <template
+            x-if="selectedTicket.progress != 'waiting' && selectedTicket.progress != 'awaiting_confirmation' && selectedTicket.progress != 'done' ">
             <form @submit.prevent="submitComment">
 
               <textarea x-model="newComment"
@@ -344,21 +345,39 @@
         </div>
 
         <!-- BOTÃO DE AÇÃO -->
+        <!-- BOTÃO DE AÇÃO -->
         <div>
 
-          <template x-if="selectedTicket.progress == 'waiting'">
-            <button @click="startTicket()"
-              class=" w-full mt-3 px-3 py-2 bg-red-800 hover:bg-red-900 rounded-lg text-sm font-medium text-white text-center shadow-md transition">
+          <!-- Iniciar atendimento -->
+          <template x-if="selectedTicket.progress === 'waiting'">
+            <button @click="startTicket()" class="w-full mt-3 px-3 py-2 
+             bg-blue-700 hover:bg-blue-800 
+             rounded-lg text-sm font-medium text-white 
+             text-center shadow-md transition">
               Iniciar atendimento
             </button>
           </template>
 
-          <template x-if="selectedTicket.progress != 'waiting'">
-            <button @click="showFinishModal = true"
-              class=" w-full mt-3 px-3 py-2 bg-red-800 hover:bg-red-900 rounded-lg text-sm font-medium text-white text-center shadow-md transition">
+          <!-- Reabrir chamado -->
+          <template x-if="['done','awaiting_confirmation'].includes(selectedTicket.progress)">
+            <button @click="reopenTicket()" class="w-full mt-3 px-3 py-2 
+             bg-amber-600 hover:bg-amber-700 
+             rounded-lg text-sm font-medium text-white 
+             text-center shadow-md transition">
+              Reabrir chamado
+            </button>
+          </template>
+
+          <!-- Finalizar atendimento -->
+          <template x-if="!['waiting','done','awaiting_confirmation'].includes(selectedTicket.progress)">
+            <button @click="showFinishModal = true" class="w-full mt-3 px-3 py-2 
+             bg-red-800 hover:bg-red-900 
+             rounded-lg text-sm font-medium text-white 
+             text-center shadow-md transition">
               Finalizar atendimento
             </button>
           </template>
+
         </div>
 
       </div>
@@ -411,6 +430,6 @@
 
       </div>
     </div>
-  </div>  
+  </div>
 
 </div>
