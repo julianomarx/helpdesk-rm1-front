@@ -31,7 +31,13 @@
             Histórico
           </button>
 
-          <button class="tab-btn" @click="ticketViewTab = 'transferTicket'"
+          <button class="tab-btn" 
+
+            @click="ticketViewTab = 'transferTicket'; 
+                    fetchTeams();
+                    fetchTeamUsers();
+             "
+
             :class="ticketViewTab === 'transferTicket' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'">
             Transferir chamado
           </button>
@@ -86,7 +92,7 @@
             <form @submit.prevent="submitComment">
 
               <textarea x-model="newComment"
-                class="w-full p-2 mt-2 rounded text-gray-100 text-sm resize-none focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm placeholder-gray-400"
+                class="w-full p-2 mt-2 rounded text-gray-100 text-sm resize-none ring-1 ring-gray-700 focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm placeholder-gray-400"
                 placeholder="Escreva um comentário..."></textarea>
               <div class="flex justify-between items-center mt-2">
                 <button class="text-sm text-blue-400 hover:underline">📎 Anexar arquivo</button>
@@ -123,7 +129,7 @@
       </div>
 
       <!-- TAB HISTÓRICO -->
-      <div class="flex-1 overflow-y-auto custom-scroll pr-2">
+      <template x-if="ticketViewTab === 'ticketHistory'">
 
         <div class="relative border-l border-gray-700 pl-6 space-y-6">
 
@@ -168,24 +174,70 @@
 
         </div>
 
-      </div>
+      </template>
 
 
       <!-- TAB Transferir chamado -->
       <div class="flex flex-1 flex-col" x-show="ticketViewTab === 'transferTicket'">
 
-        <div class="relative flex flex-col mt-1 p-4 
-              bg-gray-900/40 backdrop-blur-xl backdrop-saturate-150 
-              border border-white/10 rounded-2xl shadow-xl">
+        <div class="flex flex-col mt-1 p-6 
+    bg-gray-900/40 backdrop-blur-xl 
+    border border-white/10 rounded-2xl shadow-xl">
 
+          <h2 class="text-md font-semibold mb-6">
+            Transferir chamado
+          </h2>
 
-          <h2 class="text-md font-semibold mb-4">Transferir chamado</h2>
+          <!-- TIME -->
+          <div class="mb-5">
+            <label class="text-xs text-gray-400">
+              Transferir para TIME
+            </label>
 
-          <div class="flex-1 overflow-y-auto custom-scroll pr-2 space-y-4">
+            <select x-model="selectedTeamId" @change="selectedUserId=''" class="w-full mt-1 p-2 rounded-lg bg-gray-800
+              border border-gray-700 text-sm 
+              focus:ring-2 focus:ring-blue-600 focus:outline-none">
 
-            <p>Tela de transferir chamado aqui</p>
+              <option value="">Selecione um time</option>
 
+              <template x-for="team in teams" :key="team.id">
+                <option :value="team.id" x-text="team.name"></option>
+              </template>
+            </select>
           </div>
+
+          <div class="text-center text-xs text-gray-500 mb-4">
+            — OU —
+          </div>
+
+          <!-- USUÁRIO -->
+          <div class="mb-6">
+            <label class="text-xs text-gray-400">
+              Transferir para USUÁRIO
+            </label>
+
+            <select x-model="selectedUserId" @focus="fetchTeamUsers()" @change="selectedTeamId=''" class="w-full mt-1 p-2 rounded-lg bg-gray-800
+              border border-gray-700 text-sm 
+              focus:ring-2 focus:ring-blue-600 focus:outline-none">
+
+              <option value="">Selecione um usuário</option>
+
+              <template x-for="user in teamUsers" :key="user.id">
+                <option :value="user.id" x-text="user.name"></option>
+              </template>
+            </select>
+          </div>
+
+          <!-- BOTÃO -->
+          <button @click="validateTransfer()" class="w-full px-3 py-2 
+      bg-blue-700 hover:bg-blue-800 
+      rounded-lg text-sm font-medium text-white 
+      shadow-md transition">
+
+            Confirmar transferência
+
+          </button>
+
         </div>
       </div>
 
@@ -387,7 +439,7 @@
 
   <!--  MODAL DE DESCRIÇÃO -->
   <div x-show="showDescription" x-transition.opacity
-    class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+    class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
     <div @click.outside="showDescription = false" class="bg-gray-800/40 backdrop-blur-2xl border border-white/10 
               w-11/12 max-w-3xl rounded-2xl p-6 shadow-2xl overflow-y-auto max-h-[80vh] 
               backdrop-saturate-150">
@@ -401,7 +453,7 @@
 
   <!-- MODAL FINALIZAR ATENDIMENTO -->
   <div x-show="showFinishModal" x-transition.opacity
-    class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+    class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
 
     <div @click.outside="showFinishModal = false" class="bg-gray-800/40 backdrop-blur-2xl border border-white/10 
            w-11/12 max-w-lg rounded-2xl p-6 shadow-2xl 
@@ -430,6 +482,54 @@
 
       </div>
     </div>
+  </div>
+
+  <!-- MODAL RECLASSIFICAR TRANSFERÊNCIA -->
+  <div x-show="showTransferModal" x-transition.opacity
+    class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+
+    <div @click.outside="showTransferModal = false" class="bg-gray-800/40 backdrop-blur-2xl border border-white/10 
+  w-11/12 max-w-lg rounded-2xl p-6 shadow-2xl backdrop-saturate-150">
+
+      <h3 class="text-lg font-semibold mb-4">
+        Reclassificar chamado
+      </h3>
+
+      <p class="text-sm text-gray-400 mb-4">
+        Ao transferir para outro time é necessário selecionar a nova subcategoria.
+      </p>
+
+      <label class="text-xs text-gray-400">
+        Subcategoria
+      </label>
+
+      <select x-model="transferSubcategoryId" class="w-full mt-1 p-2 rounded-lg bg-gray-800/60 
+      border border-gray-700 text-sm 
+      focus:ring-2 focus:ring-blue-600 focus:outline-none">
+
+        <option value="">Selecione uma subcategoria</option>
+
+        <template x-for="sub in teamSubcategories" :key="sub.id">
+          <option :value="sub.id" x-text="sub.name"></option>
+        </template>
+
+      </select>
+
+      <div class="flex justify-end space-x-3 mt-6">
+
+        <button @click="showTransferModal = false" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-sm">
+          Cancelar
+        </button>
+
+        <button @click="confirmTransferWithSubcategory()"
+          class="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-sm font-medium">
+          Confirmar transferência
+        </button>
+
+      </div>
+
+    </div>
+
   </div>
 
 </div>

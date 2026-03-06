@@ -13,6 +13,225 @@ function dashboard() {
     showFinishModal: false,
     finishReason: '',
 
+    teams: [],
+    teamUsers: [],
+    selectedTeamId: '',
+    selectedUserId: '',
+
+    showTransferModal: false,
+    transferSubcategoryId: '',
+    teamSubcategories: [],
+
+    async fetchTeams() {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        console.error("Token não localizado");
+        return;
+      }
+
+      if (this.teams.length === 0) {
+        const res = await fetch(`http://127.0.0.1:8000/teams`, {
+          method: "GET",
+          headers: {
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json"
+          }
+        })
+
+        if (!res.ok) {
+          console.error("Erro ao listar times", "error");
+          return;
+        }
+
+        this.teams = await res.json();
+        console.log("resposta da API:", res);
+        console.log("VARIAVEL TEAMS", this.teams)
+      }
+    },
+
+    async fetchTeamUsers() {
+      const token = localStorage.getItem("access_token");
+
+      const teamId = this.selectedTicket?.assigned_team_id
+
+      if (!token || !teamId) return;
+
+      const res = await fetch(`http://127.0.0.1:8000/teams/${teamId}/users`, {
+        method: "GET",
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        }
+      })
+
+      if (!res.ok) {
+        this.showToast("Erro ao listar usuários do time responsável", "error");
+        console.error("Erro na requisição -> ", res.status)
+      }
+
+      this.teamUsers = await res.json()
+
+      console.log(this.teamUsers);
+    },
+
+
+    async submitTicketTransfer(subcategoryId = null) {
+      const token = localStorage.getItem("access_token");
+
+      if (!token) {
+        this.showToast("Token inválido", "error");
+        return;
+      }
+
+      const ticketId = this.selectedTicket?.id;
+
+      if (!ticketId) {
+        this.showToast("Nenhum ticket selecionado", "error");
+        return;
+      }
+
+      // 🔥 PRIORIDADE: se selecionou usuário, vai pra usuário
+      if (this.selectedUserId) {
+
+        const res = await fetch(
+          `http://127.0.0.1:8000/tickets/${ticketId}/assign-agent/${this.selectedUserId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Authorization": "Bearer " + token,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+
+        if (!res.ok) {
+          this.showToast("Erro ao transferir para usuário", "error");
+          return;
+        }
+        this.showToast("Ticket transferido para usuário!", "success");
+
+      }
+      // 🔥 SENÃO: se selecionou time
+      else if (this.selectedTeamId) {
+        const res = await fetch(
+          `http://127.0.0.1:8000/tickets/${ticketId}/assign-team/${this.selectedTeamId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Authorization": "Bearer " + token,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+
+        if (!res.ok) {
+          this.showToast("Erro ao transferir para equipe", "error");
+          return;
+        }
+
+        this.showToast("Ticket enviado para fila da equipe!", "success");
+
+        await this.changeTicketSubcategory(this.selectedTicket.id, subcategoryId);
+
+
+      } else {
+        this.showToast("Selecione um time ou um usuário", "error");
+        return;
+      }
+
+      // 🔥 Atualiza tela
+      await this.getTicketById(ticketId);
+      await this.getSelectedTicketLogs(ticketId);
+
+      // 🔥 limpa seleção
+      this.selectedTeamId = '';
+      this.selectedUserId = '';
+    },
+
+    validateTransfer() {
+      if (!this.selectedTeamId && !this.selectedUserId) {
+        this.showToast("Selecione um destino para a transferência", "error");
+        return
+      }
+
+      console.log(this.selectedTeamId)
+
+      if (this.selectedTeamId && this.selectedTeamId != this.selectedTicket.assigned_team_id) {
+        this.fetchTeamSubcategories(this.selectedTeamId);
+        this.showTransferModal = true;
+        return;
+      }
+
+
+      this.submitTicketTransfer();
+
+    },
+
+    async fetchTeamSubcategories(categoryId) {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        console.error("Token não localizado")
+      }
+
+      const res = await fetch(`http://127.0.0.1:8000/subcategories?category_id=${categoryId}`, {
+        method: 'GET',
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        }
+      })
+      if (!res.ok) {
+        console.error("Erro ao buscar subcategorias do time");
+        this.showToast("Erro ao buscar subcategorias", "error");
+        return
+      }
+
+      this.teamSubcategories = await res.json();
+    },
+
+    async confirmTransferWithSubcategory() {
+
+      if (!this.transferSubcategoryId) {
+        this.showToast("Selecione uma subcategoria", "error");
+        return;
+      }
+
+      await this.submitTicketTransfer(this.transferSubcategoryId);
+
+      this.showTransferModal = false;
+    },
+
+    //ok
+    async changeTicketSubcategory(ticketId, transferSubcategoryId) {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        console.error("Token not found");
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/tickets/${ticketId}/subcategory`, {
+          method: "PUT",
+          headers: {
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            subcategory_id: transferSubcategoryId
+          })
+        })
+
+        if (!res.ok) {
+          console.error("Erro ao efetuar a mudança de subcategoria");
+          this.showToast("Erro ao transferir ticket", "error");
+          return
+        }
+      } catch (error) {
+        console.error("Erro ao trocar subcategoria do ticket", error);
+      }
+    },
+
+
     async goTo(page, cssPath) {
       if (this.currentPage === page) return
       this.currentPage = page;
@@ -61,6 +280,13 @@ function dashboard() {
       Alpine.store("app").categories = '';
       Alpine.store("app").subcategories = '';
 
+      this.teams = [];
+      this.teamUsers = [];
+      this.selectedTeamId = '';
+      this.selectedUserId = '';
+      this.transferMode = '';
+      this.loadingUsers = false
+
       // reset do estado do dashboard
       this.currentPage = "dashboard";
       this.currentTab = "all";
@@ -92,8 +318,9 @@ function dashboard() {
           console.log(data)
 
           this.ticketList = data;
-        } catch (e) {
-
+        } catch (error) {
+          console.error("Erro ao buscar tickets:", error);
+          this.showToast("Erro ao carregar tickets", "error");
         }
       } else {
         Alpine.store("app").currentView = "login";
@@ -327,7 +554,7 @@ function dashboard() {
 
       } else {
         console.log("Token não loclaizado, redirecionando para o login");
-        Alpine.store.currentView = "login";
+        Alpine.store("app").currentView = "login";
       }
     },
 
@@ -399,7 +626,7 @@ function dashboard() {
       }
     },
 
-    async createComment(commentData, showToast=true) {
+    async createComment(commentData, showToast = true) {
       const token = localStorage.getItem("access_token");
 
       console.log(commentData)
@@ -436,7 +663,7 @@ function dashboard() {
 
     async InitStayAlive() {
 
-      stayAlive(this.tokenExpire);
+      stayAlive(Alpine.store("app").tokenExpire);
 
     },
 
@@ -459,7 +686,7 @@ function dashboard() {
           ticket_id: ticketId,
           user_id: Alpine.store("app").userId,
           comment: this.finishReason
-          }, false
+        }, false
         );
 
         //cria o comentario 
@@ -538,7 +765,8 @@ function stayAlive(expireTimestamp) {
   const showAlertAt = timeleft - alertBefore
 
   if (showAlertAt <= 0) {
-    logout();
+    Alpine.store("app").currentView = "login";
+    localStorage.removeItem("access_token");
     return;
   }
 
@@ -556,7 +784,8 @@ function stayAlive(expireTimestamp) {
       const token = localStorage.getItem("access_token");
 
       if (!token) {
-        return logout();
+        Alpine.store("app").currentView = "login";
+        localStorage.removeItem("access_token");
       }
 
       try {
