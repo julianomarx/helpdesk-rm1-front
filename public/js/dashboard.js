@@ -23,6 +23,8 @@ function dashboard() {
     transferSubcategoryId: '',
     teamSubcategories: [],
 
+    previewAttachment: null,
+
     async fetchTeams() {
       const token = localStorage.getItem("access_token");
       if (!token) {
@@ -74,7 +76,6 @@ function dashboard() {
 
       console.log(this.teamUsers);
     },
-
 
     async submitTicketTransfer(subcategoryId = null) {
       const token = localStorage.getItem("access_token");
@@ -202,7 +203,6 @@ function dashboard() {
       this.showTransferModal = false;
     },
 
-    //ok
     async changeTicketSubcategory(ticketId, transferSubcategoryId) {
       const token = localStorage.getItem("access_token");
       if (!token) {
@@ -231,7 +231,6 @@ function dashboard() {
         console.error("Erro ao trocar subcategoria do ticket", error);
       }
     },
-
 
     async goTo(page, cssPath) {
       if (this.currentPage === page) return
@@ -392,6 +391,10 @@ function dashboard() {
 
     },
 
+    // refreshTicket() {
+    //   this.getTicket(this.selectedTicket.id);
+    // },
+
     async getSelectedTicketLogs(ticketId) {
       const token = localStorage.getItem("access_token");
 
@@ -478,8 +481,6 @@ function dashboard() {
       return [...this.selectedTicket.comments].reverse();
     },
 
-
-    // showToast função 
     showToast(message, type = "success") {
       const container = document.getElementById("toast-container");
       if (!container) return;
@@ -520,7 +521,6 @@ function dashboard() {
       }, 4200);
 
     },
-
 
     async createTicket(title, description, priority, hotelId, categoryId, subcategoryId) {
       const token = localStorage.getItem("access_token");
@@ -731,10 +731,40 @@ function dashboard() {
       } catch (err) {
         this.showToast("Erro ao adicionar mensagem de encerramento ao ticket", "error");
       }
+    },
+
+    async uploadAttachment(ticketId, file) {
+      const token = localStorage.getItem("access_token");
+
+      if (!file) return;
+
+      const formData = new FormData();
+
+      formData.append("file", file);
+
+      const res = await fetch(`http://127.0.0.1:8000/tickets/${ticketId}/attachments`, {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + token
+        },
+        body: formData
+      })
+
+      if (!res.ok) {
+        const error = await res.json();
+        this.showToast("Erro ao realizar upload do arquivo", "error");
+        return;
+      }
+
+      data = await res.json();
+
+      console.log(data);
+
+      await this.getTicketById(this.selectedTicket.id);
+      this.showToast("Arquivo enviado com sucesso", "success");
     }
   };
 }
-
 
 function hotelSelector(allHotels) {
   return {
