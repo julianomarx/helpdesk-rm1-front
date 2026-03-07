@@ -3,6 +3,7 @@ function dashboard() {
     currentPage: "dashboard",
     currentTab: "all",
     ticketViewTab: 'details',
+    loadingTickets: false,
     ticketList: [],
     selectedTicket: { comments: [] },
     selectedTicketLogs: [],
@@ -298,7 +299,15 @@ function dashboard() {
     },
 
     async getTickets() {
+
       const token = localStorage.getItem("access_token");
+
+      if (!token) {
+        Alpine.store("app").currentView = "login";
+      }
+
+      this.loadingTickets = true;
+
       if (token) {
         try {
           let res = await fetch("http://127.0.0.1:8000/tickets", {
@@ -318,9 +327,12 @@ function dashboard() {
           console.log(data)
 
           this.ticketList = data;
+
         } catch (error) {
           console.error("Erro ao buscar tickets:", error);
           this.showToast("Erro ao carregar tickets", "error");
+        } finally {
+          this.loadingTickets = false;
         }
       } else {
         Alpine.store("app").currentView = "login";

@@ -31,13 +31,10 @@
             Histórico
           </button>
 
-          <button class="tab-btn" 
-
-            @click="ticketViewTab = 'transferTicket'; 
+          <button class="tab-btn" @click="ticketViewTab = 'transferTicket'; 
                     fetchTeams();
                     fetchTeamUsers();
              "
-
             :class="ticketViewTab === 'transferTicket' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'">
             Transferir chamado
           </button>
@@ -191,17 +188,19 @@
           <!-- TIME -->
           <div class="mb-5">
             <label class="text-xs text-gray-400">
-              Transferir para TIME
+              Transferir para equipe
             </label>
 
             <select x-model="selectedTeamId" @change="selectedUserId=''" class="w-full mt-1 p-2 rounded-lg bg-gray-800
               border border-gray-700 text-sm 
               focus:ring-2 focus:ring-blue-600 focus:outline-none">
 
-              <option value="">Selecione um time</option>
+              <option value="">Selecione um equipe</option>
 
               <template x-for="team in teams" :key="team.id">
-                <option :value="team.id" x-text="team.name"></option>
+                <template x-if="team.id !== selectedTicket.assigned_team.id">
+                  <option :value="team.id" x-text="team.name"></option>
+                </template>
               </template>
             </select>
           </div>
@@ -213,7 +212,7 @@
           <!-- USUÁRIO -->
           <div class="mb-6">
             <label class="text-xs text-gray-400">
-              Transferir para USUÁRIO
+              Transferir para usuário
             </label>
 
             <select x-model="selectedUserId" @focus="fetchTeamUsers()" @change="selectedTeamId=''" class="w-full mt-1 p-2 rounded-lg bg-gray-800
@@ -223,7 +222,9 @@
               <option value="">Selecione um usuário</option>
 
               <template x-for="user in teamUsers" :key="user.id">
-                <option :value="user.id" x-text="user.name"></option>
+                <template x-if="user.id !== selectedTicket.assignee.id">
+                  <option :value="user.id" x-text="user.name"></option>
+                </template>
               </template>
             </select>
           </div>
