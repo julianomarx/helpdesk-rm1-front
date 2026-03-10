@@ -1,3 +1,5 @@
+const API_BASE = "/api";
+
 function dashboard() {
   return {
     currentPage: "dashboard",
@@ -33,7 +35,7 @@ function dashboard() {
       }
 
       if (this.teams.length === 0) {
-        const res = await fetch(`http://127.0.0.1:8000/teams`, {
+        const res = await fetch(`${API_BASE}/teams`, {
           method: "GET",
           headers: {
             "Authorization": "Bearer " + token,
@@ -59,7 +61,7 @@ function dashboard() {
 
       if (!token || !teamId) return;
 
-      const res = await fetch(`http://127.0.0.1:8000/teams/${teamId}/users`, {
+      const res = await fetch(`${API_BASE}/teams/${teamId}/users`, {
         method: "GET",
         headers: {
           "Authorization": "Bearer " + token,
@@ -96,7 +98,7 @@ function dashboard() {
       if (this.selectedUserId) {
 
         const res = await fetch(
-          `http://127.0.0.1:8000/tickets/${ticketId}/assign-agent/${this.selectedUserId}`,
+          `${API_BASE}/tickets/${ticketId}/assign-agent/${this.selectedUserId}`,
           {
             method: "PUT",
             headers: {
@@ -116,7 +118,7 @@ function dashboard() {
       // 🔥 SENÃO: se selecionou time
       else if (this.selectedTeamId) {
         const res = await fetch(
-          `http://127.0.0.1:8000/tickets/${ticketId}/assign-team/${this.selectedTeamId}`,
+          `${API_BASE}/tickets/${ticketId}/assign-team/${this.selectedTeamId}`,
           {
             method: "PUT",
             headers: {
@@ -175,7 +177,7 @@ function dashboard() {
         console.error("Token não localizado")
       }
 
-      const res = await fetch(`http://127.0.0.1:8000/subcategories?category_id=${categoryId}`, {
+      const res = await fetch(`${API_BASE}/subcategories?category_id=${categoryId}`, {
         method: 'GET',
         headers: {
           "Authorization": "Bearer " + token,
@@ -211,7 +213,7 @@ function dashboard() {
       }
 
       try {
-        const res = await fetch(`http://127.0.0.1:8000/tickets/${ticketId}/subcategory`, {
+        const res = await fetch(`${API_BASE}/tickets/${ticketId}/subcategory`, {
           method: "PUT",
           headers: {
             "Authorization": "Bearer " + token,
@@ -309,7 +311,7 @@ function dashboard() {
 
       if (token) {
         try {
-          let res = await fetch("http://127.0.0.1:8000/tickets", {
+          let res = await fetch(`${API_BASE}/tickets`, {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
@@ -369,7 +371,7 @@ function dashboard() {
       }
 
       try {
-        const res = await fetch(`http://127.0.0.1:8000/tickets/${ticketId}`, {
+        const res = await fetch(`${API_BASE}/tickets/${ticketId}`, {
           headers: { "Authorization": "Bearer " + token }
         });
 
@@ -404,7 +406,7 @@ function dashboard() {
       }
 
       try {
-        const res = await fetch(`http://127.0.0.1:8000/ticket-logs/${ticketId}`, {
+        const res = await fetch(`${API_BASE}/ticket-logs/${ticketId}`, {
           headers: {
             "Authorization": "Bearer " + token
           }
@@ -444,7 +446,7 @@ function dashboard() {
 
       try {
         const res = await fetch(
-          `http://127.0.0.1:8000/tickets/start-ticket/${ticketId}`,
+          `${API_BASE}/tickets/start-ticket/${ticketId}`,
           {
             method: "PUT",
             headers: {
@@ -532,7 +534,7 @@ function dashboard() {
         }
 
         try {
-          const res = await fetch("http://127.0.0.1:8000/tickets", {
+          const res = await fetch(`${API_BASE}/tickets`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -577,7 +579,7 @@ function dashboard() {
       if (token) {
         try {
           const body = userData
-          const res = await fetch("http://127.0.0.1:8000/users", {
+          const res = await fetch(`${API_BASE}/users`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -645,7 +647,7 @@ function dashboard() {
 
       if (token) {
         try {
-          const res = await fetch("http://127.0.0.1:8000/comments", {
+          const res = await fetch(`${API_BASE}/comments`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -702,7 +704,7 @@ function dashboard() {
         );
 
         //cria o comentario 
-        const res = await fetch(`http://127.0.0.1:8000/tickets/${ticketId}`, {
+        const res = await fetch(`${API_BASE}/tickets/${ticketId}`, {
           method: "PUT",
           headers: {
             "Authorization": "Bearer " + token,
@@ -742,7 +744,7 @@ function dashboard() {
 
       formData.append("file", file);
 
-      const res = await fetch(`http://127.0.0.1:8000/tickets/${ticketId}/attachments`, {
+      const res = await fetch(`${API_BASE}/tickets/${ticketId}/attachments`, {
         method: "POST",
         headers: {
           "Authorization": "Bearer " + token
@@ -756,7 +758,7 @@ function dashboard() {
         return;
       }
 
-      data = await res.json();
+      const data = await res.json();
 
       console.log(data);
 
@@ -833,7 +835,7 @@ function stayAlive(expireTimestamp) {
       try {
 
         //chama o back pra renovar o token
-        const res = await fetch("http://127.0.0.1:8000/auth/refresh", {
+        const res = await fetch(`${API_BASE}/auth/refresh`, {
           method: "POST",
           headers: {
             "Authorization": "Bearer " + token,

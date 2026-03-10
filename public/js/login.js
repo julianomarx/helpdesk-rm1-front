@@ -1,5 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("login-form");
+
+  const API_BASE = "/api";
+
   if (!loginForm) return;
 
   loginForm.addEventListener("submit", async (event) => {
@@ -9,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const password = document.getElementById("password").value;
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/auth/login", {
+      const res = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ username: email, password }),
