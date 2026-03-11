@@ -1,4 +1,7 @@
 document.addEventListener("alpine:init", () => {
+
+  const API_BASE = "/api";
+
   Alpine.store("app", {
     currentView: "loading",
     userId: '',
@@ -17,7 +20,7 @@ document.addEventListener("alpine:init", () => {
       }
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/auth/me", {
+        const res = await fetch(`${API_BASE}/auth/me`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
