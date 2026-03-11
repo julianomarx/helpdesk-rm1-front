@@ -35,7 +35,7 @@ function dashboard() {
       }
 
       if (this.teams.length === 0) {
-        const res = await fetch(`${API_BASE}/teams`, {
+        const res = await fetch(`${API_BASE}/teams/`, {
           method: "GET",
           headers: {
             "Authorization": "Bearer " + token,
@@ -61,7 +61,7 @@ function dashboard() {
 
       if (!token || !teamId) return;
 
-      const res = await fetch(`${API_BASE}/teams/${teamId}/users`, {
+      const res = await fetch(`${API_BASE}/teams/${teamId}/users/`, {
         method: "GET",
         headers: {
           "Authorization": "Bearer " + token,
@@ -311,7 +311,7 @@ function dashboard() {
 
       if (token) {
         try {
-          let res = await fetch(`${API_BASE}/tickets`, {
+          let res = await fetch(`${API_BASE}/tickets/`, {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
@@ -647,7 +647,7 @@ function dashboard() {
 
       if (token) {
         try {
-          const res = await fetch(`${API_BASE}/comments`, {
+          const res = await fetch(`${API_BASE}/comments/`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
