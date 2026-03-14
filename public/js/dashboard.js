@@ -177,7 +177,9 @@ function dashboard() {
         console.error("Token não localizado")
       }
 
-      const res = await fetch(`${API_BASE}/subcategories?category_id=${categoryId}`, {
+      console.log(`${API_BASE}/subcategories/?category_id=${categoryId}`);
+
+      const res = await fetch(`${API_BASE}/subcategories/?category_id=${categoryId}`, {
         method: 'GET',
         headers: {
           "Authorization": "Bearer " + token,
