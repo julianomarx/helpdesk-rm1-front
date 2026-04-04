@@ -536,7 +536,7 @@ function dashboard() {
         }
 
         try {
-          const res = await fetch(`${API_BASE}/tickets`, {
+          const res = await fetch(`${API_BASE}/tickets/`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
