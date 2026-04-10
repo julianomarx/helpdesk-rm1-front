@@ -476,12 +476,22 @@
           </template>
 
           <!-- Reabrir chamado -->
-          <template x-if="['done','awaiting_confirmation'].includes(selectedTicket.progress)">
+          <template x-if="selectedTicket.progress === 'done'">
             <button @click="reopenTicket()" class="w-full mt-3 px-3 py-2 
              bg-amber-600 hover:bg-amber-700 
              rounded-lg text-sm font-medium text-white 
              text-center shadow-md transition">
               Reabrir chamado
+            </button>
+          </template>
+
+          <!-- Rejeitar solução -->
+          <template x-if="selectedTicket.progress === 'awaiting_confirmation'">
+            <button @click="reopenTicket()" class="w-full mt-3 px-3 py-2 
+             bg-amber-600 hover:bg-amber-700 
+             rounded-lg text-sm font-medium text-white 
+             text-center shadow-md transition">
+              Retornar chamado para atendimento
             </button>
           </template>
 
