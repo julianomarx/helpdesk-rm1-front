@@ -462,7 +462,6 @@
         </div>
 
         <!-- BOTÃO DE AÇÃO -->
-        <!-- BOTÃO DE AÇÃO -->
         <div>
 
           <!-- Iniciar atendimento -->
@@ -487,7 +486,7 @@
 
           <!-- Rejeitar solução -->
           <template x-if="selectedTicket.progress === 'awaiting_confirmation'">
-            <button @click="reopenTicket()" class="w-full mt-3 px-3 py-2 
+            <button @click="returnTicketToQueue()" class="w-full mt-3 px-3 py-2 
              bg-amber-600 hover:bg-amber-700 
              rounded-lg text-sm font-medium text-white 
              text-center shadow-md transition">

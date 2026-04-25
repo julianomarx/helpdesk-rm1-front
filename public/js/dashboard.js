@@ -348,6 +348,14 @@ function dashboard() {
       return this.ticketList.filter(ticket => ticket.progress === this.currentTab);
     },
 
+    async refreshSelectedTicket() {
+      const ticketId = this.selectedTicket?.id;
+      if (!ticketId) return;
+
+       await this.getTicketById(ticketId);
+       await this.getSelectedTicketLogs(ticketId);
+    },
+
     async viewTicket(ticket) {
       //busca o ticket completo
       this.getTicketById(ticket.id);
@@ -393,10 +401,6 @@ function dashboard() {
       }
 
     },
-
-    // refreshTicket() {
-    //   this.getTicket(this.selectedTicket.id);
-    // },
 
     async getSelectedTicketLogs(ticketId) {
       const token = localStorage.getItem("access_token");
@@ -477,6 +481,99 @@ function dashboard() {
         console.error("Erro ao iniciar ticket:", error);
         this.showToast("Erro inesperado ao iniciar ticket", "error");
       }
+    },
+
+    async reopenTicket() {
+      const token = localStorage.getItem("access_token");
+
+      if (!token) {
+        Alpine.store("app").currentView = "login";
+        return;
+      }
+
+      const ticketId = this.selectedTicket?.id;
+
+      if (!ticketId) {
+        this.showToast("Nenhum ticket selecionado", "error");
+        return;
+      }
+      
+      try {  
+        const res = await fetch(
+          `${API_BASE}/tickets/reopen-ticket/${ticketId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Authorization": "Bearer " + token
+            }
+          }
+        );
+
+        if (!res.ok) {
+          const error = await res.json();
+          this.showToast(error.detail || "Erro ao reabrir ticket", "error");
+          return;
+        }
+
+        const updatedTicket = await res.json();
+
+        // Atualiza ticket na tela
+        this.selectedTicket = updatedTicket;
+
+        console.log("Console de CRIA: ", updatedTicket)
+
+        // Atualiza logs
+        await this.getSelectedTicketLogs(ticketId);
+
+        this.showToast("Ticket reaberto com sucesso!", "success");
+
+      } catch (error) {
+        console.error("Erro ao reabrir ticket:", error);
+        this.showToast("Erro inesperado ao reabrir ticket", "error");
+      }
+
+    },
+
+    async returnTicketToQueue() {
+      const token = localStorage.getItem("access_token");
+
+      if (!token) {
+        Alpine.store("app").currentView = "login";
+        return;
+      }
+
+      const ticketId = this.selectedTicket?.id
+
+      if (!ticketId) {
+        this.showToast("Nenhum ticket selecionado", "error");
+        return;
+      }
+
+      try {
+
+        const res = await fetch(
+          `${API_BASE}/tickets/return-ticket/${ticketId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Authorization" : "Bearer " + token
+            }
+          }
+        )
+
+        if (!res.ok) {
+          const error = await res.json();
+          this.showToast(error.detail || "Erro ao retornar ticket", "error")
+        }
+
+      } catch (error) {
+        console.error("Erro ao retornar ticket", error)
+        return;
+      }
+
+      await this.refreshSelectedTicket();
+      this.showToast("Ticket retornado para fila!", "success"); 
+    
     },
 
     get orderedComments() {
