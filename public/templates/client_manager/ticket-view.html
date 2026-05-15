@@ -37,13 +37,16 @@
             Anexos
           </button>
 
-          <button class="tab-btn" @click="ticketViewTab = 'transferTicket'; 
-                    fetchTeams();
-                    fetchTeamUsers();
-             "
-            :class="ticketViewTab === 'transferTicket' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'">
-            Transferir chamado
-          </button>
+          <template x-if="['admin', 'agent'].includes($store.app.role)">
+            <button class="tab-btn" @click="
+             ticketViewTab = 'transferTicket'; 
+             fetchTeams();
+             fetchTeamUsers();
+            "
+              :class="ticketViewTab === 'transferTicket' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'">
+              Transferir chamado
+            </button>
+          </template>
 
         </div>
       </div>
@@ -465,7 +468,10 @@
         <div>
 
           <!-- Iniciar atendimento -->
-          <template x-if="selectedTicket.progress === 'waiting'">
+          <template x-if="
+            selectedTicket.progress === 'waiting' &&
+            ['admin', 'agent'].includes($store.app.role)
+          ">
             <button @click="startTicket()" class="w-full mt-3 px-3 py-2 
              bg-blue-700 hover:bg-blue-800 
              rounded-lg text-sm font-medium text-white 
@@ -491,6 +497,19 @@
              rounded-lg text-sm font-medium text-white 
              text-center shadow-md transition">
               Retornar chamado para atendimento
+            </button>
+          </template>
+
+          <!-- Aceitar solução -->
+          <template x-if="
+            selectedTicket.progress === 'awaiting_confirmation' && 
+            ['cliente_manager', 'clinte_receptionist','admin'].includes($store.app.role)
+              ">
+            <button @click="closeTicket()" class="w-full mt-3 px-3 py-2 
+             bg-emerald-600 hover:bg-emerald-700 
+             rounded-lg text-sm font-medium text-white 
+             text-center shadow-md transition">
+              Aceitar resolução
             </button>
           </template>
 

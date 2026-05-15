@@ -93,29 +93,46 @@ function dashboard() {
         return;
       }
 
-      // 🔥 PRIORIDADE: se selecionou usuário, vai pra usuário
       if (this.selectedUserId) {
 
-        const res = await fetch(
-          `${API_BASE}/tickets/${ticketId}/assign-agent/${this.selectedUserId}`,
-          {
-            method: "PUT",
-            headers: {
-              "Authorization": "Bearer " + token,
-              "Content-Type": "application/json"
-            }
-          }
-        );
-
-        if (!res.ok) {
-          this.showToast("Erro ao transferir para usuário", "error");
+        //valida antes se o ticket está em atendimento 
+        if (this.selectedTicket.progress == 'waiting') {
+          this.showToast("Obrigatório iniciar atendimento antes de transferir o ticket para outro usuário", "error");
           return;
         }
-        this.showToast("Ticket transferido para usuário!", "success");
+
+        try {
+          const res = await fetch(
+            `${API_BASE}/tickets/${ticketId}/assign-agent/${this.selectedUserId}`,
+            {
+              method: "PUT",
+              headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+              }
+            }
+          );
+  
+          if (!res.ok) {
+            this.showToast("Erro ao transferir para usuário", "error");
+            return;
+          }
+
+          this.showToast("Ticket transferido para usuário!", "success");
+
+        } catch (error) {
+            console.error(error)
+        }
 
       }
-      // 🔥 SENÃO: se selecionou time
+      
       else if (this.selectedTeamId) {
+
+        if (!subcategoryId) {
+          this.showToast("Selecione uma subcategoria", "error");
+          return;
+        }
+
         const res = await fetch(
           `${API_BASE}/tickets/${ticketId}/assign-team/${this.selectedTeamId}`,
           {
@@ -132,9 +149,8 @@ function dashboard() {
           return;
         }
 
+        await this.changeTicketSubcategory(ticketId, subcategoryId);
         this.showToast("Ticket enviado para fila da equipe!", "success");
-
-        await this.changeTicketSubcategory(this.selectedTicket.id, subcategoryId);
 
 
       } else {
@@ -142,32 +158,45 @@ function dashboard() {
         return;
       }
 
-      // 🔥 Atualiza tela
-      await this.getTicketById(ticketId);
-      await this.getSelectedTicketLogs(ticketId);
+      await this.refreshSelectedTicket();
 
-      // 🔥 limpa seleção
       this.selectedTeamId = '';
       this.selectedUserId = '';
+      this.transferSubcategoryId = '';
     },
 
     validateTransfer() {
+
+      //Nada selelcionado
       if (!this.selectedTeamId && !this.selectedUserId) {
         this.showToast("Selecione um destino para a transferência", "error");
-        return
-      }
-
-      console.log(this.selectedTeamId)
-
-      if (this.selectedTeamId && this.selectedTeamId != this.selectedTicket.assigned_team_id) {
-        this.fetchTeamSubcategories(this.selectedTeamId);
-        this.showTransferModal = true;
         return;
       }
 
+      //console.log(this.selectedTeamId)
+      console.log({
+        selectedTeamId: this.selectedTeamId,
+        selectedUserId: this.selectedUserId,
+        typeUser: typeof this.selectedUserId,
+        typeTeam: typeof this.selectedTeamId,
+      })
 
-      this.submitTicketTransfer();
+      //transfer to user
+      if (this.selectedUserId) {
+        this.submitTicketTransfer();
+        return;
+      }
 
+      //transfer to team
+      if (this.selectedTeamId) {
+        this.transferSubcategoryId = '';
+
+        this.fetchTeamSubcategories(this.selectedTeamId);
+
+        this.showTransferModal = true;
+
+        return;
+      }
     },
 
     async fetchTeamSubcategories(categoryId) {
@@ -245,7 +274,7 @@ function dashboard() {
       try {
 
         const role = Alpine.store("app").role
-        const res = await fetch(`/templates/${role}/${page}.html`);
+        const res = await fetch(`/templates/${page}.html`);
         if (!res.ok) throw new Error("Template não encontrado");
         const html = await res.text();
         container.innerHTML = html;
@@ -357,16 +386,18 @@ function dashboard() {
     },
 
     async viewTicket(ticket) {
-      //busca o ticket completo
-      this.getTicketById(ticket.id);
 
-      // limpa logs antigos
+
+       // limpa logs antigos
       this.selectedTicketLogs = [];
 
       //Define como details a tab para sempre abrir na aba detalhes
       this.ticketViewTab = 'details';
 
-      await this.getSelectedTicketLogs(ticket.id)
+      //busca o ticket completo
+      await this.getTicketById(ticket.id);
+
+      //await this.getSelectedTicketLogs(ticket.id)
 
       this.goTo("ticket-view");
 
@@ -473,7 +504,7 @@ function dashboard() {
         this.selectedTicket = updatedTicket;
 
         // Atualiza logs
-        await this.getSelectedTicketLogs(ticketId);
+        await this.refreshSelectedTicket();
 
         this.showToast("Ticket iniciado com sucesso!", "success");
 
@@ -481,6 +512,42 @@ function dashboard() {
         console.error("Erro ao iniciar ticket:", error);
         this.showToast("Erro inesperado ao iniciar ticket", "error");
       }
+    },
+
+    async closeTicket() {
+      const token = localStorage.getItem("access_token");
+
+      if (!token) {
+        Alpine.store("app").currentView = "login";
+        return;
+      }
+
+      const ticketId = this.selectedTicket?.id;
+
+      try {
+        const res = await fetch(`${API_BASE}/tickets/close-ticket/${ticketId}`, {
+          method: "PUT",
+          headers: {
+            "Authorization": "Bearer " + token
+          }
+        });
+
+        if(!res.ok) {
+          const error = await res.json();
+          this.showToast(error.detail || "Erro ao encerrar ticket", "error")
+        }
+
+        const updatedTicket = await res.json();
+
+        this.showToast("Ticket finalizado", "success")
+
+        await this.refreshSelectedTicket();
+        
+      } catch (error) {
+        console.error("Erro ao reabrir encerrar:", error);
+        this.showToast("Erro inesperado ao encerrar ticket", "error");
+      }
+
     },
 
     async reopenTicket() {
@@ -518,12 +585,7 @@ function dashboard() {
         const updatedTicket = await res.json();
 
         // Atualiza ticket na tela
-        this.selectedTicket = updatedTicket;
-
-        console.log("Console de CRIA: ", updatedTicket)
-
-        // Atualiza logs
-        await this.getSelectedTicketLogs(ticketId);
+        await this.refreshSelectedTicket();
 
         this.showToast("Ticket reaberto com sucesso!", "success");
 
@@ -677,7 +739,7 @@ function dashboard() {
       if (token) {
         try {
           const body = userData
-          const res = await fetch(`${API_BASE}/users`, {
+          const res = await fetch(`${API_BASE}/users/`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
