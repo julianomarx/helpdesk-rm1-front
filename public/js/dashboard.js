@@ -1022,6 +1022,7 @@ function dashboard() {
             console.error("Erro detalhado:", errorData)
 
             this.showToast("Erro ao criar usuário", "error");
+            return;
           }
 
 

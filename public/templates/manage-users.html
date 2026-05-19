@@ -37,40 +37,45 @@
         </div>
 
         <!-- HOTEL -->
-        <div>
-          <label class="block text-xs mb-1">
-            Hotel
-          </label>
 
-          <select
-            x-model="filters.hotelId"
-            :disabled="$store.app.role === 'client_manager' || $store.app.role === 'client_receptionist' "
-            class="w-full p-2 rounded-md
-                   bg-gray-800/90 border border-white/10
-                   focus:ring-1 focus:ring-blue-500
-                   focus:outline-none text-sm
-                   disabled:opacity-50">
 
-            <option value="">
-              Todos hotéis
-            </option>
+        <template x-if="['admin', 'agent'].includes($store.app.role)">
+          <div>
+            <label class="block text-xs mb-1">
+              Hotel
+            </label>
 
-            <template
-              x-for="hotel in $store.app.hotels"
-              :key="hotel.id">
+            <select 
+              x-model="filters.hotelId"
+              :disabled="$store.app.role === 'client_manager' || $store.app.role === 'client_receptionist' "
+              class="w-full p-2 rounded-md
+                    bg-gray-800/90 border border-white/10
+                    focus:ring-1 focus:ring-blue-500
+                    focus:outline-none text-sm
+                    disabled:opacity-50">
 
-              <option
-                :value="hotel.id"
-                x-text="hotel.code + ' - ' + hotel.name">
+              <option  value="">
+                Todos hotéis
               </option>
 
-            </template>
+              <template
+                x-for="hotel in $store.app.hotels"
+                :key="hotel.id">
 
-          </select>
-        </div>
+                <option
+                  :value="hotel.id"
+                  x-text="hotel.code + ' - ' + hotel.name">
+                </option>
+
+              </template>
+
+            </select>
+          </div>
+        </template>
 
         <!-- ROLE -->
-        <div>
+        <template x-if="['admin', 'agent'].includes($store.app.role)">
+          <div>
           <label class="block text-xs mb-1">
             Função
           </label>
@@ -106,6 +111,7 @@
 
           </select>
         </div>
+        </template>
 
         <!-- BTN -->
         <button
