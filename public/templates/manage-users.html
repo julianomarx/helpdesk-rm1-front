@@ -1,93 +1,90 @@
 <div
-  class="flex flex-1 gap-5 p-4 overflow-hidden text-gray-200"">
+  class="flex flex-col flex-1 min-h-0 gap-5 p-4 text-gray-200">
 
-  <!-- LEFT -->
-  <div class="flex flex-col w-[420px] shrink-0">
+  <!-- HEADER -->
+  <div class="shrink-0">
+    <h1 class="font-bold text-gray-200 border-b border-gray-400 pb-1">
+      Gerenciar Usuários
+    </h1>
+  </div>
 
-    <!-- HEADER -->
-    <div class="p-1 rounded-t-lg">
-      <h1 class="font-bold text-gray-200 border-b border-gray-400">
-        Gerenciar Usuários
-      </h1>
-    </div>
+  <!-- FILTERS -->
+  <div
+    class="p-5 shrink-0
+           bg-gray-900/40 backdrop-blur-xl backdrop-saturate-150
+           border border-white/10 rounded-2xl shadow-xl">
 
-    <!-- FILTER CARD -->
-    <div
-      class="mt-5 p-5
-             bg-gray-900/40 backdrop-blur-xl backdrop-saturate-150
-             border border-white/10 rounded-2xl shadow-xl">
+    <div class="flex flex-wrap items-end gap-4">
 
-      <div class="flex flex-col gap-4">
+      <!-- SEARCH -->
+      <div class="flex-[2] min-w-[280px]">
 
-        <!-- SEARCH -->
-        <div>
+        <label class="block text-xs mb-1">
+          Buscar usuário
+        </label>
+
+        <input
+          type="text"
+          x-model="filters.search"
+          placeholder="Nome do usuário..."
+          class="w-full p-3 rounded-xl
+                 bg-gray-800/50 border border-white/10
+                 focus:ring-1 focus:ring-blue-500
+                 focus:outline-none text-sm
+                 placeholder-gray-400">
+      </div>
+
+      <!-- HOTEL -->
+      <template x-if="['admin','agent'].includes($store.app.role)">
+
+        <div class="flex-1 min-w-[220px]">
+
           <label class="block text-xs mb-1">
-            Buscar usuário
+            Hotel
           </label>
 
-          <input
-            type="text"
-            x-model="filters.search"
-            placeholder="Nome do usuário..."
-            class="w-full p-2 rounded-md
-                   bg-gray-800/50 border border-white/10
+          <select
+            x-model="filters.hotelId"
+            class="w-full p-3 rounded-xl
+                   bg-gray-800/90 border border-white/10
                    focus:ring-1 focus:ring-blue-500
-                   focus:outline-none text-sm
-                   placeholder-gray-400">
-        </div>
+                   focus:outline-none text-sm">
 
-        <!-- HOTEL -->
+            <option value="">
+              Todos hotéis
+            </option>
 
+            <template
+              x-for="hotel in $store.app.hotels"
+              :key="hotel.id">
 
-        <template x-if="['admin', 'agent'].includes($store.app.role)">
-          <div>
-            <label class="block text-xs mb-1">
-              Hotel
-            </label>
-
-            <select 
-              x-model="filters.hotelId"
-              :disabled="$store.app.role === 'client_manager' || $store.app.role === 'client_receptionist' "
-              class="w-full p-2 rounded-md
-                    bg-gray-800/90 border border-white/10
-                    focus:ring-1 focus:ring-blue-500
-                    focus:outline-none text-sm
-                    disabled:opacity-50">
-
-              <option  value="">
-                Todos hotéis
+              <option
+                :value="hotel.id"
+                x-text="hotel.code + ' - ' + hotel.name">
               </option>
 
-              <template
-                x-for="hotel in $store.app.hotels"
-                :key="hotel.id">
+            </template>
 
-                <option
-                  :value="hotel.id"
-                  x-text="hotel.code + ' - ' + hotel.name">
-                </option>
+          </select>
+        </div>
 
-              </template>
+      </template>
 
-            </select>
-          </div>
-        </template>
+      <!-- ROLE -->
+      <template x-if="['admin','agent'].includes($store.app.role)">
 
-        <!-- ROLE -->
-        <template x-if="['admin', 'agent'].includes($store.app.role)">
-          <div>
+        <div class="flex-1 min-w-[220px]">
+
           <label class="block text-xs mb-1">
             Função
           </label>
 
           <select
             x-model="filters.role"
-            :disabled="$store.app.role === 'client_manager' || $store.app.role === 'client_receptionist' "
-            class="w-full p-2 rounded-md
+            class="w-full p-3 rounded-xl
                    bg-gray-800/90 border border-white/10
                    focus:ring-1 focus:ring-blue-500
-                   focus:outline-none text-sm
-                   disabled:opacity-50">
+                   focus:outline-none text-sm">
 
             <option value="">
               Todas
@@ -111,314 +108,546 @@
 
           </select>
         </div>
-        </template>
 
-        <!-- BTN -->
+      </template>
+
+      <!-- BUTTON -->
+      <div class="w-[220px]">
+
         <button
           @click="fetchUsers()"
           class="w-full
                  bg-blue-600/90 hover:bg-blue-700
                  transition-colors
-                 py-2 rounded-lg
+                 py-3 rounded-xl
                  text-sm font-semibold
                  shadow-md">
 
           Buscar usuários
 
         </button>
+
       </div>
+
     </div>
 
-    <!-- LIST -->
-    <div
-      class="flex-1 mt-5 p-4
-             bg-gray-900/40 backdrop-blur-xl backdrop-saturate-150
-             border border-white/10 rounded-2xl shadow-xl
-             overflow-hidden">
-
-      <div class="flex justify-between mb-4">
-
-        <span class="font-semibold">
-          Usuários
-        </span>
-
-        <span
-          class="text-xs text-gray-400"
-          x-text="listedUsers.length + ' encontrados'">
-        </span>
-
-      </div>
-
-      <div class="overflow-y-auto h-full pr-1 flex flex-col gap-3">
-
-        <template
-          x-for="user in listedUsers"
-          :key="user.id">
-
-          <div
-            class="rounded-2xl border border-white/10
-                   bg-gray-800/50 p-4">
-
-            <div class="flex justify-between items-start">
-
-              <div>
-
-                <div
-                  class="font-semibold"
-                  x-text="user.name">
-                </div>
-
-                <div
-                  class="text-xs text-gray-400"
-                  x-text="user.email">
-                </div>
-
-                <!-- BADGE -->
-                <div class="mt-3">
-
-                  <span
-                    class="text-xs rounded-full px-3 py-1 font-semibold"
-                    :class="roleMeta(user.role).class"
-                    x-text="roleMeta(user.role).label">
-                  </span>
-
-                </div>
-              </div>
-
-              <button
-                @click="selectUser(user)"
-                class="w-10 h-10 rounded-xl
-                       bg-gray-700 hover:bg-blue-600
-                       transition">
-
-                ✏️
-
-              </button>
-            </div>
-          </div>
-        </template>
-      </div>
-    </div>
   </div>
 
-  <!-- RIGHT -->
-  <div class="flex flex-1 flex-col">
+  <!-- TABLE -->
+  <div
+    class="flex flex-col flex-1 min-h-0
+           bg-gray-900/40 backdrop-blur-xl backdrop-saturate-150
+           border border-white/10 rounded-2xl shadow-xl
+           overflow-hidden">
 
+    <!-- HEADER -->
     <div
-      class="mt-8 p-5
-             bg-gray-900/40 backdrop-blur-xl backdrop-saturate-150
-             border border-white/10 rounded-2xl shadow-xl
-             h-full overflow-y-auto">
+      class="flex items-center px-5 py-4
+             border-b border-white/10
+             text-xs uppercase tracking-wide
+             text-gray-400 shrink-0">
 
-      <template x-if="editor.user">
+      <div class="flex-[1.5]">
+        Nome
+      </div>
 
-        <div>
+      <div class="flex-[2]">
+        Email
+      </div>
 
-          <!-- HEADER -->
+      <div class="flex-1">
+        Função
+      </div>
+
+      <div class="w-24 text-center">
+        Hotéis
+      </div>
+
+      <div class="w-20 text-right">
+        Abrir
+      </div>
+
+    </div>
+
+    <!-- BODY -->
+    <div class="flex-1 overflow-y-auto">
+
+      <template
+        x-for="user in listedUsers"
+        :key="user.id">
+
+        <div
+          @click="selectUser(user); showUserModal = true"
+          class="flex items-center px-5 py-4
+                 border-b border-white/5
+                 hover:bg-white/5
+                 cursor-pointer transition">
+
+          <!-- NAME -->
           <div
-            class="flex items-center justify-between mb-5">
-
-            <div>
-              <h2 class="font-bold text-lg">
-                Editar usuário
-              </h2>
-
-              <p class="text-xs text-gray-400">
-                Atualize informações do usuário
-              </p>
-            </div>
-
-            <button
-              @click="editor.enabled = !editor.enabled"
-              class="bg-blue-600 hover:bg-blue-700
-                     px-4 py-2 rounded-lg
-                     text-sm font-semibold">
-
-              ✏️ Editar usuário
-
-            </button>
+            class="flex-[1.5] font-medium text-gray-100 truncate"
+            x-text="user.name">
           </div>
 
-          <!-- NAME + EMAIL -->
-          <div class="flex gap-4">
-
-            <div class="flex-1 mb-4">
-              <label class="block text-xs mb-1">
-                Nome
-              </label>
-
-              <input
-                x-model="editor.user.name"
-                :disabled="!editor.enabled"
-                class="w-full p-2 rounded-md
-                       bg-gray-800/50 border border-white/10
-                       disabled:opacity-50">
-            </div>
-
-            <div class="flex-1 mb-4">
-              <label class="block text-xs mb-1">
-                Email
-              </label>
-
-              <input
-                x-model="editor.user.email"
-                :disabled="!editor.enabled"
-                class="w-full p-2 rounded-md
-                       bg-gray-800/50 border border-white/10
-                       disabled:opacity-50">
-            </div>
+          <!-- EMAIL -->
+          <div
+            class="flex-[2] text-sm text-gray-400 truncate"
+            x-text="user.email">
           </div>
 
           <!-- ROLE -->
-          <div class="mb-4">
-            <label class="block text-xs mb-1">
-              Função
-            </label>
+          <div class="flex-1">
 
-            <select
-              x-model="editor.user.role"
-              :disabled="!editor.enabled"
-              class="w-full p-2 rounded-md
-                     bg-gray-800/90 border border-white/10
-                     disabled:opacity-50">
+            <span
+              class="text-xs rounded-full px-3 py-1 font-semibold"
+              :class="roleMeta(user.role).class"
+              x-text="roleMeta(user.role).label">
+            </span>
 
-              <option value="admin">
-                Admin
-              </option>
-
-              <option value="agent">
-                Suporte
-              </option>
-
-              <option value="client_manager">
-                Gerente
-              </option>
-
-              <option value="client_receptionist">
-                Recepcionista
-              </option>
-
-            </select>
-          </div>
-
-          <!-- PASSWORD -->
-          <div class="mb-4">
-            <label class="block text-xs mb-1">
-              Nova senha
-            </label>
-
-            <input
-              type="password"
-              x-model="editor.password"
-              :disabled="!editor.enabled"
-              placeholder="Opcional"
-              class="w-full p-2 rounded-md
-                     bg-gray-800/50 border border-white/10
-                     disabled:opacity-50">
           </div>
 
           <!-- HOTELS -->
-          <div class="mb-4">
-
-            <label class="block text-xs mb-2">
-              Hotéis
-            </label>
-
-            <div class="flex gap-4">
-
-              <!-- AVAILABLE -->
-              <div
-                class="flex-1 p-4 rounded-2xl
-                       bg-gray-800/50 border border-white/10">
-
-                <input
-                  x-model="hotelSearch"
-                  placeholder="Buscar hotel..."
-                  class="w-full p-2 mb-3 rounded-md
-                         bg-gray-900 border border-white/10">
-
-                <div
-                  class="max-h-64 overflow-y-auto flex flex-col gap-2">
-
-                  <template
-                    x-for="hotel in filteredHotels"
-                    :key="hotel.id">
-
-                    <button
-                      @click="addHotel(hotel)"
-                      :disabled="!editor.enabled"
-                      class="text-left p-2 rounded-lg
-                             bg-gray-700 hover:bg-gray-600">
-
-                      <span
-                        x-text="hotel.code + ' - ' + hotel.name">
-                      </span>
-
-                    </button>
-
-                  </template>
-                </div>
-              </div>
-
-              <!-- SELECTED -->
-              <div
-                class="flex-1 p-4 rounded-2xl
-                       bg-gray-800/50 border border-white/10">
-
-                <div
-                  class="max-h-80 overflow-y-auto flex flex-col gap-2">
-
-                  <template
-                    x-for="hotel in editor.user.hotels"
-                    :key="hotel.id">
-
-                    <div
-                      class="flex items-center justify-between
-                             p-2 rounded-lg bg-gray-700">
-
-                      <span
-                        class="text-sm"
-                        x-text="hotel.name">
-                      </span>
-
-                      <button
-                        @click="removeHotel(hotel)"
-                        :disabled="!editor.enabled">
-
-                        ❌
-
-                      </button>
-                    </div>
-
-                  </template>
-                </div>
-              </div>
-
-            </div>
+          <div
+            class="w-24 text-center text-sm text-gray-400"
+            x-text="user.hotels?.length || 0">
           </div>
 
-          <!-- SAVE -->
+          <!-- ACTION -->
+          <div class="w-20 text-right text-gray-500">
+            →
+          </div>
+
+        </div>
+
+      </template>
+
+      <!-- EMPTY -->
+      <template x-if="listedUsers.length === 0">
+
+        <div
+          class="flex items-center justify-center
+                 h-full text-gray-500 text-sm">
+
+          Nenhum usuário encontrado
+
+        </div>
+
+      </template>
+
+    </div>
+
+  </div>
+
+  <!-- MODAL -->
+  <div
+    x-show="showUserModal"
+    x-transition.opacity
+    class="fixed inset-0 z-50
+           bg-black/40 backdrop-blur-sm
+           flex items-center justify-center">
+
+    <div
+      @click.outside="showUserModal = false"
+      class="bg-gray-800/40 backdrop-blur-2xl
+             border border-white/10
+             rounded-[32px]
+             shadow-2xl
+             w-[94vw]
+             max-w-7xl
+             h-[82vh]
+             p-6
+             flex flex-col
+             backdrop-saturate-150">
+
+      <!-- HEADER -->
+      <div class="flex items-center justify-between mb-5 shrink-0">
+
+        <div>
+
+          <h2 class="font-bold text-xl">
+            Editar usuário
+          </h2>
+
+          <p class="text-xs text-gray-400">
+            Atualize informações do usuário
+          </p>
+
+        </div>
+
+        <div class="flex gap-3">
+
           <button
-            x-show="editor.enabled"
-            @click="saveUser()"
-            class="w-full
-                   bg-emerald-600 hover:bg-emerald-700
-                   transition-colors
-                   py-2 rounded-lg
+            @click="editor.enabled = !editor.enabled"
+            class="bg-blue-600 hover:bg-blue-700
+                   px-4 py-2 rounded-xl
                    text-sm font-semibold">
 
-            Salvar alterações
+            <span
+              x-text="editor.enabled
+                ? 'Cancelar edição'
+                : 'Editar usuário'">
+            </span>
+
+          </button>
+
+          <button
+            @click="showUserModal = false"
+            class="bg-gray-700 hover:bg-gray-600
+                   px-4 py-2 rounded-xl
+                   text-sm">
+
+            Fechar
 
           </button>
 
         </div>
+
+      </div>
+
+      <template x-if="editor.user">
+
+        <div class="flex flex-col flex-1 min-h-0">
+
+          <!-- FORM -->
+          <div class="flex flex-col flex-1 min-h-0">
+
+            <!-- ROW 1 -->
+            <div class="flex gap-4 mb-4 shrink-0">
+
+              <!-- NOME -->
+              <div class="flex flex-col flex-1 min-w-0">
+
+                <label class="block text-xs mb-1">
+                  Nome
+                </label>
+
+                <input
+                  type="text"
+                  x-model="editor.user.name"
+                  :disabled="!editor.enabled"
+                  class="w-full p-3 rounded-xl
+                         bg-gray-800/50 border border-white/10
+                         disabled:opacity-50
+                         focus:outline-none
+                         focus:ring-1 focus:ring-blue-500">
+              </div>
+
+              <!-- EMAIL -->
+              <div class="flex flex-col flex-1 min-w-0">
+
+                <label class="block text-xs mb-1">
+                  Email
+                </label>
+
+                <input
+                  type="email"
+                  x-model="editor.user.email"
+                  :disabled="!editor.enabled"
+                  class="w-full p-3 rounded-xl
+                         bg-gray-800/50 border border-white/10
+                         disabled:opacity-50
+                         focus:outline-none
+                         focus:ring-1 focus:ring-blue-500">
+              </div>
+
+            </div>
+
+            <!-- ROW 2 -->
+            <div class="flex gap-4 mb-5 shrink-0">
+
+              <!-- ROLE -->
+              <div class="flex flex-col flex-1 min-w-0">
+
+                <label class="block text-xs mb-1">
+                  Função
+                </label>
+
+                <select
+                  x-model="editor.user.role"
+                  :disabled="!editor.enabled"
+                  class="w-full p-3 rounded-xl
+                         bg-gray-800/50 border border-white/10
+                         disabled:opacity-50">
+
+                  <option value="admin">
+                    Admin
+                  </option>
+
+                  <option value="agent">
+                    Suporte
+                  </option>
+
+                  <option value="client_manager">
+                    Gerente
+                  </option>
+
+                  <option value="client_receptionist">
+                    Recepcionista
+                  </option>
+
+                </select>
+              </div>
+
+              <!-- PASSWORD -->
+              <div class="flex flex-col flex-1 min-w-0">
+
+                <label class="block text-xs mb-1">
+                  Nova senha
+                </label>
+
+                <input
+                  type="password"
+                  x-model="editor.password"
+                  :disabled="!editor.enabled"
+                  placeholder="Deixe vazio para manter"
+                  class="w-full p-3 rounded-xl
+                         bg-gray-800/50 border border-white/10
+                         disabled:opacity-50
+                         focus:outline-none
+                         focus:ring-1 focus:ring-blue-500">
+              </div>
+
+            </div>
+
+            <!-- HOTELS -->
+            <div
+              class="flex flex-col flex-1 min-h-0"
+              x-show="!(
+                editor.user.role === 'admin' ||
+                editor.user.role === 'agent'
+              )">
+
+              <!-- TITLE -->
+              <div class="mb-3 shrink-0">
+
+                <label class="block text-xs mb-2">
+                  Hotéis vinculados
+                </label>
+
+                <input
+                  type="text"
+                  x-model="hotelSearch"
+                  :disabled="!editor.enabled"
+                  placeholder="Buscar hotel por nome ou código..."
+                  class="w-full p-3 rounded-xl
+                         bg-gray-800/40 border border-white/10
+                         focus:ring-1 focus:ring-blue-500
+                         focus:outline-none
+                         disabled:opacity-50
+                         placeholder-gray-400 text-sm">
+              </div>
+
+              <!-- LISTS -->
+              <div class="flex gap-5 flex-1 min-h-0">
+
+                <!-- DISPONÍVEIS -->
+                <div
+                  class="flex flex-col flex-1 min-h-0
+                         rounded-3xl overflow-hidden
+                         border border-white/10
+                         bg-gray-900/40 backdrop-blur-md">
+
+                  <!-- HEADER -->
+                  <div
+                    class="flex items-center justify-between
+                           px-4 py-3 shrink-0
+                           border-b border-white/10">
+
+                    <span class="text-xs font-semibold text-gray-300">
+                      Disponíveis
+                    </span>
+
+                    <span
+                      class="text-[11px] text-gray-500"
+                      x-text="filteredHotels.length">
+                    </span>
+
+                  </div>
+
+                  <!-- BODY -->
+                  <div
+                    class="flex-1 overflow-y-auto
+                           p-2 space-y-2">
+
+                    <template
+                      x-for="hotel in filteredHotels"
+                      :key="hotel.id">
+
+                      <div
+                        class="flex items-center justify-between
+                               px-3 py-3 rounded-2xl
+                               bg-gray-900/30
+                               border border-transparent
+                               hover:border-white/10
+                               hover:bg-gray-700/20
+                               transition">
+
+                        <div class="min-w-0">
+
+                          <div
+                            class="text-xs font-medium truncate"
+                            x-text="hotel.code">
+                          </div>
+
+                          <div
+                            class="text-[11px] text-gray-400 truncate"
+                            x-text="hotel.name">
+                          </div>
+
+                        </div>
+
+                        <button
+                          type="button"
+                          :disabled="!editor.enabled"
+                          @click="addHotel(hotel)"
+                          class="ml-3 shrink-0
+                                 w-9 h-9 rounded-xl
+                                 bg-emerald-500/10
+                                 text-emerald-300
+                                 hover:bg-emerald-500/20
+                                 disabled:opacity-40
+                                 transition">
+
+                          +
+
+                        </button>
+
+                      </div>
+
+                    </template>
+
+                  </div>
+
+                </div>
+
+                <!-- VINCULADOS -->
+                <div
+                  class="flex flex-col flex-1 min-h-0
+                         rounded-3xl overflow-hidden
+                         border border-white/10
+                         bg-gray-900/40 backdrop-blur-md">
+
+                  <!-- HEADER -->
+                  <div
+                    class="flex items-center justify-between
+                           px-4 py-3 shrink-0
+                           border-b border-white/10">
+
+                    <span class="text-xs font-semibold text-gray-300">
+                      Vinculados
+                    </span>
+
+                    <span
+                      class="text-[11px] text-gray-500"
+                      x-text="editor.user.hotels.length">
+                    </span>
+
+                  </div>
+
+                  <!-- BODY -->
+                  <div
+                    class="flex-1 overflow-y-auto
+                           p-2 space-y-2">
+
+                    <template
+                      x-for="hotel in editor.user.hotels"
+                      :key="hotel.id">
+
+                      <div
+                        class="flex items-center justify-between
+                               px-3 py-3 rounded-2xl
+                               bg-gray-900/30">
+
+                        <div class="min-w-0">
+
+                          <div
+                            class="text-xs font-medium truncate"
+                            x-text="hotel.code">
+                          </div>
+
+                          <div
+                            class="text-[11px] text-gray-400 truncate"
+                            x-text="hotel.name">
+                          </div>
+
+                        </div>
+
+                        <button
+                          type="button"
+                          :disabled="!editor.enabled"
+                          @click="removeHotel(hotel)"
+                          class="ml-3 shrink-0
+                                 w-9 h-9 rounded-xl
+                                 bg-red-500/10
+                                 text-red-300
+                                 hover:bg-red-500/20
+                                 disabled:opacity-40
+                                 transition">
+
+                          −
+
+                        </button>
+
+                      </div>
+
+                    </template>
+
+                    <!-- EMPTY -->
+                    <div
+                      x-show="editor.user.hotels.length === 0"
+                      class="flex items-center justify-center
+                             h-full text-xs text-gray-500">
+
+                      Nenhum hotel vinculado
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- FOOTER -->
+            <div
+              class="flex justify-end gap-3
+                     pt-5 mt-5 shrink-0">
+
+              <button
+                @click="showUserModal = false"
+                class="px-5 py-3 rounded-xl
+                       bg-gray-700 hover:bg-gray-600
+                       transition">
+
+                Cancelar
+
+              </button>
+
+              <button
+                x-show="editor.enabled"
+                @click="saveUser()"
+                class="px-6 py-3 rounded-xl
+                       bg-green-600 hover:bg-green-700
+                       font-semibold transition">
+
+                Salvar alterações
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
       </template>
 
       <!-- EMPTY -->
       <template x-if="!editor.user">
 
-        <div
-          class="flex h-full items-center justify-center">
+        <div class="flex flex-1 items-center justify-center">
 
           <div class="text-center">
 
@@ -431,195 +660,14 @@
             </div>
 
           </div>
+
         </div>
+
       </template>
+
     </div>
+
   </div>
+
 </div>
 
-<script>
-/*function manageUsers() {
-  return {
-
-    listedUsers: [],
-
-    filters: {
-      search: '',
-      hotelId: '',
-      role: ''
-    },
-
-    hotelSearch: '',
-
-    editor: {
-      enabled: false,
-      user: null,
-      password: ''
-    },
-
-
-    
-
-    selectUser(user) {
-
-      this.editor.enabled = false
-      this.editor.password = ''
-
-      this.editor.user =
-        structuredClone(user)
-
-      if (!this.editor.user.hotels) {
-        this.editor.user.hotels = []
-      }
-    },
-
-    async saveUser() {
-
-      try {
-
-        await fetch(
-          `/users/${this.editor.user.id}`,
-          {
-            method: 'PUT',
-            headers: {
-              'Content-Type':
-                'application/json'
-            },
-
-            body: JSON.stringify({
-              name:
-                this.editor.user.name,
-
-              email:
-                this.editor.user.email,
-
-              role:
-                this.editor.user.role,
-
-              password:
-                this.editor.password || null
-            })
-          }
-        )
-
-        await fetch(
-          `/users/${this.editor.user.id}/hotels`,
-          {
-            method: 'PUT',
-            headers: {
-              'Content-Type':
-                'application/json'
-            },
-
-            body: JSON.stringify({
-              hotel_ids:
-                this.editor.user.hotels
-                  .map(h => h.id)
-            })
-          }
-        )
-
-        showToast(
-          'Usuário atualizado',
-          'success'
-        )
-
-        this.editor.enabled =
-          false
-
-        await this.fetchUsers()
-
-      } catch (err) {
-
-        console.error(err)
-
-        showToast(
-          'Erro ao salvar usuário',
-          'error'
-        )
-      }
-    },
-
-    get filteredHotels() {
-
-      const query =
-        this.hotelSearch
-          .toLowerCase()
-
-      return this.$store.app.hotels
-        .filter(hotel => {
-
-          const exists =
-            this.editor.user.hotels
-              .find(
-                h =>
-                  h.id === hotel.id
-              )
-
-          return (
-            !exists &&
-            (
-              hotel.name
-                .toLowerCase()
-                .includes(query)
-              ||
-              hotel.code
-                .toLowerCase()
-                .includes(query)
-            )
-          )
-        })
-    },
-
-    addHotel(hotel) {
-
-      this.editor.user.hotels
-        .push(hotel)
-    },
-
-    removeHotel(hotel) {
-
-      this.editor.user.hotels =
-        this.editor.user.hotels
-          .filter(
-            h =>
-              h.id !== hotel.id
-          )
-    },
-
-    roleMeta(role) {
-
-      return {
-
-        admin: {
-          label: 'ADMIN',
-          class:
-            'bg-red-500/20 text-red-300'
-        },
-
-        agent: {
-          label: 'SUPORTE',
-          class:
-            'bg-blue-500/20 text-blue-300'
-        },
-
-        client_manager: {
-          label: 'GERENTE',
-          class:
-            'bg-amber-500/20 text-amber-300'
-        },
-
-        client_receptionist: {
-          label:
-            'RECEPCIONISTA',
-
-          class:
-            'bg-emerald-500/20 text-emerald-300'
-        }
-
-      }[role]
-    }
-  }
-}
-*/
-</script>

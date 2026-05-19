@@ -32,6 +32,8 @@ function dashboard() {
       password: ''
     },
 
+    showUserModal: false,
+
     teams: [],
     teamUsers: [],
     selectedTeamId: '',
@@ -139,15 +141,16 @@ function dashboard() {
       this.editor.enabled = false
       this.editor.password = ''
 
-      this.editor.user =
-        structuredClone(user)
-
-      if (!this.editor.user.hotels) {
-        this.editor.user.hotels = []
+      this.editor.user = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        hotels: [...(user.hotels || [])]
       }
     },
 
-        async saveUser() {
+    async saveUser() {
 
       try {
 
@@ -193,7 +196,7 @@ function dashboard() {
           }
         )
 
-        showToast(
+        this.showToast(
           'Usuário atualizado',
           'success'
         )
@@ -207,7 +210,7 @@ function dashboard() {
 
         console.error(err)
 
-        showToast(
+        this.showToast(
           'Erro ao salvar usuário',
           'error'
         )
@@ -221,7 +224,7 @@ function dashboard() {
         this.hotelSearch
           .toLowerCase()
 
-      return this.$store.app.hotels
+      return Alpine.store('app').hotels
         .filter(hotel => {
 
           const exists =
