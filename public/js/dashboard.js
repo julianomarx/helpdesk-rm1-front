@@ -16,6 +16,22 @@ function dashboard() {
     showFinishModal: false,
     finishReason: '',
 
+    listedUsers: [],
+
+    filters: {
+      search: '',
+      hotelId: '',
+      role: ''
+    },
+
+    hotelSearch: '',
+
+    editor: {
+      enabled: false,
+      user: null,
+      password: ''
+    },
+
     teams: [],
     teamUsers: [],
     selectedTeamId: '',
@@ -26,6 +42,258 @@ function dashboard() {
     teamSubcategories: [],
 
     previewAttachment: null,
+
+
+    async fetchUsers() {
+
+      const token =
+      localStorage.getItem("access_token");
+
+      if (!token) {
+        this.currentPage = 'login';
+        return;
+      }
+
+      try {
+
+      const params =
+        new URLSearchParams();
+
+      if (this.filters.search) {
+        params.append(
+          'search',
+          this.filters.search
+        );
+      }
+
+      if (this.filters.hotelId) {
+        params.append(
+          'hotel_id',
+          this.filters.hotelId
+        );
+      }
+
+      if (this.filters.role) {
+        params.append(
+          'role',
+          this.filters.role
+        );
+      }
+
+      console.log(
+        'QUERY:',
+        params.toString()
+      );
+
+      const response =
+      await fetch(
+        `${API_BASE}/users/?${params.toString()}`,
+        {
+          method: "GET",
+          headers: {
+            "Authorization":
+              "Bearer " + token,
+            "Content-Type":
+              "application/json"
+          }
+        }
+      );
+
+      if (!response.ok) {
+        console.error(
+          'Erro API:',
+          response.status
+        );
+
+      this.showToast(
+        'Erro ao buscar usuários',
+        'error'
+      );
+
+      return;
+    }
+
+    const data =
+      await response.json();
+
+    console.log(
+      'USERS:',
+      data
+    );
+
+    this.listedUsers = data;
+
+  } catch (err) {
+
+    console.error(err);
+
+    this.showToast(
+      'Erro ao buscar usuários',
+      'error'
+    );
+  }
+},
+
+    selectUser(user) {
+
+      this.editor.enabled = false
+      this.editor.password = ''
+
+      this.editor.user =
+        structuredClone(user)
+
+      if (!this.editor.user.hotels) {
+        this.editor.user.hotels = []
+      }
+    },
+
+        async saveUser() {
+
+      try {
+
+        await fetch(
+          `/users/${this.editor.user.id}`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type':
+                'application/json'
+            },
+
+            body: JSON.stringify({
+              name:
+                this.editor.user.name,
+
+              email:
+                this.editor.user.email,
+
+              role:
+                this.editor.user.role,
+
+              password:
+                this.editor.password || null
+            })
+          }
+        )
+
+        await fetch(
+          `/users/${this.editor.user.id}/hotels`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type':
+                'application/json'
+            },
+
+            body: JSON.stringify({
+              hotel_ids:
+                this.editor.user.hotels
+                  .map(h => h.id)
+            })
+          }
+        )
+
+        showToast(
+          'Usuário atualizado',
+          'success'
+        )
+
+        this.editor.enabled =
+          false
+
+        await this.fetchUsers()
+
+      } catch (err) {
+
+        console.error(err)
+
+        showToast(
+          'Erro ao salvar usuário',
+          'error'
+        )
+      }
+    },
+
+
+    get filteredHotels() {
+
+      const query =
+        this.hotelSearch
+          .toLowerCase()
+
+      return this.$store.app.hotels
+        .filter(hotel => {
+
+          const exists =
+            this.editor.user.hotels
+              .find(
+                h =>
+                  h.id === hotel.id
+              )
+
+          return (
+            !exists &&
+            (
+              hotel.name
+                .toLowerCase()
+                .includes(query)
+              ||
+              hotel.code
+                .toLowerCase()
+                .includes(query)
+            )
+          )
+        })
+    },
+
+    addHotel(hotel) {
+
+      this.editor.user.hotels
+        .push(hotel)
+    },
+
+    removeHotel(hotel) {
+
+      this.editor.user.hotels =
+        this.editor.user.hotels
+          .filter(
+            h =>
+              h.id !== hotel.id
+          )
+    },
+
+    roleMeta(role) {
+
+      return {
+
+        admin: {
+          label: 'ADMIN',
+          class:
+            'bg-red-500/20 text-red-300'
+        },
+
+        agent: {
+          label: 'SUPORTE',
+          class:
+            'bg-blue-500/20 text-blue-300'
+        },
+
+        client_manager: {
+          label: 'GERENTE',
+          class:
+            'bg-amber-500/20 text-amber-300'
+        },
+
+        client_receptionist: {
+          label:
+            'RECEPCIONISTA',
+
+          class:
+            'bg-emerald-500/20 text-emerald-300'
+        }
+
+      }[role]
+    },
 
     async fetchTeams() {
       const token = localStorage.getItem("access_token");
