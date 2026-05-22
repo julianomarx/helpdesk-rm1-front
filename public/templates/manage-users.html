@@ -177,7 +177,7 @@
         :key="user.id">
 
         <div
-          @click="selectUser(user); showUserModal = true"
+          @click="selectUser(user)"
           class="flex items-center px-5 py-4
                  border-b border-white/5
                  hover:bg-white/5
@@ -276,29 +276,19 @@
 
         <div class="flex gap-3">
 
-          <button
-            @click="editor.enabled = !editor.enabled"
-            class="bg-blue-600 hover:bg-blue-700
-                   px-4 py-2 rounded-xl
-                   text-sm font-semibold">
+          <template x-if="!editor.enabled">
+            <button
+              @click="editor.enabled = !editor.enabled"
+              class="bg-blue-600 hover:bg-blue-700
+                    px-4 py-2 rounded-xl
+                    text-sm font-semibold">
 
-            <span
-              x-text="editor.enabled
-                ? 'Cancelar edição'
-                : 'Editar usuário'">
-            </span>
+              <span>
+                <p>Editar usuário</p>
+              </span>
+            </button>
+          </template>
 
-          </button>
-
-          <button
-            @click="showUserModal = false"
-            class="bg-gray-700 hover:bg-gray-600
-                   px-4 py-2 rounded-xl
-                   text-sm">
-
-            Fechar
-
-          </button>
 
         </div>
 

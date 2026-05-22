@@ -136,56 +136,98 @@ function dashboard() {
   }
 },
 
-    selectUser(user) {
+    async selectUser(user) {
 
-      this.editor.enabled = false
-      this.editor.password = ''
+      const token = localStorage.getItem("access_token");
 
-      this.editor.user = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        hotels: [...(user.hotels || [])]
+      if (!token) {
+        this.currentPage == 'login';
+        return;
+      }
+
+      try {
+
+        const res = await fetch(`${API_BASE}/users/${user.id}`, {
+          method : "GET",
+          headers : {
+            "Authorization" : "Bearer " + token,
+            "Content-Type" : "application/json"
+          }
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          console.error("Erro ao buscar informações do usuário", data)
+        }
+
+        this.editor.enabled = false
+        this.editor.password = ''
+
+
+        const data = await res.json();
+
+        this.editor.user = {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          hotels: [...(data.hotels || [])]
+        }
+
+        this.showUserModal = true; 
+
+
+      } catch (e) {
+        console.error("Erro ao buscar informações de usuário -> ", e );
+        this.showToast("Erro ao buscar dados do usuário", "error");
       }
     },
 
     async saveUser() {
 
+      const token = localStorage.getItem("access_token");
+
+      if (!token) {
+        this.currentPage == 'login';
+        return;
+      }
+
+      const userUpdate = JSON.stringify({
+        name:
+          this.editor.user.name
+        })
+
+        console.log(userUpdate)
+
       try {
 
-        await fetch(
-          `/users/${this.editor.user.id}`,
+        const res = await fetch(
+          `${API_BASE}/users/${this.editor.user.id}`,
           {
             method: 'PUT',
             headers: {
-              'Content-Type':
-                'application/json'
+              "Authorization" : "Bearer " + token,
+              'Content-Type': 'application/json'
             },
-
-            body: JSON.stringify({
-              name:
-                this.editor.user.name,
-
-              email:
-                this.editor.user.email,
-
-              role:
-                this.editor.user.role,
-
-              password:
-                this.editor.password || null
-            })
+            body: userUpdate
           }
         )
+        if (!res.ok) {
+          this.showToast('Erro ao salvar usuário','error');
+          return;
+        }
+
+        const data = await res.json();
+
+        console.log(data)
 
         await fetch(
-          `/users/${this.editor.user.id}/hotels`,
+          `${API_BASE}/users/${this.editor.user.id}/hotels`,
           {
             method: 'PUT',
             headers: {
-              'Content-Type':
-                'application/json'
+              "Authorization" : "Bearer " + token,
+              'Content-Type': 'application/json'
             },
 
             body: JSON.stringify({
@@ -194,7 +236,7 @@ function dashboard() {
                   .map(h => h.id)
             })
           }
-        )
+        ) 
 
         this.showToast(
           'Usuário atualizado',

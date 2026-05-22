@@ -96,17 +96,27 @@
       </div>
 
       <!-- Função -->
-      <div class="mb-3">
+      <template x-if="['admin', 'agent'].includes($store.app.role)">
+        <div class="mb-3">
         <label class="block text-xs mb-1">Função *</label>
         <select x-model="role"
           class="w-full p-2 rounded-md bg-gray-800/90 border border-white/10
                  focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm">
-          <option value="admin">Administrador</option>
-          <option value="agent">Atendente suporte</option>
+                 
+          <template x-if="$store.app.role == 'admin'">
+            <option value="admin">Administrador</option>
+          </template>
+
+          <template x-if="$store.app.role == 'admin'">
+            <option value="agent">Atendente suporte</option>
+          </template>
+
+
           <option value="client_manager">Gerente do Cliente</option>
           <option value="client_receptionist">Recepcionista</option>
         </select>
-      </div>
+        </div>
+      </template>
 
       <!-- Hotéis -->
       <div class="mb-3" x-show="!(role === 'admin' || role === 'agent')">
