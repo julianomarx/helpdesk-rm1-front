@@ -193,8 +193,10 @@ function dashboard() {
       }
 
       const userUpdate = JSON.stringify({
-        name:
-          this.editor.user.name
+        name: this.editor.user.name,
+        email: this.editor.user.email,
+        password: this.editor.user.password,
+        role: this.editor.user.role
         })
 
         console.log(userUpdate)
@@ -580,7 +582,13 @@ function dashboard() {
     async goTo(page, cssPath) {
       if (this.currentPage === page) return
       this.currentPage = page;
+
+      if (page !== "manage-users") {
+        this.listedUsers = [];
+      }
+
       if (cssPath) this.loadCss(cssPath);
+      
       if (page === "tickets") this.getTickets();
 
       const container = document.getElementById("page-container");
@@ -1247,7 +1255,9 @@ function hotelSelector(allHotels) {
     search: '',
     selectedHotels: [],
     get filteredHotels() {
+
       if (!allHotels) return []; // se ainda não veio nada, retorna lista vazia
+
       return allHotels.filter(hotel => {
         const query = this.search.toLowerCase();
         const notSelected = !this.selectedHotels.find(h => h.id === hotel.id);
@@ -1288,7 +1298,7 @@ function stayAlive(expireTimestamp) {
     return;
   }
 
-  console.log(`⏱ Sessão ativa. Mostrará alerta em ${(showAlertAt / 1000 / 60).toFixed(1)} min`);
+  console.log(`Sessão ativa. Mostrará alerta em ${(showAlertAt / 1000 / 60).toFixed(1)} min`);
 
   setTimeout(async () => {
     const keep = confirm("Sua sessão irá expirar em breve. Deseja manter ativa?");
@@ -1296,8 +1306,6 @@ function stayAlive(expireTimestamp) {
 
       console.log("Sessão mantida pelo usuário.");
 
-
-      //lógica para renovar o token e atualizar o payload
       console.log("Renovando o token...");
       const token = localStorage.getItem("access_token");
 
@@ -1308,7 +1316,6 @@ function stayAlive(expireTimestamp) {
 
       try {
 
-        //chama o back pra renovar o token
         const res = await fetch(`${API_BASE}/auth/refresh`, {
           method: "POST",
           headers: {
