@@ -166,12 +166,17 @@ function dashboard() {
 
         const data = await res.json();
 
+        await this.fetchTeams();
+
+        console.log(data)
+
         this.editor.user = {
           id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
-          hotels: [...(data.hotels || [])]
+          hotels: [...(data.hotels || [])],
+          teams: [...(data.teams || [])]
         }
 
         this.showUserModal = true; 
@@ -221,7 +226,11 @@ function dashboard() {
 
         const data = await res.json();
 
+        console.log("Times antes", this.editor.user.teams)
+
         console.log(data)
+
+        console.log("Times depois", this.editor.user.teams)
 
         await fetch(
           `${API_BASE}/users/${this.editor.user.id}/hotels`,
@@ -240,15 +249,33 @@ function dashboard() {
           }
         ) 
 
+        await fetch(
+          `${API_BASE}/users/${this.editor.user.id}/teams`,
+          {
+            method: 'PUT',
+            headers: {
+              "Authorization" : "Bearer " + token,
+              'Content-Type': 'application/json'
+            },
+
+            body: JSON.stringify({
+              team_ids:
+                this.editor.user.teams
+                  .map(h => h.id)
+            })
+          }
+        )
+
         this.showToast(
           'Usuário atualizado',
           'success'
         )
 
-        this.editor.enabled =
-          false
+        this.editor.enabled = false;
 
-        await this.fetchUsers()
+        await this.fetchUsers();
+
+        this.showUserModal = false
 
       } catch (err) {
 
@@ -261,8 +288,30 @@ function dashboard() {
       }
     },
 
+    hasTeam(teamId) {
+      return this.editor.user.teams?.some(
+        t => t.id === teamId
+      )
+    },
 
-    get filteredHotels() {
+    addTeam(team) {
+    const exists = this.editor.user.teams.find(
+      t => t.id === team.id
+    )
+
+    if (exists) {
+      this.editor.user.teams =
+        this.editor.user.teams.filter(
+          t => t.id !== team.id
+        )
+      return
+    }
+
+    this.editor.user.teams.push(team)
+  },
+
+
+  get filteredHotels() {
 
       const query =
         this.hotelSearch
