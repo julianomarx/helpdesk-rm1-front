@@ -45,6 +45,39 @@ function dashboard() {
 
     previewAttachment: null,
 
+    showCreateUserModal: false,
+
+    creator: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      role: '',
+      hotels: [],
+      teams: []
+    },
+
+    resetCreator() {
+      this.creator = {
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        role: '',
+        hotel: [],
+        teams: []
+      }
+    },
+
+    openCreateUserModal() {
+      this.resetCreator();
+      this.showCreateUserModal = true;
+    },
+
+    
+
+
+
 
     async fetchUsers() {
 

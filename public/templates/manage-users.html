@@ -604,7 +604,10 @@
             <!-- TEAMS -->
 <div
   class="flex flex-col shrink-0"
-  x-show="editor.user.role !== 'admin'">
+  x-show="
+  editor.user.role == 'agent' ||
+  editor.user.role == 'admin'
+  ">
 
   <!-- HEADER -->
   <div class="mb-3">
