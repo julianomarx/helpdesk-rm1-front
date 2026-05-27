@@ -47,6 +47,7 @@ function dashboard() {
 
     showCreateUserModal: false,
 
+    
     creator: {
       name: '',
       email: '',
@@ -57,27 +58,26 @@ function dashboard() {
       teams: []
     },
 
-    resetCreator() {
+    resetCreateUser() {
       this.creator = {
         name: '',
         email: '',
         password: '',
         confirmPassword: '',
         role: '',
-        hotel: [],
+        hotels: [],
         teams: []
       }
+
+      this.hotelSearch = '';
     },
 
     openCreateUserModal() {
-      this.resetCreator();
+      this.resetCreateUser();
       this.showCreateUserModal = true;
     },
 
-    
-
-
-
+  
 
     async fetchUsers() {
 
@@ -344,7 +344,7 @@ function dashboard() {
   },
 
 
-  get filteredHotels() {
+  get filteredHotelsEdit() {
 
       const query =
         this.hotelSearch
@@ -375,6 +375,25 @@ function dashboard() {
         })
     },
 
+    get filteredHotelsCreate() {
+      const query = this.hotelSearch.toLowerCase();
+
+      return Alpine.store('app').hotels.filter(hotel => {
+        const exists =
+          this.creator.hotels?.find(
+            h => h.id === hotel.id
+          );
+
+        return (
+          !exists &&
+          (
+            hotel.name.toLowerCase().includes(query) ||
+            hotel.code.toLowerCase().includes(query)
+          )
+        );
+      });
+    },
+
     addHotel(hotel) {
 
       this.editor.user.hotels
@@ -385,6 +404,22 @@ function dashboard() {
 
       this.editor.user.hotels =
         this.editor.user.hotels
+          .filter(
+            h =>
+              h.id !== hotel.id
+          )
+    },
+
+    addCreatorHotel(hotel) {
+
+      this.creator.hotels
+        .push(hotel)
+    },
+
+    removeCreatorHotel(hotel) {
+
+      this.creator.hotels =
+        this.creator.hotels
           .filter(
             h =>
               h.id !== hotel.id
@@ -683,10 +718,6 @@ function dashboard() {
         container.innerHTML = html;
 
         Alpine.initTree(container);
-
-        // if (page === "create-user") {
-        //   this.initCreateUser(); // ex: função dentro do dashboard.js
-        // }
 
       } catch (error) {
         container.innerHTML = `<p class="text-red-500">Erro ao carregar a página: ${error.message}</p>`;
@@ -1135,20 +1166,48 @@ function dashboard() {
       }
     },
 
-    async createUser(userData) {
+    async createUser() {
       const token = localStorage.getItem("access_token");
 
-      console.log(userData)
-      if (token) {
-        try {
-          const body = userData
+      if (!token) {
+        this.currentPage = 'login';
+        return;
+      }
+
+      if (
+        !this.creator.name ||
+        !this.creator.email ||
+        !this.creator.password ||
+        !this.creator.role
+      ) {
+        this.showToast("Preencha todos os campos obrigatórios!", "error");
+        return;
+      }
+
+      if (
+        this.creator.password !== this.creator.confirmPassword
+      ) {
+        this.showToast("As senhas não coincidem", "error");
+        return;
+      }
+
+      const payload = {
+        name: this.creator.name,
+        email: this.creator.email,
+        password: this.creator.password,
+        role: this.creator.role,
+        hotel_ids: this.creator.hotel_ids,
+        team_ids: this.creator.team_ids
+      }
+
+      try {
           const res = await fetch(`${API_BASE}/users/`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               "Authorization": "Bearer " + token
             },
-            body: JSON.stringify(userData)
+            body: JSON.stringify(payload)
           });
 
           if (!res.ok) {
@@ -1167,7 +1226,7 @@ function dashboard() {
         } catch (error) {
           console.error("Erro nessa merda :", error)
         }
-      }
+
     },
 
     async submitComment() {

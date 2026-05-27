@@ -234,4 +234,12 @@ input {
   scrollbar-color: #8d8d8dbb #2d2d2d;
 }
 
+#create-user-btn {
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
 

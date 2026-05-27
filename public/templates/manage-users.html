@@ -236,9 +236,26 @@
 
     </div>
 
+    <button
+    id="create-user-btn"
+    @click="openCreateUserModal()"
+    class="fixed bottom-8 right-8
+          w-16 h-16
+          rounded-full
+          bg-blue-600 hover:bg-blue-700
+          shadow-2xl z-40
+          flex items-center justify-center
+          transition hover:scale-105">
+
+    <span class="text-4xl leading-none">
+      +
+    </span>
+
+    </button>
+
   </div>
 
-  <!-- MODAL -->
+  <!-- MODAL EDIT USER -->
   <div
     x-show="showUserModal"
     x-transition.opacity
@@ -449,7 +466,7 @@
 
                     <span
                       class="text-[11px] text-gray-500"
-                      x-text="filteredHotels.length">
+                      x-text="filteredHotelsEdit.length">
                     </span>
 
                   </div>
@@ -460,7 +477,7 @@
                            p-2 space-y-2">
 
                     <template
-                      x-for="hotel in filteredHotels"
+                      x-for="hotel in filteredHotelsEdit"
                       :key="hotel.id">
 
                       <div
@@ -740,5 +757,459 @@
 
   </div>
 
-</div>
+  <!--Modal create user-->
+  <div
+    x-show="showCreateUserModal"
+    x-transition.opacity
+    class="fixed inset-0 z-50
+          bg-black/40 backdrop-blur-sm
+          flex items-center justify-center">
+
+    <div
+      @click.outside="showCreateUserModal = false"
+      class="bg-gray-800/40 backdrop-blur-2xl
+            border border-white/10
+            rounded-[32px]
+            shadow-2xl
+            w-[94vw]
+            max-w-7xl
+            h-[82vh]
+            p-6 flex flex-col">
+
+      <!-- HEADER -->
+      <div class="mb-5">
+
+        <h2 class="font-bold text-xl">
+          Criar usuário
+        </h2>
+
+        <p class="text-xs text-gray-400">
+          Adicione um novo usuário
+        </p>
+
+      </div>
+
+
+      <!-- Daqui pra baixo -->
+      <!-- FORM -->
+      <div class="flex flex-col flex-1 min-h-0">
+
+        <!-- ROW 1 -->
+        <div class="flex gap-4 mb-4 shrink-0">
+
+          <!-- NOME -->
+          <div class="flex flex-col flex-1 min-w-0">
+
+            <label class="block text-xs mb-1">
+              Nome
+            </label>
+
+            <input
+              type="text"
+              x-model="creator.name"
+              placeholder="Digite o nome do usuário"
+              class="w-full p-3 rounded-xl
+                    bg-gray-800/50 border border-white/10
+                    focus:outline-none
+                    focus:ring-1 focus:ring-blue-500">
+          </div>
+
+          <!-- EMAIL -->
+          <div class="flex flex-col flex-1 min-w-0">
+
+            <label class="block text-xs mb-1">
+              Email
+            </label>
+
+            <input
+              type="email"
+              x-model="creator.email"
+              placeholder="Digite o email"
+              class="w-full p-3 rounded-xl
+                    bg-gray-800/50 border border-white/10
+                    focus:outline-none
+                    focus:ring-1 focus:ring-blue-500">
+          </div>
+
+        </div>
+
+        <!-- ROW 2 -->
+        <div class="flex gap-4 mb-5 shrink-0">
+
+          <!-- ROLE -->
+          <div class="flex flex-col flex-1 min-w-0">
+
+            <label class="block text-xs mb-1">
+              Função
+            </label>
+
+            <select
+              x-model="creator.role"
+              class="w-full p-3 rounded-xl
+                    bg-gray-800/50 border border-white/10">
+
+              <option selected disabled>
+                Selecione uma função
+              </option>
+
+              <option value="admin">
+                Admin
+              </option>
+
+              <option value="agent">
+                Suporte
+              </option>
+
+              <option value="client_manager">
+                Gerente
+              </option>
+
+              <option value="client_receptionist">
+                Recepcionista
+              </option>
+
+            </select>
+          </div>
+
+          <!-- PASSWORD -->
+          <div class="flex flex-col flex-1 min-w-0">
+
+            <label class="block text-xs mb-1">
+              Senha
+            </label>
+
+            <input
+              type="password"
+              x-model="creator.password"
+              placeholder="Digite a senha"
+              class="w-full p-3 rounded-xl
+                    bg-gray-800/50 border border-white/10
+                    focus:outline-none
+                    focus:ring-1 focus:ring-blue-500">
+          </div>
+
+          <!-- CONRIRM PASSWORD -->
+          <div class="flex flex-col flex-1 min-w-0">
+
+            <label class="block text-xs mb-1">
+              Confirmar senha
+            </label>
+
+            <input
+              type="password"
+              x-model="creator.confirmPassword"
+              placeholder="Digite a senha"
+              class="w-full p-3 rounded-xl
+                    bg-gray-800/50 border border-white/10
+                    focus:outline-none
+                    focus:ring-1 focus:ring-blue-500">
+          </div>
+
+        </div>
+
+        <!-- HOTELS -->
+        <div
+          class="flex flex-col flex-1 min-h-0"
+          x-show="!(
+            creator.role === 'admin' ||
+            creator.role === 'agent'
+          )">
+
+          <!-- TITLE -->
+          <div class="mb-3 shrink-0">
+
+            <label class="block text-xs mb-2">
+              Vincular hotéis
+            </label>
+
+            <input
+              type="text"
+              x-model="hotelSearch"
+              placeholder="Buscar hotel por nome ou código..."
+              class="w-full p-3 rounded-xl
+                    bg-gray-800/40 border border-white/10
+                    focus:ring-1 focus:ring-blue-500
+                    focus:outline-none
+                    placeholder-gray-400 text-sm">
+          </div>
+
+          <!-- LISTS -->
+          <div class="flex gap-5 flex-1 min-h-0">
+
+            <!-- DISPONÍVEIS -->
+            <div
+              class="flex flex-col flex-1 min-h-0
+                    rounded-3xl overflow-hidden
+                    border border-white/10
+                    bg-gray-900/40 backdrop-blur-md">
+
+              <!-- HEADER -->
+              <div
+                class="flex items-center justify-between
+                      px-4 py-3 shrink-0
+                      border-b border-white/10">
+
+                <span class="text-xs font-semibold text-gray-300">
+                  Disponíveis
+                </span>
+
+                <span
+                  class="text-[11px] text-gray-500"
+                  x-text="filteredHotelsCreate.length">
+                </span>
+
+              </div>
+
+              <!-- BODY -->
+              <div
+                class="flex-1 overflow-y-auto
+                      p-2 space-y-2">
+
+                <template
+                  x-for="hotel in filteredHotelsCreate"
+                  :key="hotel.id">
+
+                  <div
+                    class="flex items-center justify-between
+                          px-3 py-3 rounded-2xl
+                          bg-gray-900/30
+                          border border-transparent
+                          hover:border-white/10
+                          hover:bg-gray-700/20
+                          transition">
+
+                    <div class="min-w-0">
+
+                      <div
+                        class="text-xs font-medium truncate"
+                        x-text="hotel.code">
+                      </div>
+
+                      <div
+                        class="text-[11px] text-gray-400 truncate"
+                        x-text="hotel.name">
+                      </div>
+
+                    </div>
+
+                    <button
+                      type="button"
+                      @click="addCreatorHotel(hotel)"
+                      class="ml-3 shrink-0
+                            w-9 h-9 rounded-xl
+                            bg-emerald-500/10
+                            text-emerald-300
+                            hover:bg-emerald-500/20
+                            transition">
+
+                      +
+
+                    </button>
+
+                  </div>
+
+                </template>
+
+              </div>
+
+            </div>
+
+            <!-- VINCULADOS -->
+            <div
+              class="flex flex-col flex-1 min-h-0
+                    rounded-3xl overflow-hidden
+                    border border-white/10
+                    bg-gray-900/40 backdrop-blur-md">
+
+              <!-- HEADER -->
+              <div
+                class="flex items-center justify-between
+                      px-4 py-3 shrink-0
+                      border-b border-white/10">
+
+                <span class="text-xs font-semibold text-gray-300">
+                  Vinculados
+                </span>
+
+                <span
+                  class="text-[11px] text-gray-500"
+                  x-text="creator.hotels.length">
+                </span>
+
+              </div>
+
+              <!-- BODY -->
+              <div
+                class="flex-1 overflow-y-auto
+                      p-2 space-y-2">
+
+                <template
+                  x-for="hotel in creator.hotels"
+                  :key="hotel.id">
+
+                  <div
+                    class="flex items-center justify-between
+                          px-3 py-3 rounded-2xl
+                          bg-gray-900/30">
+
+                    <div class="min-w-0">
+
+                      <div
+                        class="text-xs font-medium truncate"
+                        x-text="hotel.code">
+                      </div>
+
+                      <div
+                        class="text-[11px] text-gray-400 truncate"
+                        x-text="hotel.name">
+                      </div>
+
+                    </div>
+
+                    <button
+                      type="button"
+                      @click="removeCreatorHotel(hotel)"
+                      class="ml-3 shrink-0
+                            w-9 h-9 rounded-xl
+                            bg-red-500/10
+                            text-red-300
+                            hover:bg-red-500/20
+                            transition">
+
+                      −
+
+                    </button>
+
+                  </div>
+
+                </template>
+
+                <div
+                  x-show="creator.hotels.length === 0"
+                  class="flex items-center justify-center
+                        h-full text-xs text-gray-500">
+
+                  Nenhum hotel vinculado
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- TEAMS -->
+        <div
+          class="flex flex-col shrink-0"
+          x-show="
+            creator.role == 'agent' ||
+            creator.role == 'admin'
+          ">
+
+          <div class="mb-3">
+
+            <label class="block text-xs mb-2">
+              Times vinculados
+            </label>
+
+            <p class="text-[11px] text-gray-500">
+              Selecione os times do usuário
+            </p>
+
+          </div>
+
+          <div
+            class="grid grid-cols-2 lg:grid-cols-3 gap-3">
+
+            <template
+              x-for="team in teams"
+              :key="team.id">
+
+              <button
+                type="button"
+                @click="toggleCreateTeam(team)"
+                class="group flex items-center justify-between
+                      px-4 py-4 rounded-2xl
+                      border transition-all duration-200"
+
+                :class="hasCreateTeam(team.id)
+                  ? 'bg-emerald-500/15 border-emerald-500/40'
+                  : 'bg-gray-900/30 border-white/10 hover:bg-white/5 hover:border-white/20'">
+
+                <div class="min-w-0 text-left">
+
+                  <div
+                    class="text-sm font-medium truncate"
+                    x-text="team.name">
+                  </div>
+
+                </div>
+
+                <div
+                  class="ml-4 shrink-0 w-12 h-7 rounded-full
+                        relative transition-all"
+
+                  :class="hasCreateTeam(team.id)
+                    ? 'bg-emerald-500/70'
+                    : 'bg-gray-700/70'">
+
+                  <div
+                    class="absolute top-1 left-1
+                          w-5 h-5 rounded-full
+                          bg-white transition-all"
+
+                    :class="hasCreateTeam(team.id)
+                      ? 'translate-x-5'
+                      : ''">
+                  </div>
+
+                </div>
+
+              </button>
+
+            </template>
+
+          </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div
+          class="flex justify-end gap-3
+                pt-5 mt-5 shrink-0">
+
+          <button
+            @click="showCreateUserModal = false"
+            class="px-5 py-3 rounded-xl
+                  bg-gray-700 hover:bg-gray-600
+                  transition">
+
+            Cancelar
+
+          </button>
+
+          <button
+            @click="createUserAction()"
+            class="px-6 py-3 rounded-xl
+                  bg-green-600 hover:bg-green-700
+                  font-semibold transition">
+
+            Criar usuário
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+
+
+    </div>
+
+  </div>
+
 
