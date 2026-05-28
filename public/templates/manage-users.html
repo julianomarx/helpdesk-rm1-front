@@ -910,10 +910,10 @@
         <!-- HOTELS -->
         <div
           class="flex flex-col flex-1 min-h-0"
-          x-show="!(
-            creator.role === 'admin' ||
-            creator.role === 'agent'
-          )">
+          x-show="
+          ['admin', 'agent'].includes($store.app.role) &&
+          ['client_manager', 'client_receptionist'].includes(creator.role)       
+          ">
 
           <!-- TITLE -->
           <div class="mb-3 shrink-0">

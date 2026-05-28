@@ -238,7 +238,7 @@ function dashboard() {
 
       if (!token) {
         this.currentPage = 'login';
-        return;
+        return false
       }
 
       // limpa erros antes de validar
@@ -295,10 +295,13 @@ function dashboard() {
             return false;
           }
 
+          const createdUserData = await res.json()
 
-          console.log(res)
+          console.log(createdUserData)
+
           this.showToast("Usuário criado com sucesso!", "success");
-          return true
+    
+          return createdUserData
 
         } catch (error) {
           console.error("Erro nessa merda :", error)
@@ -308,9 +311,15 @@ function dashboard() {
 
     async submitUserCreation () {
       
-      if (await this.createUser()) {
+      const createdUser = await this.createUser()
+
+      if (createdUser) {
+
         this.resetCreateUser();
         this.showCreateUserModal = false;
+
+        this.listedUsers = [];
+        this.listedUsers.push(createdUser)
       }
     },
 
