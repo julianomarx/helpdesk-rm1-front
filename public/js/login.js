@@ -40,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
       Alpine.store("app").role = payload.role;
       Alpine.store("app").menus = payload.menus;
       Alpine.store("app").hotels = payload.hotels;
+      Alpine.store("app").teams = payload.teams;
       Alpine.store("app").tokenExpire = payload.exp;
       Alpine.store("app").categories = payload.categories;
       Alpine.store("app").subcategories = payload.subcategories

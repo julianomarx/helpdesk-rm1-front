@@ -8,6 +8,7 @@ document.addEventListener("alpine:init", () => {
     role: null,
     menus: [],
     hotels: [],
+    teams: [],
     tokenExpire: '',
 
 
@@ -35,6 +36,7 @@ document.addEventListener("alpine:init", () => {
         this.role = payload.role;
         this.menus = payload.menus;
         this.hotels = payload.hotels;
+        this.teams = payload.teams;
 
         this.currentView = "dashboard";
 

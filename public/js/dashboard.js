@@ -58,6 +58,14 @@ function dashboard() {
       teams: []
     },
 
+    creatorErrors: {
+      name: false,
+      email: false,
+      password: false,
+      confirmPassword: false,
+      role: false
+    },
+
     resetCreateUser() {
       this.creator = {
         name: '',
@@ -69,6 +77,14 @@ function dashboard() {
         teams: []
       }
 
+      this.creatorErrors = {
+        name: false,
+        email: false,
+        password: false,
+        confirmPassword: false,
+        role: false
+      }
+
       this.hotelSearch = '';
     },
 
@@ -78,7 +94,6 @@ function dashboard() {
     },
 
   
-
     async fetchUsers() {
 
       const token =
@@ -167,7 +182,7 @@ function dashboard() {
       'error'
     );
   }
-},
+    },
 
     async selectUser(user) {
 
@@ -196,10 +211,7 @@ function dashboard() {
         this.editor.enabled = false
         this.editor.password = ''
 
-
         const data = await res.json();
-
-        await this.fetchTeams();
 
         console.log(data)
 
@@ -218,6 +230,87 @@ function dashboard() {
       } catch (e) {
         console.error("Erro ao buscar informações de usuário -> ", e );
         this.showToast("Erro ao buscar dados do usuário", "error");
+      }
+    },
+
+    async createUser() {
+      const token = localStorage.getItem("access_token");
+
+      if (!token) {
+        this.currentPage = 'login';
+        return;
+      }
+
+      // limpa erros antes de validar
+      this.creatorErrors = {
+        name: false,
+        email: false,
+        password: false,
+        confirmPassword: false,
+        role: false
+      };
+
+      if (
+        !this.creator.name ||
+        !this.creator.email ||
+        !this.creator.password ||
+        !this.creator.role
+      ) {
+        this.showToast("Preencha todos os campos obrigatórios!", "error");
+        return false;
+      }
+
+      if (
+        this.creator.password !== this.creator.confirmPassword
+      ) {
+        this.showToast("As senhas não coincidem", "error");
+        return false;
+      }
+
+      const payload = {
+        name: this.creator.name,
+        email: this.creator.email,
+        password: this.creator.password,
+        role: this.creator.role,
+        hotel_ids: this.creator.hotels.map(h => h.id),
+        team_ids: this.creator.teams.map(t => t.id)
+      }
+
+      try {
+          const res = await fetch(`${API_BASE}/users/`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (!res.ok) {
+
+            const errorData = await res.json();
+            console.error("Erro detalhado:", errorData)
+
+            this.showToast("Erro ao criar usuário", "error");
+            return false;
+          }
+
+
+          console.log(res)
+          this.showToast("Usuário criado com sucesso!", "success");
+          return true
+
+        } catch (error) {
+          console.error("Erro nessa merda :", error)
+        }
+
+    },
+
+    async submitUserCreation () {
+      
+      if (await this.createUser()) {
+        this.resetCreateUser();
+        this.showCreateUserModal = false;
       }
     },
 
@@ -327,7 +420,7 @@ function dashboard() {
       )
     },
 
-    addTeam(team) {
+    toggleTeam(team) {
     const exists = this.editor.user.teams.find(
       t => t.id === team.id
     )
@@ -341,10 +434,30 @@ function dashboard() {
     }
 
     this.editor.user.teams.push(team)
-  },
+    },
 
+    hasCreatorTeam(teamId) {
+      return this.creator.teams?.some(
+        t => t.id === teamId
+      );
+    },
 
-  get filteredHotelsEdit() {
+    toggleCreatorTeam(team) {
+      const exists = this.hasCreatorTeam(team.id);
+
+      if (exists) {
+        this.creator.teams =
+          this.creator.teams.filter(
+            t => t.id !== team.id
+          );
+
+        return;
+      }
+
+      this.creator.teams.push(team);
+    },
+
+    get filteredHotelsEdit() {
 
       const query =
         this.hotelSearch
@@ -459,7 +572,7 @@ function dashboard() {
       }[role]
     },
 
-    async fetchTeams() {
+    /*async fetchTeams() {
       const token = localStorage.getItem("access_token");
       if (!token) {
         console.error("Token não localizado");
@@ -484,7 +597,7 @@ function dashboard() {
         console.log("resposta da API:", res);
         console.log("VARIAVEL TEAMS", this.teams)
       }
-    },
+    },*/
 
     async fetchTeamUsers() {
       const token = localStorage.getItem("access_token");
@@ -1164,69 +1277,6 @@ function dashboard() {
         console.log("Token não loclaizado, redirecionando para o login");
         Alpine.store("app").currentView = "login";
       }
-    },
-
-    async createUser() {
-      const token = localStorage.getItem("access_token");
-
-      if (!token) {
-        this.currentPage = 'login';
-        return;
-      }
-
-      if (
-        !this.creator.name ||
-        !this.creator.email ||
-        !this.creator.password ||
-        !this.creator.role
-      ) {
-        this.showToast("Preencha todos os campos obrigatórios!", "error");
-        return;
-      }
-
-      if (
-        this.creator.password !== this.creator.confirmPassword
-      ) {
-        this.showToast("As senhas não coincidem", "error");
-        return;
-      }
-
-      const payload = {
-        name: this.creator.name,
-        email: this.creator.email,
-        password: this.creator.password,
-        role: this.creator.role,
-        hotel_ids: this.creator.hotel_ids,
-        team_ids: this.creator.team_ids
-      }
-
-      try {
-          const res = await fetch(`${API_BASE}/users/`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer " + token
-            },
-            body: JSON.stringify(payload)
-          });
-
-          if (!res.ok) {
-
-            const errorData = await res.json();
-            console.error("Erro detalhado:", errorData)
-
-            this.showToast("Erro ao criar usuário", "error");
-            return;
-          }
-
-
-          console.log(res)
-          this.showToast("Usuário criado com sucesso!", "success");
-
-        } catch (error) {
-          console.error("Erro nessa merda :", error)
-        }
-
     },
 
     async submitComment() {
