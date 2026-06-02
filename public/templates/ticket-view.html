@@ -509,7 +509,7 @@
           <!-- Aceitar solução -->
           <template x-if="
             selectedTicket.progress === 'awaiting_confirmation' && 
-            ['cliente_manager', 'clinte_receptionist','admin'].includes($store.app.role)
+            ['client_manager', 'client_receptionist','admin'].includes($store.app.role)
               ">
             <button @click="closeTicket()" class="w-full mt-3 px-3 py-2 
              bg-emerald-600 hover:bg-emerald-700 
@@ -520,7 +520,10 @@
           </template>
 
           <!-- Finalizar atendimento -->
-          <template x-if="!['waiting','done','awaiting_confirmation'].includes(selectedTicket.progress)">
+          <template x-if="
+            !['waiting','done','awaiting_confirmation'].includes(selectedTicket.progress) &&
+            ['admin', 'agent'].includes($store.app.role)
+          ">
             <button @click="showFinishModal = true" class="w-full mt-3 px-3 py-2 
              bg-red-800 hover:bg-red-900 
              rounded-lg text-sm font-medium text-white 
