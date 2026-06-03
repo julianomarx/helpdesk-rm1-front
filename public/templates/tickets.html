@@ -1,138 +1,301 @@
-<div class="  flex-1 flex flex-col h-full gap-3">
+<div class="flex flex-col flex-1 min-h-0 gap-5 p-4 text-gray-200">
 
-  <!-- Cabeçalho FIXO AO TOPO  -->
-  <div class=" p-1 rounded-t-lg  sticky top-0 z-10">
+  <!-- HEADER -->
+  <div class="shrink-0">
 
-    <h1 class=" mr-1 font-bold text-gray-200  ">Chamados</h1>
+    <h1
+      class="font-bold text-gray-200
+             border-b border-gray-400 pb-1">
 
-    <div class="flex space-x-2 border-b border-gray-400">
+      Gerenciar Chamados
 
-      <button class="tab-btn" @click="currentTab = 'all'"
-        :class="currentTab === 'all' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
-        class="">
-        Todos
-      </button>
+    </h1>
 
-      <button class="tab-btn" @click="currentTab = 'waiting'"
-        :class="currentTab === 'waiting' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
-        class="">
-        Aguardando atendimento
-      </button>
+  </div>
 
-      <button class="tab-btn" @click="currentTab = 'in_progress'"
-        :class="currentTab === 'in_progress' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
-        class="">
-        Em atendimento
-      </button>
+  <!-- FILTERS -->
+  <div
+    class="p-5 shrink-0
+           bg-gray-900/40
+           backdrop-blur-xl backdrop-saturate-150
+           border border-white/10
+           rounded-2xl shadow-xl">
 
-      <button class="tab-btn" @click="currentTab = 'feedback'"
-        :class="currentTab === 'feedback' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
-        class="">
-        Feedback do solicitante
-      </button>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
 
-      <button class="tab-btn" @click="currentTab = 'awaiting_confirmation'"
-        :class="currentTab === 'awaiting_confirmation' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
-        class="">
-        Enviado para encerramento
-      </button>
+      <!-- SEARCH -->
+      <div class="xl:col-span-2">
 
-      <button class="tab-btn" @click="currentTab = 'done'"
-        :class="currentTab === 'done' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'"
-        class="">
-        Concluído
-      </button>
+        <label class="block text-xs mb-1">
+          Buscar chamado
+        </label>
+
+        <input
+          type="text"
+          x-model="filters.search"
+          placeholder="Título, descrição ou ticket..."
+          class="w-full p-3 rounded-xl
+                 bg-gray-800/50
+                 border border-white/10
+                 focus:outline-none
+                 focus:ring-1 focus:ring-blue-500">
+      </div>
+
+      <!-- STATUS -->
+      <div>
+
+        <label class="block text-xs mb-1">
+          Progresso
+        </label>
+
+        <select
+          x-model="filters.progress"
+          class="w-full p-3 rounded-xl
+                 bg-gray-800/90
+                 border border-white/10">
+
+          <option value="">
+            Todos
+          </option>
+
+          <option value="waiting">
+            Aguardando
+          </option>
+
+          <option value="in_progress">
+            Em andamento
+          </option>
+
+          <option value="feedback">
+            Feedback
+          </option>
+
+          <option value="awaiting_confirmation">
+            Confirmação
+          </option>
+
+          <option value="done">
+            Finalizado
+          </option>
+
+        </select>
+
+      </div>
+
+      <!-- PRIORITY -->
+      <div>
+
+        <label class="block text-xs mb-1">
+          Prioridade
+        </label>
+
+        <select
+          x-model="filters.priority"
+          class="w-full p-3 rounded-xl
+                 bg-gray-800/90
+                 border border-white/10">
+
+          <option value="">
+            Todas
+          </option>
+
+          <option value="critical">
+            Crítica
+          </option>
+
+          <option value="high">
+            Alta
+          </option>
+
+          <option value="medium">
+            Média
+          </option>
+
+          <option value="low">
+            Baixa
+          </option>
+
+        </select>
+
+      </div>
+
+      <!-- TEAM -->
+      <div>
+
+        <label class="block text-xs mb-1">
+          Time
+        </label>
+
+        <select
+          x-model="filters.team_id"
+          class="w-full p-3 rounded-xl
+                 bg-gray-800/90
+                 border border-white/10">
+
+          <option value="">
+            Todos
+          </option>
+
+          <template
+            x-for="team in $store.app.teams"
+            :key="team.id">
+
+            <option
+              :value="team.id"
+              x-text="team.name">
+            </option>
+
+          </template>
+
+        </select>
+
+      </div>
+
     </div>
-  </div>
-
-
-  <!-- Animação loading tickets -->
-  <div x-show="loadingTickets" x-cloak class="flex flex-col items-center gap-3 py-12 text-gray-400">
-
-    <div class="w-10 h-10 border-3 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
-
-    <span class="text-sm">Carregando tickets...</span>
 
   </div>
 
-  <!-- Lista de tickets -->
-  <div class="overflow-auto overflow-x-hidden x-transition.opacity.duration.200mss" x-show="!loadingTickets">
+  <!-- LIST -->
+  <div
+    class="flex flex-col flex-1 min-h-0
+           overflow-y-auto gap-3">
 
-    <template x-for="ticket in filteredTickets" :key="ticket.id">
+    <template
+      x-for="ticket in filteredTickets"
+      :key="ticket.id">
 
-      <div @click="viewTicket(ticket)" class="relative pl-10 pr-5 py-5 m-2 rounded-2xl 
-       bg-gray-800/30 backdrop-blur-xl backdrop-saturate-150 
-       border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]
-       text-gray-200 transition-all duration-300 ease-out 
-       hover:bg-gray-800/40 hover:scale-[1.01] cursor-pointer overflow-hidden">
+      <div
+        @click="viewTicket(ticket)"
+        class="group
+               bg-gray-900/40
+               backdrop-blur-xl backdrop-saturate-150
+               border border-white/10
+               rounded-2xl
+               p-5
+               cursor-pointer
+               hover:bg-white/[0.04]
+               hover:border-white/20
+               transition-all">
 
-        <!-- Linha lateral -->
-        <div class="absolute left-5 top-0 bottom-0 w-px bg-gray-700"></div>
+        <!-- TOP -->
+        <div class="flex items-start gap-4">
 
-        <!-- Bolinha com cor por status -->
-        <div class="absolute left-[13px] top-7 w-4 h-4 rounded-full border-2 border-gray-900" :class="{
-           'bg-red-500': ticket.progress === 'waiting',
-           'bg-blue-500': ticket.progress === 'in_progress',
-           'bg-amber-500': ticket.progress === 'feedback',
-           'bg-green-500': ticket.progress === 'done',
-           'bg-slate-400': ticket.progress === 'awaiting_confirmation'
-         }">
+          <!-- ID -->
+          <div
+            class="shrink-0
+                   text-blue-400
+                   font-bold">
+
+            #<span x-text="ticket.id"></span>
+
+          </div>
+
+          <!-- CONTENT -->
+          <div class="flex-1 min-w-0">
+
+            <!-- TITLE -->
+            <div
+              class="font-semibold text-gray-100
+                     line-clamp-2 break-words"
+              x-text="ticket.title">
+            </div>
+
+            <!-- SUB -->
+            <div
+              class="mt-1 text-xs text-gray-500
+                     flex flex-wrap gap-2">
+
+              <span
+                x-text="ticket.hotel.code">
+              </span>
+
+              <span>
+                •
+              </span>
+
+              <span
+                x-text="ticket.hotel.name">
+              </span>
+
+              <span>
+                •
+              </span>
+
+              <span
+                x-text="ticket.creator.name">
+              </span>
+
+            </div>
+
+          </div>
+
+          <!-- ARROW -->
+          <div
+            class="text-gray-500
+                   group-hover:text-gray-300">
+
+            →
+
+          </div>
+
         </div>
 
-        <div class="flex justify-between">
+        <!-- BOTTOM -->
+        <div
+          class="mt-4
+                 flex flex-wrap items-center
+                 gap-2">
 
-          <!-- ESQUERDA -->
-          <div class="w-3/4">
+          <!-- PRIORITY -->
+          <span
+            class="px-3 py-1 rounded-full
+                   text-xs font-semibold"
 
-            <!-- Linha superior -->
-            <p class="text-xs text-gray-400">
-              <span x-text="ticket.id"></span>
-              •
-              <span x-text="ticket.hotel.name"></span>
-              -
-              <span x-text="ticket.hotel.code"></span>
-            </p>
+            :class="{
+              'bg-red-500/15 text-red-300': ticket.priority === 'critical',
+              'bg-orange-500/15 text-orange-300': ticket.priority === 'high',
+              'bg-yellow-500/15 text-yellow-300': ticket.priority === 'medium',
+              'bg-slate-500/15 text-slate-300': ticket.priority === 'low'
+            }">
 
-            <!-- Título -->
-            <h2 class="mt-1 text-white font-bold text-sm" x-text="ticket.title">
-            </h2>
+            <span x-text="ticket.priority"></span>
 
-            <!-- Descrição -->
-            <p class="mt-2 text-xs text-gray-300 leading-relaxed" x-text="ticket.description.length > 220
-                   ? ticket.description.substring(0,220) + '...'
-                   : ticket.description">
-            </p>
+          </span>
 
-          </div>
+          <!-- PROGRESS -->
+          <span
+            class="px-3 py-1 rounded-full
+                   text-xs font-semibold"
 
-          <!-- DIREITA -->
-          <div class="text-right text-xs space-y-1 flex flex-col justify-center">
+            :class="{
+              'bg-blue-500/15 text-blue-300': ticket.progress === 'in_progress',
+              'bg-yellow-500/15 text-yellow-300': ticket.progress === 'feedback',
+              'bg-emerald-500/15 text-emerald-300': ticket.progress === 'done',
+              'bg-gray-500/15 text-gray-300': ticket.progress === 'awaiting_confirmation',
+              'bg-red-500/15 text-red-300': ticket.progress === 'waiting'
+            }">
 
-            <!-- Status traduzido -->
-            <span class="font-semibold" :class="{
-                'text-red-500': ticket.progress === 'waiting',
-                'text-blue-500': ticket.progress === 'in_progress',
-                'text-amber-500': ticket.progress === 'feedback',
-                'text-green-500': ticket.progress === 'done',
-                'text-slate-400': ticket.progress === 'awaiting_confirmation'
-              }" x-text="{
-                waiting: 'Aguardando atendimento',
-                in_progress: 'Em atendimento',
-                feedback: 'Feedback do solicitante',
-                awaiting_confirmation: 'Enviado para encerramento',
-                done: 'Concluído'
-              }[ticket.progress]">
-            </span>
+            <span x-text="ticket.progress"></span>
 
-            <!-- Criador -->
-            <p class="italic text-gray-400" x-text="'Aberto por ' + ticket.creator.name">
-            </p>
+          </span>
 
-            <!-- Data -->
-            <p class="text-gray-500" x-text="dayjs(ticket.created_at).format('DD/MM/YYYY HH:mm')">
-            </p>
+          <!-- TEAM -->
+          <span
+            class="px-3 py-1 rounded-full
+                   text-xs font-semibold
+                   bg-cyan-500/15
+                   text-cyan-300"
 
-          </div>
+            x-text="ticket.assigned_team.name">
+          </span>
+
+          <!-- UPDATED -->
+          <span
+            class="ml-auto
+                   text-xs
+                   text-gray-500"
+            x-text="ticket.updated_at">
+          </span>
 
         </div>
 
@@ -140,10 +303,41 @@
 
     </template>
 
+    <!-- EMPTY -->
+    <template x-if="filteredTickets.length === 0">
 
-    <!-- Mensagem quando não há tickets -->
-    <p x-show="ticketList.length === 0" class="text-gray-400">Nenhum chamado encontrado</p>
+      <div
+        class="flex flex-1
+               items-center justify-center
+               text-gray-500">
+
+        Nenhum chamado encontrado
+
+      </div>
+
+    </template>
 
   </div>
+
+  <!-- FLOATING BUTTON -->
+  <button
+    @click="showCreateTicketModal = true"
+    class="fixed
+           bottom-8 right-8
+           w-16 h-16
+           rounded-full
+           bg-blue-600  
+           hover:bg-blue-700
+           shadow-2xl
+           flex items-center justify-center
+           transition
+           hover:scale-105
+           z-40">
+
+    <span class="text-4xl leading-none">
+      +
+    </span>
+
+  </button>
 
 </div>
