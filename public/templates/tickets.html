@@ -1,140 +1,251 @@
-<div class="flex flex-col flex-1 min-h-0 gap-5 p-4 text-gray-200">
+<div
+  class="
+    flex flex-col flex-1
+    min-h-0
+    overflow-x-hidden
+    gap-3
+    p-3
+    text-gray-200"
+  >
 
+  
   <!-- HEADER -->
-  <div class="shrink-0">
+  <div
+    class="
+      shrink-0
+      flex
+      items-center
+      gap-3
+      pb-2
+      border-b
+      border-gray-400
+      flex-wrap">
+
+    <!-- TÍTULO -->
 
     <h1
-      class="font-bold text-gray-200
-             border-b border-gray-400 pb-1">
+      class="
+        text-xl
+        font-semibold
+        whitespace-nowrap
+        mr-3">
 
       Gerenciar Chamados
 
     </h1>
 
+    <!-- STATUS -->
+
+    <div class="flex gap-2">
+
+      <button
+        id="ticket-status-open-btn"
+        @click="changeStatus('open')"
+        class="px-4 py-2 rounded-xl text-sm transition input-class"
+        :class="
+          ticketFilters.status === 'open'
+            ? 'bg-blue-600 text-white'
+            : 'bg-gray-900/40 border border-white/10'
+        ">
+
+        Abertos
+
+      </button>
+
+      <button
+        id="ticket-status-closed-btn"
+        @click="changeStatus('closed')"
+        class="px-4 py-2 rounded-xl text-sm transition input-class"
+        :class="
+          ticketFilters.status === 'closed'
+            ? 'bg-emerald-600 text-white'
+            : 'bg-gray-900/40 border border-white/10'
+        ">
+
+        Concluídos
+
+      </button>
+
+      <button
+        id="ticket-status-cancelled-btn"
+        @click="changeStatus('cancelled')"
+        class="px-4 py-2 rounded-xl text-sm transition input-class"
+        :class="
+          ticketFilters.status === 'cancelled'
+            ? 'bg-red-600 text-white'
+            : 'bg-gray-900/40 border border-white/10'
+        ">
+
+        Cancelados
+
+      </button>
+
+    </div>
+
+    <!-- SEARCH -->
+
+    <div class="relative flex-1 min-w-[260px] max-w-[420px]">
+
+      <span
+        class="
+          absolute
+          left-3
+          top-1/2
+          -translate-y-1/2
+          text-gray-500
+          pointer-events-none">
+
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-4 h-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor">
+
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
+
+        </svg>
+
+      </span>
+
+      <input
+        id="ticket-search-input"
+        type="text"
+        x-model="ticketFilters.search"
+        placeholder="Buscar chamado..."
+
+        @keydown.enter="getTickets()"
+
+        class="
+          w-full
+          h-10
+          pl-10
+          pr-3
+          rounded-xl
+          input-class-search 
+          bg-gray-800/50
+          border border-white/10"
+         >
+
+    </div>
+
   </div>
 
-  <!-- FILTERS -->
+  <!-- FILTROS -->
+
   <div
-    class="p-5 shrink-0
-           bg-gray-900/40
-           backdrop-blur-xl backdrop-saturate-150
-           border border-white/10
-           rounded-2xl shadow-xl">
+    class="
+      shrink-0
+      px-4 py-3
+      bg-gray-900/40
+      backdrop-blur-xl
+      border border-white/10
+      rounded-2xl">
 
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
+    <div
+      class="
+        flex
+        flex-wrap
+        items-end
+        gap-3">
 
-      <!-- SEARCH -->
-      <div class="xl:col-span-2">
+      <!-- PROGRESS -->
 
-        <label class="block text-xs mb-1">
-          Buscar chamado
-        </label>
+      <div class="flex flex-col min-w-[180px] flex-1">
 
-        <input
-          type="text"
-          x-model="filters.search"
-          placeholder="Título, descrição ou ticket..."
-          class="w-full p-3 rounded-xl
-                 bg-gray-800/50
-                 border border-white/10
-                 focus:outline-none
-                 focus:ring-1 focus:ring-blue-500">
-      </div>
+        <label
+          for="ticket-progress-filter"
+          class="text-[11px] text-gray-400 mb-1">
 
-      <!-- STATUS -->
-      <div>
-
-        <label class="block text-xs mb-1">
           Progresso
+
         </label>
 
         <select
-          x-model="filters.progress"
-          class="w-full p-3 rounded-xl
-                 bg-gray-800/90
-                 border border-white/10">
+          id="ticket-progress-filter"
+          x-model="ticketFilters.progress"
 
-          <option value="">
-            Todos
-          </option>
+          class="
+            h-10
+            px-3
+            rounded-xl
+            input-class
+            bg-gray-800/90
+            border border-white/10">
 
-          <option value="waiting">
-            Aguardando
-          </option>
-
-          <option value="in_progress">
-            Em andamento
-          </option>
-
-          <option value="feedback">
-            Feedback
-          </option>
-
-          <option value="awaiting_confirmation">
-            Confirmação
-          </option>
-
-          <option value="done">
-            Finalizado
-          </option>
+          <option value="">Todos</option>
+          <option value="waiting">Aguardando</option>
+          <option value="in_progress">Em andamento</option>
+          <option value="feedback">Feedback</option>
+          <option value="awaiting_confirmation">Confirmação</option>
+          <option value="done">Finalizado</option>
 
         </select>
 
       </div>
 
-      <!-- PRIORITY -->
-      <div>
+      <!-- PRIORIDADE -->
 
-        <label class="block text-xs mb-1">
+      <div class="flex flex-col min-w-[140px] flex-1">
+
+        <label
+          for="ticket-priority-filter"
+          class="text-[11px] text-gray-400 mb-1">
+
           Prioridade
+
         </label>
 
         <select
-          x-model="filters.priority"
-          class="w-full p-3 rounded-xl
-                 bg-gray-800/90
-                 border border-white/10">
+          id="ticket-priority-filter"
+          x-model="ticketFilters.priority"
 
-          <option value="">
-            Todas
-          </option>
+          class="
+            h-10
+            px-3
+            rounded-xl
+            input-class
+            bg-gray-800/90
+            border border-white/10">
 
-          <option value="critical">
-            Crítica
-          </option>
-
-          <option value="high">
-            Alta
-          </option>
-
-          <option value="medium">
-            Média
-          </option>
-
-          <option value="low">
-            Baixa
-          </option>
+          <option value="">Todas</option>
+          <option value="high">Alta</option>
+          <option value="medium">Média</option>
+          <option value="low">Baixa</option>
 
         </select>
 
       </div>
 
-      <!-- TEAM -->
-      <div>
+      <!-- TIME -->
 
-        <label class="block text-xs mb-1">
+      <div class="flex flex-col min-w-[180px] flex-1">
+
+        <label
+          for="ticket-team-filter"
+          class="text-[11px] text-gray-400 mb-1">
+
           Time
+
         </label>
 
         <select
-          x-model="filters.team_id"
-          class="w-full p-3 rounded-xl
-                 bg-gray-800/90
-                 border border-white/10">
+          id="ticket-team-filter"
+          x-model="ticketFilters.team_id"
 
-          <option value="">
-            Todos
-          </option>
+          class="
+            h-10
+            px-3
+            rounded-xl
+            input-class
+            bg-gray-800/90
+            border border-white/10">
+
+          <option value="">Todos</option>
 
           <template
             x-for="team in $store.app.teams"
@@ -151,6 +262,67 @@
 
       </div>
 
+      <!-- HOTEL -->
+
+      <div class="flex flex-col min-w-[180px] flex-1">
+
+        <label
+          for="ticket-hotel-filter"
+          class="text-[11px] text-gray-400 mb-1">
+
+          Hotel
+
+        </label>
+
+        <select
+          id="ticket-hotel-filter"
+          x-model="ticketFilters.hotel_id"
+
+          class="
+            h-10
+            px-3
+            rounded-xl
+            input-class
+            bg-gray-800/90
+            border border-white/10">
+
+          <option value="">Todos</option>
+
+          <template
+            x-for="hotel in $store.app.hotels"
+            :key="hotel.id">
+
+            <option
+              :value="hotel.id"
+              x-text="hotel.code">
+            </option>
+
+          </template>
+
+        </select>
+
+      </div>
+
+      <!-- BOTÃO -->
+
+      <button
+        id="ticket-search-btn"
+        @click="getTickets()"
+
+        class="
+          h-10
+          px-6
+          rounded-xl
+          input-class
+          bg-blue-600
+          hover:bg-blue-700
+          transition
+          shrink-0">
+
+        Buscar
+
+      </button>
+
     </div>
 
   </div>
@@ -161,26 +333,25 @@
            overflow-y-auto gap-3">
 
     <template
-      x-for="ticket in filteredTickets"
+      x-for="ticket in ticketList"
       :key="ticket.id">
 
       <div
         @click="viewTicket(ticket)"
-        class="group
-               bg-gray-900/40
-               backdrop-blur-xl backdrop-saturate-150
-               border border-white/10
-               rounded-2xl
-               p-5
-               cursor-pointer
-               hover:bg-white/[0.04]
-               hover:border-white/20
-               transition-all">
+        class="
+          group
+          bg-gray-900/40
+          backdrop-blur-xl
+          border border-white/10
+          rounded-2xl
+          p-4
+          cursor-pointer
+          hover:bg-white/[0.04]
+          hover:border-white/20
+          transition-all">
 
-        <!-- TOP -->
         <div class="flex items-start gap-4">
 
-          <!-- ID -->
           <div
             class="shrink-0
                    text-blue-400
@@ -190,46 +361,27 @@
 
           </div>
 
-          <!-- CONTENT -->
           <div class="flex-1 min-w-0">
 
-            <!-- TITLE -->
             <div
-              class="font-semibold text-gray-100
-                     line-clamp-2 break-words"
+              class="font-semibold text-gray-100 line-clamp-2"
               x-text="ticket.title">
             </div>
 
-            <!-- SUB -->
             <div
-              class="mt-1 text-xs text-gray-500
-                     flex flex-wrap gap-2">
+              class="mt-1 text-xs text-gray-500 flex flex-wrap gap-2">
 
-              <span
-                x-text="ticket.hotel.code">
-              </span>
+              <span x-text="ticket.hotel?.code"></span>
 
-              <span>
-                •
-              </span>
+              <span>•</span>
 
-              <span
-                x-text="ticket.hotel.name">
-              </span>
+              <span x-text="ticket.hotel?.name"></span>
 
-              <span>
-                •
-              </span>
-
-              <span
-                x-text="ticket.creator.name">
-              </span>
-
+    
             </div>
 
           </div>
 
-          <!-- ARROW -->
           <div
             class="text-gray-500
                    group-hover:text-gray-300">
@@ -240,19 +392,14 @@
 
         </div>
 
-        <!-- BOTTOM -->
         <div
-          class="mt-4
-                 flex flex-wrap items-center
-                 gap-2">
+          class="mt-3
+                 flex flex-wrap items-center gap-2">
 
-          <!-- PRIORITY -->
           <span
-            class="px-3 py-1 rounded-full
-                   text-xs font-semibold"
+            class="px-3 py-1 rounded-full text-xs font-semibold"
 
             :class="{
-              'bg-red-500/15 text-red-300': ticket.priority === 'critical',
               'bg-orange-500/15 text-orange-300': ticket.priority === 'high',
               'bg-yellow-500/15 text-yellow-300': ticket.priority === 'medium',
               'bg-slate-500/15 text-slate-300': ticket.priority === 'low'
@@ -262,40 +409,55 @@
 
           </span>
 
-          <!-- PROGRESS -->
           <span
-            class="px-3 py-1 rounded-full
-                   text-xs font-semibold"
+            class="px-3 py-1 rounded-full text-xs font-semibold"
 
             :class="{
+              'bg-red-500/15 text-red-300': ticket.progress === 'waiting',
               'bg-blue-500/15 text-blue-300': ticket.progress === 'in_progress',
               'bg-yellow-500/15 text-yellow-300': ticket.progress === 'feedback',
-              'bg-emerald-500/15 text-emerald-300': ticket.progress === 'done',
               'bg-gray-500/15 text-gray-300': ticket.progress === 'awaiting_confirmation',
-              'bg-red-500/15 text-red-300': ticket.progress === 'waiting'
+              'bg-emerald-500/15 text-emerald-300': ticket.progress === 'done'
             }">
 
             <span x-text="ticket.progress"></span>
 
           </span>
 
-          <!-- TEAM -->
-          <span
-            class="px-3 py-1 rounded-full
-                   text-xs font-semibold
-                   bg-cyan-500/15
-                   text-cyan-300"
+          <template x-if="ticket.assigned_team">
 
-            x-text="ticket.assigned_team.name">
+            <span
+              class="
+                px-3 py-1 rounded-full
+                text-xs font-semibold
+                bg-cyan-500/15
+                text-cyan-300"
+
+              x-text="ticket.assigned_team.name">
+            </span>
+
+          </template>
+
+
+        
+
+          <div
+            class="ml-auto text-xs text-gray-500"
+          >
+
+          <span>Aberto por: </span>
+
+          <span x-text="ticket.creator?.name"></span>
+
+          <span>•</span>
+
+          <span
+            x-text="formatDate(ticket.created_at)">
           </span>
 
-          <!-- UPDATED -->
-          <span
-            class="ml-auto
-                   text-xs
-                   text-gray-500"
-            x-text="ticket.updated_at">
-          </span>
+          </div>
+          
+  
 
         </div>
 
@@ -303,36 +465,104 @@
 
     </template>
 
-    <!-- EMPTY -->
-    <template x-if="filteredTickets.length === 0">
+  </div>
 
-      <div
-        class="flex flex-1
-               items-center justify-center
-               text-gray-500">
+  <!-- PAGINATION -->
 
-        Nenhum chamado encontrado
+  <div
+    class="
+      shrink-0
+      relative
+      border-t border-white/10
+      pt-3">
 
-      </div>
+    <!-- TOTAL -->
 
-    </template>
+    <div
+      class="
+        absolute
+        left-0
+        top-3
+        text-sm
+        text-gray-500">
+
+      <span x-text="pagination.total"></span>
+      chamados
+
+    </div>
+
+    <!-- PAGINAÇÃO -->
+
+    <div
+      class="
+        flex
+        justify-center
+        items-center
+        gap-2">
+
+      <button
+        id="ticket-previous-page-btn"
+        @click="previousPage"
+        :disabled="pagination.page <= 1"
+
+        class="
+          w-9 h-9
+          rounded-xl
+          bg-gray-800
+          hover:bg-gray-700
+          transition
+          disabled:opacity-30">
+
+        ←
+
+      </button>
+
+      <span class="text-sm text-gray-400">
+
+        <span x-text="pagination.page"></span>
+        /
+        <span x-text="pagination.pages"></span>
+
+      </span>
+
+      <button
+        id="ticket-next-page-btn"
+        @click="nextPage"
+        :disabled="pagination.page >= pagination.pages"
+
+        class="
+          w-9 h-9
+          rounded-xl
+          bg-gray-800
+          hover:bg-gray-700
+          transition
+          disabled:opacity-30">
+
+        →
+
+      </button>
+
+    </div>
 
   </div>
 
-  <!-- FLOATING BUTTON -->
+  <!-- FAB -->
   <button
+    id="create-ticket-btn"
     @click="showCreateTicketModal = true"
-    class="fixed
-           bottom-8 right-8
-           w-16 h-16
-           rounded-full
-           bg-blue-600  
-           hover:bg-blue-700
-           shadow-2xl
-           flex items-center justify-center
-           transition
-           hover:scale-105
-           z-40">
+
+    class="
+      fixed
+      bottom-8 right-8
+      w-16 h-16
+      rounded-full
+      bg-blue-600
+      hover:bg-blue-700
+      shadow-2xl
+      flex items-center justify-center
+      transition
+      hover:scale-105
+      z-40">
 
     <span class="text-4xl leading-none">
       +

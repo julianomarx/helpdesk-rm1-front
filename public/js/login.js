@@ -36,7 +36,8 @@ document.addEventListener("DOMContentLoaded", () => {
       //aqui iremos guardar as informações de hoteis e permissões em localstorage
 
       // Atualiza store do Alpine
-      Alpine.store("app").userId = payload.sub
+      Alpine.store("app").userId = payload.sub;
+      Alpine.store("app").userName = payload.name
       Alpine.store("app").role = payload.role;
       Alpine.store("app").menus = payload.menus;
       Alpine.store("app").hotels = payload.hotels;

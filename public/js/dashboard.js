@@ -5,11 +5,32 @@ function dashboard() {
     currentPage: "dashboard",
     currentTab: "all",
     ticketViewTab: 'details',
+
     loadingTickets: false,
     ticketList: [],
+
+    pagination: {
+      page: 1,
+      pageSize: 50,
+      total: 0,
+      pages: 0
+    },
+
+    ticketFilters: {
+      status: 'open',
+      search: '',
+      hotel_id: '',
+      progress: '',
+      priority: '',
+      team_id: '',
+      category_id: ''
+    },
+
     selectedTicket: { comments: [] },
     selectedTicketLogs: [],
+
     newComment: '',
+
     showDescription: false,
     maxDescLength: 400,
 
@@ -18,7 +39,7 @@ function dashboard() {
 
     listedUsers: [],
 
-    filters: {
+    userFilters: {
       search: '',
       hotelId: '',
       role: ''
@@ -93,6 +114,22 @@ function dashboard() {
       this.showCreateUserModal = true;
     },
 
+    formatDate(date) {
+
+      if (!date) return '';
+
+      return new Date(date)
+        .toLocaleString(
+          'pt-BR'
+        );
+
+    },
+
+    changeStatus(status) {
+      this.ticketFilters.status = status;
+      this.pagination.page = 1;
+      this.getTickets();
+    },
   
     async fetchUsers() {
 
@@ -109,24 +146,24 @@ function dashboard() {
       const params =
         new URLSearchParams();
 
-      if (this.filters.search) {
+      if (this.userFilters.search) {
         params.append(
           'search',
-          this.filters.search
+          this.userFilters.search
         );
       }
 
-      if (this.filters.hotelId) {
+      if (this.userFilters.hotelId) {
         params.append(
           'hotel_id',
-          this.filters.hotelId
+          this.userFilters.hotelId
         );
       }
 
-      if (this.filters.role) {
+      if (this.userFilters.role) {
         params.append(
           'role',
-          this.filters.role
+          this.userFilters.role
         );
       }
 
@@ -581,33 +618,6 @@ function dashboard() {
       }[role]
     },
 
-    /*async fetchTeams() {
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        console.error("Token não localizado");
-        return;
-      }
-
-      if (this.teams.length === 0) {
-        const res = await fetch(`${API_BASE}/teams/`, {
-          method: "GET",
-          headers: {
-            "Authorization": "Bearer " + token,
-            "Content-Type": "application/json"
-          }
-        })
-
-        if (!res.ok) {
-          console.error("Erro ao listar times", "error");
-          return;
-        }
-
-        this.teams = await res.json();
-        console.log("resposta da API:", res);
-        console.log("VARIAVEL TEAMS", this.teams)
-      }
-    },*/
-
     async fetchTeamUsers() {
       const token = localStorage.getItem("access_token");
 
@@ -885,47 +895,127 @@ function dashboard() {
       if (container) container.innerHTML = "";
     },
 
-    async getTickets() {
+    async getTickets(resetPage = false) {
 
-      const token = localStorage.getItem("access_token");
+      const token =
+        localStorage.getItem("access_token");
 
       if (!token) {
-        Alpine.store("app").currentView = "login";
+        this.currentPage = 'login';
+        return;
+      }
+
+      if (resetPage) {
+        this.pagination.page = 1;
       }
 
       this.loadingTickets = true;
 
-      if (token) {
-        try {
-          let res = await fetch(`${API_BASE}/tickets/`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer " + token
-            },
-          });
+      try {
 
-          if (!res.ok) {
-            throw new Error("Erro ao buscar tickets");
-          }
+        const params =
+          new URLSearchParams();
 
-          const data = await res.json();
+        params.append(
+          'status',
+          this.ticketFilters.status
+        );
 
-          console.log(data)
+        params.append(
+          'page',
+          this.pagination.page
+        );
 
-          this.ticketList = data;
+        params.append(
+          'page_size',
+          this.pagination.pageSize
+        );
 
-        } catch (error) {
-          console.error("Erro ao buscar tickets:", error);
-          this.showToast("Erro ao carregar tickets", "error");
-        } finally {
-          this.loadingTickets = false;
+        if (this.ticketFilters.search) {
+          params.append(
+            'search',
+            this.ticketFilters.search
+          );
         }
-      } else {
-        Alpine.store("app").currentView = "login";
+
+        if (this.ticketFilters.progress) {
+          params.append(
+            'progress',
+            this.ticketFilters.progress
+          );
+        }
+
+        if (this.ticketFilters.priority) {
+          params.append(
+            'priority',
+            this.ticketFilters.priority
+          );
+        }
+
+        if (this.ticketFilters.team_id) {
+          params.append(
+            'team_id',
+            this.ticketFilters.team_id
+          );
+        }
+
+        if (this.ticketFilters.category_id) {
+          params.append(
+            'category_id',
+            this.ticketFilters.category_id
+          );
+        }
+
+        if (this.ticketFilters.hotel_id) {
+          params.append(
+            'hotel_id',
+            this.ticketFilters.hotel_id
+          );
+        }
+
+        const res =
+          await fetch(
+            `${API_BASE}/tickets/?${params.toString()}`,
+            {
+              headers: {
+                Authorization:
+                  'Bearer ' + token
+              }
+            }
+          );
+
+        if (!res.ok) {
+          throw new Error();
+        }
+
+        const data =
+          await res.json();
+
+        this.ticketList =
+          data.items;
+
+        this.pagination.total =
+          data.total;
+
+        this.pagination.pages =
+          data.pages;
+
+      } catch (e) {
+
+        console.error(e);
+
+        this.showToast(
+          'Erro ao carregar tickets',
+          'error'
+        );
+
+      } finally {
+
+        this.loadingTickets = false;
+
       }
     },
-
+    
     get filteredTickets() {
       if (this.currentTab === "all") {
         return this.ticketList;

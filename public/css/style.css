@@ -41,12 +41,7 @@ html {
   align-self: center;
 }
 
-input,
-button {
-  padding: 10px;
-  
-  border-radius: 4px;
-}
+
 
 input {
   background: #555;
@@ -241,5 +236,16 @@ input {
   border-radius: 9999px;
   flex-shrink: 0;
 }
+
+.input-class {
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.input-class-search {
+  border-radius: 4px;
+}
+
+
 
 
