@@ -13,17 +13,17 @@
         </h1>
 
         <div class="flex w-full space-x-2">
-          <button @click="goTo('tickets')" class="tab-btn"
+          <button @click="goTo('tickets')" class="tab-btn input-class"
             :class="'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'">
             ← Voltar
           </button>
 
-          <button class="tab-btn" @click="ticketViewTab = 'details'"
+          <button class="tab-btn input-class" @click="ticketViewTab = 'details'"
             :class="ticketViewTab === 'details' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'">
             Detalhes
           </button>
 
-          <button class="tab-btn" @click="
+          <button class="tab-btn input-class" @click="
             ticketViewTab = 'ticketHistory';
             getSelectedTicketLogs(selectedTicket.id)
             "
@@ -32,13 +32,13 @@
           </button>
 
           <!-- Anexos -->
-          <button class="tab-btn" @click="ticketViewTab = 'attachments'"
+          <button class="tab-btn input-class" @click="ticketViewTab = 'attachments'"
             :class="ticketViewTab === 'attachments' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'">
             Anexos
           </button>
 
           <template x-if="['admin', 'agent'].includes($store.app.role)">
-            <button class="tab-btn" @click="
+            <button class="tab-btn input-class" @click="
              ticketViewTab = 'transferTicket'; 
              fetchTeamUsers()"
               :class="ticketViewTab === 'transferTicket' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'">
@@ -47,7 +47,7 @@
           </template>
 
           <template x-if="['admin', 'agent'].includes($store.app.role)">
-            <button class="tab-btn" @click="
+            <button class="tab-btn input-class" @click="
              ticketViewTab = 'timelog'"
               :class="ticketViewTab === 'timelog' ? 'border-b-2 border-gray-400 text-white' : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'">
               Timelog
@@ -374,12 +374,12 @@
 
         <div class="mt-2 flex items-center justify-evenly">
           <button
-            class=" w-30  bg-blue-600 hover:bg-blue-700 rounded-lg text-xs font-small text-white text-center shadow-md transition">
+            class=" w-30 input-class bg-blue-600 hover:bg-blue-700 rounded-lg text-xs font-small text-white text-center shadow-md transition">
             📞 Contatar
           </button>
 
           <button
-            class=" w-30 bg-green-600 hover:bg-emerald-700 rounded-lg text-xs font-small text-white text-center shadow-md transition">
+            class=" w-30 input-class bg-green-600 hover:bg-emerald-700 rounded-lg text-xs font-small text-white text-center shadow-md transition">
             📅 Agendar
           </button>
         </div>
@@ -480,7 +480,7 @@
           ">
             <button @click="startTicket()" class="w-full mt-3 px-3 py-2 
              bg-blue-700 hover:bg-blue-800 
-             rounded-lg text-sm font-medium text-white 
+             rounded-lg text-sm font-medium text-white input-class
              text-center shadow-md transition">
               Iniciar atendimento
             </button>
@@ -490,7 +490,7 @@
           <template x-if="selectedTicket.progress === 'done'">
             <button @click="reopenTicket()" class="w-full mt-3 px-3 py-2 
              bg-amber-600 hover:bg-amber-700 
-             rounded-lg text-sm font-medium text-white 
+             rounded-lg text-sm font-medium text-white input-class
              text-center shadow-md transition">
               Reabrir chamado
             </button>
@@ -500,7 +500,7 @@
           <template x-if="selectedTicket.progress === 'awaiting_confirmation'">
             <button @click="returnTicketToQueue()" class="w-full mt-3 px-3 py-2 
              bg-amber-600 hover:bg-amber-700 
-             rounded-lg text-sm font-medium text-white 
+             rounded-lg text-sm font-medium text-white input-class
              text-center shadow-md transition">
               Retornar chamado para atendimento
             </button>
@@ -513,7 +513,7 @@
               ">
             <button @click="closeTicket()" class="w-full mt-3 px-3 py-2 
              bg-emerald-600 hover:bg-emerald-700 
-             rounded-lg text-sm font-medium text-white 
+             rounded-lg text-sm font-medium text-white input-class
              text-center shadow-md transition">
               Aceitar resolução
             </button>
@@ -526,7 +526,7 @@
           ">
             <button @click="showFinishModal = true" class="w-full mt-3 px-3 py-2 
              bg-red-800 hover:bg-red-900 
-             rounded-lg text-sm font-medium text-white 
+             rounded-lg text-sm font-medium text-white input-class
              text-center shadow-md transition">
               Finalizar atendimento
             </button>
