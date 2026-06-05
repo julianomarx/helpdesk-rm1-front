@@ -68,7 +68,17 @@ function dashboard() {
 
     showCreateUserModal: false,
 
-    
+    showCreateTicketModal: false,
+
+    newTicket: {
+    title: '',
+    description: '',
+    priority: 'low',
+    hotelId: '',
+    categoryId: '',
+    subcategoryId: ''
+    },
+
     creator: {
       name: '',
       email: '',
@@ -114,6 +124,8 @@ function dashboard() {
       this.showCreateUserModal = true;
     },
 
+    
+
     formatDate(date) {
 
       if (!date) return '';
@@ -130,6 +142,29 @@ function dashboard() {
       this.pagination.page = 1;
       this.getTickets();
     },
+
+    async nextPage() {
+
+        if (this.pagination.page >= this.pagination.pages) {
+            return;
+        }
+
+        this.pagination.page++;
+
+        await this.getTickets();
+    },
+
+    async previousPage() {
+
+        if (this.pagination.page <= 1) {
+            return;
+        }
+
+        this.pagination.page--;
+
+        await this.getTickets();
+    },
+
   
     async fetchUsers() {
 
@@ -1327,6 +1362,50 @@ function dashboard() {
         toast.classList.add("opacity-0", "translate-x-full");
         setTimeout(() => toast.remove(), 500); // tempo da transição
       }, 4200);
+
+    },
+
+    async submitCreateTicket() {
+
+      const t = this.newTicket;
+
+      if (
+        !t.title ||
+        !t.description ||
+        !t.hotelId ||
+        !t.categoryId ||
+        !t.subcategoryId
+      ) {
+        showToast('Preencha todos os campos obrigatórios.', 'error');
+        return;
+      }
+
+      await this.createTicket(
+        t.title,
+        t.description,
+        t.priority,
+        t.hotelId,
+        t.categoryId,
+        t.subcategoryId
+      );
+
+      this.resetCreateTicket();
+
+      this.showCreateTicketModal = false;
+
+      this.getTickets();
+    },
+
+    resetCreateTicket() {
+
+      this.newTicket = {
+        title: '',
+        description: '',
+        priority: 'low',
+        hotelId: '',
+        categoryId: '',
+        subcategoryId: ''
+      };
 
     },
 

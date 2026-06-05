@@ -570,4 +570,270 @@
 
   </button>
 
+  <!-- MODAL CREATE TICKET -->
+  <div
+    x-show="showCreateTicketModal"
+    x-transition.opacity
+    class="fixed inset-0 z-50
+          bg-black/50 backdrop-blur-sm
+          flex items-center justify-center">
+
+    <div
+      @click.outside="showCreateTicketModal = false"
+      class="bg-gray-800/40 backdrop-blur-2xl
+            border border-white/10
+            rounded-[32px]
+            shadow-2xl
+            w-[94vw]
+            max-w-4xl
+            h-[82vh]
+            p-6
+            flex flex-col
+            backdrop-saturate-150">
+
+      <!-- Header -->
+      <div class="mb-6 shrink-0">
+
+        <h2 class="text-xl font-bold text-gray-100">
+          Abrir chamado
+        </h2>
+
+        <p class="text-sm text-gray-400 mt-1">
+          Registre uma nova solicitação.
+        </p>
+
+      </div>
+
+      <!-- Body -->
+      <div class="flex-1 overflow-y-auto pr-2 custom-scroll">
+
+        <!-- Título -->
+        <div class="mb-5">
+
+          <label class="block text-xs mb-1 text-gray-300">
+            Título *
+          </label>
+
+          <input
+            type="text"
+            x-model="newTicket.title"
+            maxlength="100"
+            placeholder="Digite o título do chamado"
+            class="w-full p-3 rounded-xl
+                  bg-gray-800/50 border border-white/10
+                  focus:ring-1 focus:ring-blue-500
+                  focus:outline-none
+                  placeholder-gray-400">
+
+          <div
+            class="flex justify-end text-xs mt-2"
+            :class="100 - newTicket.title.length < 15
+              ? 'text-yellow-400'
+              : 'text-gray-400'">
+
+            <span
+              x-text="(100 - newTicket.title.length) + ' caracteres restantes'">
+            </span>
+
+          </div>
+
+        </div>
+
+        <!-- Categoria + Subcategoria -->
+        <div class="grid grid-cols-2 gap-4 mb-5">
+
+          <div>
+
+            <label class="block text-xs mb-1 text-gray-300">
+              Categoria *
+            </label>
+
+            <select
+              x-model="newTicket.categoryId"
+              @change="newTicket.subcategoryId = ''"
+              class="w-full p-3 rounded-xl
+                    bg-gray-800/90 border border-white/10
+                    focus:ring-1 focus:ring-blue-500
+                    focus:outline-none">
+
+              <option value="">
+                Selecione uma categoria
+              </option>
+
+              <template
+                x-for="cat in $store.app.categories"
+                :key="cat.id">
+
+                <option
+                  :value="cat.id"
+                  x-text="cat.name">
+                </option>
+
+              </template>
+
+            </select>
+
+          </div>
+
+          <div>
+
+            <label class="block text-xs mb-1 text-gray-300">
+              Subcategoria *
+            </label>
+
+            <select
+              x-model="newTicket.subcategoryId"
+              :disabled="!newTicket.categoryId"
+              class="w-full p-3 rounded-xl
+                    bg-gray-800/90 border border-white/10
+                    focus:ring-1 focus:ring-blue-500
+                    focus:outline-none
+                    disabled:opacity-50
+                    disabled:cursor-not-allowed">
+
+              <option value="">
+                Selecione uma subcategoria
+              </option>
+
+              <template
+                x-for="sub in $store.app.subcategories"
+                :key="sub.id">
+
+                <option
+                  x-show="sub.category_id === Number(newTicket.categoryId)"
+                  :value="sub.id"
+                  x-text="sub.name">
+                </option>
+
+              </template>
+
+            </select>
+
+          </div>
+
+        </div>
+
+        <!-- Descrição -->
+        <div class="mb-5">
+
+          <label class="block text-xs mb-1 text-gray-300">
+            Descrição *
+          </label>
+
+          <textarea
+            x-model="newTicket.description"
+            rows="10"
+            placeholder="Descreva o problema..."
+            class="w-full p-3 rounded-xl
+                  bg-gray-800/50 border border-white/10
+                  focus:ring-1 focus:ring-blue-500
+                  focus:outline-none
+                  resize-none
+                  placeholder-gray-400">
+          </textarea>
+
+        </div>
+
+        <!-- Prioridade + Hotel -->
+        <div class="grid grid-cols-2 gap-4">
+
+          <div>
+
+            <label class="block text-xs mb-1 text-gray-300">
+              Prioridade *
+            </label>
+
+            <select
+              x-model="newTicket.priority"
+              class="w-full p-3 rounded-xl
+                    bg-gray-800/90 border border-white/10
+                    focus:ring-1 focus:ring-blue-500
+                    focus:outline-none">
+
+              <option value="low">
+                Baixa
+              </option>
+
+              <option value="medium">
+                Média
+              </option>
+
+              <option value="high">
+                Alta
+              </option>
+
+            </select>
+
+          </div>
+
+          <div>
+
+            <label class="block text-xs mb-1 text-gray-300">
+              Hotel *
+            </label>
+
+            <select
+              x-model="newTicket.hotelId"
+              class="w-full p-3 rounded-xl
+                    bg-gray-800/90 border border-white/10
+                    focus:ring-1 focus:ring-blue-500
+                    focus:outline-none">
+
+              <option value="">
+                Selecione um hotel
+              </option>
+
+              <template
+                x-for="hotel in $store.app.hotels"
+                :key="hotel.id">
+
+                <option
+                  :value="hotel.id"
+                  x-text="hotel.code + ' - ' + hotel.name">
+                </option>
+
+              </template>
+
+            </select>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div
+        class="flex justify-end gap-3
+              pt-5 mt-5
+              border-t border-white/10
+              shrink-0">
+
+        <button
+          @click="showCreateTicketModal = false"
+          class="px-5 py-3 rounded-xl
+                bg-gray-700 hover:bg-gray-600
+                transition">
+
+          Cancelar
+
+        </button>
+
+        <button
+          @click="submitCreateTicket()"
+          class="px-6 py-3 rounded-xl
+                bg-blue-600 hover:bg-blue-700
+                text-white font-semibold
+                shadow-lg transition">
+
+          Abrir chamado
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
 </div>
