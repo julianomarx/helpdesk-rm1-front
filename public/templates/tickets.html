@@ -653,7 +653,7 @@
             x-model="newTicket.title"
             maxlength="100"
             placeholder="Digite o título do chamado"
-            class="w-full p-3 rounded-xl
+            class="w-full p-3 rounded-xl input-class
                   bg-gray-800/50 border border-white/10
                   focus:ring-1 focus:ring-blue-500
                   focus:outline-none
@@ -685,7 +685,7 @@
             <select
               x-model="newTicket.categoryId"
               @change="newTicket.subcategoryId = ''"
-              class="w-full p-3 rounded-xl
+              class="w-full p-3 rounded-xl input-class
                     bg-gray-800/90 border border-white/10
                     focus:ring-1 focus:ring-blue-500
                     focus:outline-none">
@@ -718,7 +718,7 @@
             <select
               x-model="newTicket.subcategoryId"
               :disabled="!newTicket.categoryId"
-              class="w-full p-3 rounded-xl
+              class="w-full p-3 rounded-xl input-class
                     bg-gray-800/90 border border-white/10
                     focus:ring-1 focus:ring-blue-500
                     focus:outline-none
@@ -758,7 +758,7 @@
             x-model="newTicket.description"
             rows="10"
             placeholder="Descreva o problema..."
-            class="w-full p-3 rounded-xl h-[200px]
+            class="w-full p-3 rounded-xl h-[200px] input-class
                   bg-gray-800/50 border border-white/10
                   focus:ring-1 focus:ring-blue-500
                   focus:outline-none
@@ -779,7 +779,7 @@
 
             <select
               x-model="newTicket.priority"
-              class="w-full p-3 rounded-xl
+              class="w-full p-3 rounded-xl input-class
                     bg-gray-800/90 border border-white/10
                     focus:ring-1 focus:ring-blue-500
                     focus:outline-none">
@@ -808,7 +808,7 @@
 
             <select
               x-model="newTicket.hotelId"
-              class="w-full p-3 rounded-xl
+              class="w-full p-3 rounded-xl input-class
                     bg-gray-800/90 border border-white/10
                     focus:ring-1 focus:ring-blue-500
                     focus:outline-none">
@@ -845,7 +845,7 @@
 
         <button
           @click="showCreateTicketModal = false"
-          class="px-5 py-3 rounded-xl
+          class="px-5 py-3 rounded-xl input-class
                 bg-gray-700 hover:bg-gray-600
                 transition">
 
@@ -855,7 +855,7 @@
 
         <button
           @click="submitCreateTicket()"
-          class="px-6 py-3 rounded-xl
+          class="px-6 py-3 rounded-xl input-class
                 bg-blue-600 hover:bg-blue-700
                 text-white font-semibold
                 shadow-lg transition">
