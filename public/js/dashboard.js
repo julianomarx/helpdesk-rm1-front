@@ -81,15 +81,6 @@ function dashboard() {
       avatarUrl: ''
     },
 
-    newTicket: {
-    title: '',
-    description: '',
-    priority: 'low',
-    hotelId: '',
-    categoryId: '',
-    subcategoryId: ''
-    },
-
     creator: {
       name: '',
       email: '',
@@ -106,6 +97,26 @@ function dashboard() {
       password: false,
       confirmPassword: false,
       role: false
+    },
+
+    newTicket: {
+      title: '',
+      description: '',
+      priority: 'low',
+      hotelId: '',
+      categoryId: '',
+      subcategoryId: ''
+    },
+
+    resetNewTicketModal() {
+      this.newTicket = {
+        title: '',
+        description: '',
+        priority: 'low',
+        hotelId: '',
+        categoryId: '',
+        subcategoryId: ''
+      }
     },
 
     resetCreateUser() {

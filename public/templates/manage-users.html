@@ -812,7 +812,7 @@
               type="text"
               x-model="creator.name"
               placeholder="Digite o nome do usuário"
-              class="w-full p-3 rounded-xl
+              class="w-full p-3 rounded-xl input-class
                     bg-gray-800/50 border border-white/10
                     focus:outline-none
                     focus:ring-1 focus:ring-blue-500">
@@ -829,7 +829,7 @@
               type="email"
               x-model="creator.email"
               placeholder="Digite o email"
-              class="w-full p-3 rounded-xl
+              class="w-full p-3 rounded-xl input-class
                     bg-gray-800/50 border border-white/10
                     focus:outline-none
                     focus:ring-1 focus:ring-blue-500">
@@ -849,7 +849,7 @@
 
             <select
               x-model="creator.role"
-              class="w-full p-3 rounded-xl
+              class="w-full p-3 h-[45px] rounded-xl input-class
                     bg-gray-800/50 border border-white/10">
 
               <option selected disabled value="">
@@ -886,7 +886,7 @@
               type="password"
               x-model="creator.password"
               placeholder="Digite a senha"
-              class="w-full p-3 rounded-xl
+              class="w-full p-3 rounded-xl input-class
                     bg-gray-800/50 border border-white/10
                     focus:outline-none
                     focus:ring-1 focus:ring-blue-500">
@@ -903,7 +903,7 @@
               type="password"
               x-model="creator.confirmPassword"
               placeholder="Digite a senha"
-              class="w-full p-3 rounded-xl
+              class="w-full p-3 rounded-xl input-class  
                     bg-gray-800/50 border border-white/10
                     focus:outline-none
                     focus:ring-1 focus:ring-blue-500">
@@ -930,7 +930,7 @@
               type="text"
               x-model="hotelSearch"
               placeholder="Buscar hotel por nome ou código..."
-              class="w-full p-3 rounded-xl
+              class="w-full p-3 rounded-xl input-class
                     bg-gray-800/40 border border-white/10
                     focus:ring-1 focus:ring-blue-500
                     focus:outline-none
@@ -1052,9 +1052,13 @@
                   :key="hotel.id">
 
                   <div
-                    class="flex items-center justify-between
+                    class="flex items-center justify-between input-class
                           px-3 py-3 rounded-2xl
-                          bg-gray-900/30">
+                          bg-gray-900/30
+                          border border-transparent
+                          hover:border-white/10
+                          hover:bg-gray-700/20
+                          transition">
 
                     <div class="min-w-0">
 
@@ -1187,7 +1191,7 @@
 
           <button
             @click="showCreateUserModal = false"
-            class="px-5 py-3 rounded-xl
+            class="px-5 py-3 rounded-xl input-class
                   bg-gray-700 hover:bg-gray-600
                   transition">
 
@@ -1197,7 +1201,7 @@
 
           <button
             @click="submitUserCreation()"
-            class="px-6 py-3 rounded-xl
+            class="px-6 py-3 rounded-xl input-class
                   bg-green-600 hover:bg-green-700
                   font-semibold transition">
 

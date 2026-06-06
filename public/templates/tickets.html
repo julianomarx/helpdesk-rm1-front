@@ -583,7 +583,7 @@
   <!-- FAB -->
   <button
     id="create-ticket-btn"
-    @click="showCreateTicketModal = true"
+    @click="resetNewTicketModal(); showCreateTicketModal = true;"
 
     class="
       fixed
@@ -758,7 +758,7 @@
             x-model="newTicket.description"
             rows="10"
             placeholder="Descreva o problema..."
-            class="w-full p-3 rounded-xl
+            class="w-full p-3 rounded-xl h-[200px]
                   bg-gray-800/50 border border-white/10
                   focus:ring-1 focus:ring-blue-500
                   focus:outline-none
