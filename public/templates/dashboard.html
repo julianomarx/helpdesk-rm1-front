@@ -1,1 +1,406 @@
-<p>Dashboard do Admin</p>
+<div
+    x-data="dashboardPage()"
+    x-init="loadDashboardOverview()"
+    class="flex flex-col h-full overflow-hidden">
+
+    <!-- HEADER -->
+
+    <div class="mb-6">
+
+        <h1 class="text-2xl font-bold">
+            Dashboard
+        </h1>
+
+        <p class="text-sm text-gray-400">
+            Indicadores operacionais e produtividade
+        </p>
+
+    </div>
+
+    <!-- FILTROS -->
+
+    <div
+        class="mb-6 p-4 rounded-3xl
+        bg-gray-800/40 backdrop-blur-2xl
+        border border-white/10">
+
+        <div class="flex flex-wrap gap-3">
+
+            <input
+                type="date"
+                class="input-class bg-gray-900/50 border border-white/10 rounded-xl">
+
+            <input
+                type="date"
+                class="input-class bg-gray-900/50 border border-white/10 rounded-xl">
+
+            <button
+                class="px-4 py-2 rounded-xl
+                bg-blue-600 hover:bg-blue-700">
+
+                Filtrar
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- SCROLL -->
+
+    <div class="flex-1 overflow-y-auto pr-2 space-y-8">
+
+        <!-- ===================================================== -->
+        <!-- DASHBOARD 1 -->
+        <!-- ===================================================== -->
+
+        <section>
+
+            <div class="mb-4">
+
+                <h2 class="text-lg font-semibold">
+                    Operação
+                </h2>
+
+                <p class="text-xs text-gray-400">
+                    O que está acontecendo agora?
+                </p>
+
+            </div>
+
+            <!-- KPI GRID -->
+
+            <div
+                class="grid
+                grid-cols-2
+                md:grid-cols-4
+                xl:grid-cols-6
+                gap-4 mb-6">
+
+                <!-- KPI -->
+
+                <template
+                    x-for="card in overviewCards"
+                    :key="card.label">
+
+                    <div
+                        class="rounded-3xl
+                        bg-gray-800/40
+                        backdrop-blur-2xl
+                        border border-white/10
+                        p-5">
+
+                        <div
+                            class="text-xs text-gray-400 mb-2"
+                            x-text="card.label">
+                        </div>
+
+                        <div
+                            class="text-3xl font-bold"
+                            x-text="card.value">
+                        </div>
+
+                    </div>
+
+                </template>
+
+            </div>
+
+            <!-- TABELAS -->
+
+            <div
+                class="grid
+                grid-cols-1
+                xl:grid-cols-2
+                gap-5">
+
+                <!-- TICKETS PARADOS -->
+
+                <div
+                    class="rounded-3xl
+                    bg-gray-800/40
+                    border border-white/10
+                    backdrop-blur-2xl">
+
+                    <div class="p-5 border-b border-white/10">
+
+                        <h3 class="font-semibold">
+                            Tickets Parados
+                        </h3>
+
+                    </div>
+
+                    <div class="p-5">
+
+                        <div class="text-sm text-gray-500">
+                            Endpoint futuro
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- SEM RESPONSÁVEL -->
+
+                <div
+                    class="rounded-3xl
+                    bg-gray-800/40
+                    border border-white/10
+                    backdrop-blur-2xl">
+
+                    <div class="p-5 border-b border-white/10">
+
+                        <h3 class="font-semibold">
+                            Tickets Sem Responsável
+                        </h3>
+
+                    </div>
+
+                    <div class="p-5">
+
+                        <div class="text-sm text-gray-500">
+                            Endpoint futuro
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- CRÍTICOS -->
+
+                <div
+                    class="rounded-3xl
+                    bg-gray-800/40
+                    border border-white/10
+                    backdrop-blur-2xl">
+
+                    <div class="p-5 border-b border-white/10">
+
+                        <h3 class="font-semibold">
+                            Tickets Críticos
+                        </h3>
+
+                    </div>
+
+                    <div class="p-5">
+
+                        <div class="text-sm text-gray-500">
+                            Endpoint futuro
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- AGUARDANDO CLIENTE -->
+
+                <div
+                    class="rounded-3xl
+                    bg-gray-800/40
+                    border border-white/10
+                    backdrop-blur-2xl">
+
+                    <div class="p-5 border-b border-white/10">
+
+                        <h3 class="font-semibold">
+                            Aguardando Cliente
+                        </h3>
+
+                    </div>
+
+                    <div class="p-5">
+
+                        <div class="text-sm text-gray-500">
+                            Endpoint futuro
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ===================================================== -->
+        <!-- DASHBOARD 2 -->
+        <!-- ===================================================== -->
+
+        <section>
+
+            <div class="mb-4">
+
+                <h2 class="text-lg font-semibold">
+                    Produtividade Individual
+                </h2>
+
+                <p class="text-xs text-gray-400">
+                    Quem está produzindo?
+                </p>
+
+            </div>
+
+            <div
+                class="rounded-3xl
+                bg-gray-800/40
+                border border-white/10
+                backdrop-blur-2xl
+                p-6">
+
+                Ranking de atendentes
+
+            </div>
+
+        </section>
+
+        <!-- ===================================================== -->
+        <!-- DASHBOARD 3 -->
+        <!-- ===================================================== -->
+
+        <section>
+
+            <div class="mb-4">
+
+                <h2 class="text-lg font-semibold">
+                    Gargalos
+                </h2>
+
+                <p class="text-xs text-gray-400">
+                    Onde estamos perdendo tempo?
+                </p>
+
+            </div>
+
+            <div
+                class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+
+                <div
+                    class="rounded-3xl
+                    bg-gray-800/40
+                    border border-white/10
+                    backdrop-blur-2xl
+                    p-6">
+
+                    Tempo médio por equipe
+
+                </div>
+
+                <div
+                    class="rounded-3xl
+                    bg-gray-800/40
+                    border border-white/10
+                    backdrop-blur-2xl
+                    p-6">
+
+                    Tempo médio por categoria
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ===================================================== -->
+        <!-- DASHBOARD 4 -->
+        <!-- ===================================================== -->
+
+        <section>
+
+            <div class="mb-4">
+
+                <h2 class="text-lg font-semibold">
+                    Volume
+                </h2>
+
+            </div>
+
+            <div
+                class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+
+                <div
+                    class="rounded-3xl
+                    bg-gray-800/40
+                    border border-white/10
+                    backdrop-blur-2xl
+                    p-6">
+
+                    Gráfico por Categoria
+
+                </div>
+
+                <div
+                    class="rounded-3xl
+                    bg-gray-800/40
+                    border border-white/10
+                    backdrop-blur-2xl
+                    p-6">
+
+                    Hotéis que mais abrem tickets
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ===================================================== -->
+        <!-- DASHBOARD 5 -->
+        <!-- ===================================================== -->
+
+        <section>
+
+            <div class="mb-4">
+
+                <h2 class="text-lg font-semibold">
+                    SLA
+                </h2>
+
+            </div>
+
+            <div
+                class="rounded-3xl
+                bg-gray-800/40
+                border border-white/10
+                backdrop-blur-2xl
+                p-6">
+
+                Indicadores SLA
+
+            </div>
+
+        </section>
+
+        <!-- ===================================================== -->
+        <!-- DASHBOARD 6 -->
+        <!-- ===================================================== -->
+
+        <section>
+
+            <div class="mb-4">
+
+                <h2 class="text-lg font-semibold">
+                    Histórico
+                </h2>
+
+                <p class="text-xs text-gray-400">
+                    Estamos melhorando ou piorando?
+                </p>
+
+            </div>
+
+            <div
+                class="rounded-3xl
+                bg-gray-800/40
+                border border-white/10
+                backdrop-blur-2xl
+                p-6">
+
+                Gráfico mensal
+
+            </div>
+
+        </section>
+
+    </div>
+
+</div>

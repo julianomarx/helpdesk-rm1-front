@@ -108,6 +108,17 @@ function dashboard() {
       subcategoryId: ''
     },
 
+    dashboardOverview: {
+      created_today_tickets: 0,
+      open_tickets: 0,
+      in_progress_tickets: 0,
+      feedback_tickets: 0,
+      awaiting_confirmation_tickets: 0,
+      unassigned_tickets: 0,
+      stale_48h_tickets: 0,
+      high_priority_tickets: 0
+    },
+
     resetNewTicketModal() {
       this.newTicket = {
         title: '',
@@ -175,6 +186,84 @@ function dashboard() {
       this.ticketFilters.status = status;
       this.pagination.page = 1;
       this.getTickets();
+    },
+
+    async loadDashboardOverview() {
+
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        this.currentPage = 'login';
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${API_BASE}/dashboard/overview`,
+          {
+            headers: {
+              "Authorization" : "Bearer " + token,
+              "Content-Type" : "application/json"
+            }
+          }
+        )
+
+        if (!response.ok)
+          throw new Error()
+
+        this.dashboardOverview = await response.json();
+
+        console.log(
+          "Dados recebidos da API:",
+          this.dashboardOverview
+        );
+
+      } catch (err) {
+        console.error(err)
+
+        showToast(
+          "Erro ao carregar dashboard",
+          "error"
+        )
+
+      }
+
+    },
+
+    get overviewCards() {
+      return [
+        {
+          label: "Criados Hoje",
+          value: this.dashboardOverview.created_today_tickets
+        },
+        {
+          label: "Tickets Abertos",
+          value: this.dashboardOverview.open_tickets
+        },
+        {
+          label: "Em Atendimento",
+          value: this.dashboardOverview.in_progress_tickets
+        },
+        {
+          label: "Aguardando Feedback",
+          value: this.dashboardOverview.feedback_tickets
+        },
+        {
+          label: "Aguardando Confirmação",
+          value: this.dashboardOverview.awaiting_confirmation_tickets
+        },
+        {
+          label: "Sem Responsável",
+          value: this.dashboardOverview.unassigned_tickets
+        },
+        {
+          label: "Parados +48h",
+          value: this.dashboardOverview.stale_48h_tickets
+        },
+        {
+          label: "Alta Prioridade",
+          value: this.dashboardOverview.high_priority_tickets
+        }
+      ];
     },
 
     async nextPage() {
@@ -907,7 +996,13 @@ function dashboard() {
 
       if (cssPath) this.loadCss(cssPath);
       
-      if (page === "tickets") this.getTickets();
+      if (page === "tickets") {
+        await this.getTickets();
+      }
+
+      /*if(page === 'dashboard'){
+        await this.loadDashboardOverview()
+      }*/
 
       const container = document.getElementById("page-container");
       try {
