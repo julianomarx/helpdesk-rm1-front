@@ -70,6 +70,17 @@ function dashboard() {
 
     showCreateTicketModal: false,
 
+
+    showProfileModal: false,
+
+    profile: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      avatarUrl: ''
+    },
+
     newTicket: {
     title: '',
     description: '',
@@ -117,6 +128,18 @@ function dashboard() {
       }
 
       this.hotelSearch = '';
+    },
+
+    openProfileModal() {
+
+      this.profile = {
+        name: Alpine.store("app").userName || '',
+        email: Alpine.store("app").userEmail || '',
+        password: '',
+        confirmPassword: ''
+      };
+
+      this.showProfileModal = true;
     },
 
     openCreateUserModal() {
@@ -1394,6 +1417,72 @@ function dashboard() {
       this.showCreateTicketModal = false;
 
       this.getTickets();
+    },
+
+    async copyTicket(ticket) {
+
+      const text = `
+        *CHAMADO #${ticket.id}*
+        *Hotel* ${ticket.hotel?.code || ''} - ${ticket.hotel?.name || ''}
+        *Título* ${ticket.title}
+
+        *Categoria* ${ticket.category?.name || ''}
+        *Subcategoria* ${ticket.subcategory?.name || ''}
+        *Prioridade* ${ticket.priority}
+        *Status* ${ticket.progress}
+    
+        *Descrição*
+        ${ticket.description}
+      `;
+
+      try {
+
+        await navigator.clipboard.writeText(text);
+
+        this.showToast(
+          `Ticket #${ticket.id} copiado`,
+          'success'
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+        this.showToast(
+          'Erro ao copiar ticket',
+          'error'
+        );
+
+      }
+    },
+
+    shareTicketWhatsapp(ticket) {
+
+      const message = `
+        🎫 CHAMADO #${ticket.id}
+
+        🏨 Hotel: ${ticket.hotel_name || '-'}
+
+        📌 Título:
+        ${ticket.title}
+
+        📝 Descrição:
+        ${ticket.description}
+
+        ⚠️ Prioridade:
+        ${ticket.priority}
+
+        📊 Status:
+        ${ticket.progress}
+      `;
+
+      const encoded =
+        encodeURIComponent(message);
+
+      window.open(
+        `https://wa.me/?text=${encoded}`,
+        '_blank'
+        );
     },
 
     resetCreateTicket() {

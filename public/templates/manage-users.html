@@ -27,7 +27,7 @@
           type="text"
           x-model="userFilters.search"
           placeholder="Nome do usuário..."
-          class="w-full p-3 rounded-xl
+          class="w-full p-3 rounded-xl input-class
                  bg-gray-800/50 border border-white/10
                  focus:ring-1 focus:ring-blue-500
                  focus:outline-none text-sm
@@ -46,7 +46,7 @@
           <select
             x-model="userFilters.hotelId"
             class="w-full p-3 rounded-xl
-                   bg-gray-800/90 border border-white/10
+                   bg-gray-800/90 border border-white/10 input-class
                    focus:ring-1 focus:ring-blue-500
                    focus:outline-none text-sm">
 
@@ -81,7 +81,7 @@
 
           <select
             x-model="userFilters.role"
-            class="w-full p-3 rounded-xl
+            class="w-full p-3 rounded-xl input-class
                    bg-gray-800/90 border border-white/10
                    focus:ring-1 focus:ring-blue-500
                    focus:outline-none text-sm">
@@ -116,7 +116,7 @@
 
         <button
           @click="fetchUsers()"
-          class="w-full
+          class="w-full input-class
                  bg-blue-600/90 hover:bg-blue-700
                  transition-colors
                  py-3 rounded-xl
@@ -333,7 +333,7 @@
                   x-model="editor.user.name"
                   :disabled="!editor.enabled"
                   class="w-full p-3 rounded-xl
-                         bg-gray-800/50 border border-white/10
+                         bg-gray-800/50 border border-white/10 input-class
                          disabled:opacity-50
                          focus:outline-none
                          focus:ring-1 focus:ring-blue-500">
@@ -350,7 +350,7 @@
                   type="email"
                   x-model="editor.user.email"
                   :disabled="!editor.enabled"
-                  class="w-full p-3 rounded-xl
+                  class="w-full p-3 rounded-xl input-class
                          bg-gray-800/50 border border-white/10
                          disabled:opacity-50
                          focus:outline-none
@@ -372,7 +372,7 @@
                 <select
                   x-model="editor.user.role"
                   :disabled="!editor.enabled"
-                  class="w-full p-3 rounded-xl
+                  class="w-full p-3 rounded-xl input-class
                          bg-gray-800/50 border border-white/10
                          disabled:opacity-50">
 
@@ -407,7 +407,7 @@
                   x-model="editor.user.password"
                   :disabled="!editor.enabled"
                   placeholder="Deixe vazio para manter"
-                  class="w-full p-3 rounded-xl
+                  class="w-full p-3 rounded-xl input-class
                          bg-gray-800/50 border border-white/10
                          disabled:opacity-50
                          focus:outline-none
@@ -436,7 +436,7 @@
                   x-model="hotelSearch"
                   :disabled="!editor.enabled"
                   placeholder="Buscar hotel por nome ou código..."
-                  class="w-full p-3 rounded-xl
+                  class="w-full p-3 rounded-xl input-class
                          bg-gray-800/40 border border-white/10
                          focus:ring-1 focus:ring-blue-500
                          focus:outline-none
@@ -481,7 +481,7 @@
                       :key="hotel.id">
 
                       <div
-                        class="flex items-center justify-between
+                        class="flex items-center justify-between input-class
                                px-3 py-3 rounded-2xl
                                bg-gray-900/30
                                border border-transparent
@@ -561,9 +561,13 @@
                       :key="hotel.id">
 
                       <div
-                        class="flex items-center justify-between
+                        class="flex items-center justify-between input-class
                                px-3 py-3 rounded-2xl
-                               bg-gray-900/30">
+                               bg-gray-900/30
+                               border border-transparent
+                               hover:border-white/10
+                               hover:bg-gray-700/20
+                               transition">
 
                         <div class="min-w-0">
 
@@ -651,7 +655,7 @@
         type="button"
         :disabled="!editor.enabled"
         @click="toggleTeam(team)"
-        class="group flex items-center justify-between
+        class="group flex items-center justify-between input-class
                px-4 py-4 rounded-2xl
                border transition-all duration-200
                disabled:opacity-50"
@@ -679,7 +683,7 @@
             : 'bg-gray-700/70'">
 
           <div
-            class="absolute top-1 left-1
+            class="absolute top-1 left-1 
                    w-5 h-5 rounded-full
                    bg-white transition-all"
 
@@ -705,7 +709,7 @@
 
               <button
                 @click="showUserModal = false"
-                class="px-5 py-3 rounded-xl
+                class="px-5 py-3 rounded-xl input-class
                        bg-gray-700 hover:bg-gray-600
                        transition">
 
@@ -716,7 +720,7 @@
               <button
                 x-show="editor.enabled"
                 @click="saveUser()"
-                class="px-6 py-3 rounded-xl
+                class="px-6 py-3 rounded-xl input-class
                        bg-green-600 hover:bg-green-700
                        font-semibold transition">
 
@@ -970,7 +974,7 @@
                   :key="hotel.id">
 
                   <div
-                    class="flex items-center justify-between
+                    class="flex items-center justify-between input-class
                           px-3 py-3 rounded-2xl
                           bg-gray-900/30
                           border border-transparent
