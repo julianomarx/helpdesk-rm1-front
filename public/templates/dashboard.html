@@ -1,44 +1,75 @@
 <div
     x-data="dashboardPage()"
     x-init="loadDashboardOverview()"
-    class="flex flex-col h-full overflow-hidden">
+    class="flex p-3 flex-col h-full overflow-hidden text-gray-200">
 
     <!-- HEADER -->
 
-    <div class="mb-6">
+    <div class="mb-3">
 
-        <h1 class="text-2xl font-bold">
+        <h1 class="text-2xl font-bold border-b pb-2 border-gray-400 ">
             Dashboard
         </h1>
 
-        <p class="text-sm text-gray-400">
-            Indicadores operacionais e produtividade
-        </p>
-
     </div>
 
-    <!-- FILTROS -->
+    <!-- TABS -->
 
     <div
-        class="mb-6 p-4 rounded-3xl
-        bg-gray-800/40 backdrop-blur-2xl
-        border border-white/10">
+        class="mb-2
+        rounded-3xl
+        bg-gray-800/40
+        backdrop-blur-2xl
+        border border-white/10
+        p-2">
 
-        <div class="flex flex-wrap gap-3">
-
-            <input
-                type="date"
-                class="input-class bg-gray-900/50 border border-white/10 rounded-xl">
-
-            <input
-                type="date"
-                class="input-class bg-gray-900/50 border border-white/10 rounded-xl">
+        <div class="flex flex-wrap gap-2">
 
             <button
-                class="px-4 py-2 rounded-xl
-                bg-blue-600 hover:bg-blue-700">
+                class="px-4 py-2 rounded-2xl
+                bg-blue-600 text-white">
 
-                Filtrar
+                Operacional
+
+            </button>
+
+            <button
+                class="px-4 py-2 rounded-2xl
+                hover:bg-white/5">
+
+                Gargalos
+
+            </button>
+
+            <button
+                class="px-4 py-2 rounded-2xl
+                hover:bg-white/5">
+
+                Produtividade
+
+            </button>
+
+            <button
+                class="px-4 py-2 rounded-2xl
+                hover:bg-white/5">
+
+                Volume
+
+            </button>
+
+            <button
+                class="px-4 py-2 rounded-2xl
+                hover:bg-white/5">
+
+                SLA
+
+            </button>
+
+            <button
+                class="px-4 py-2 rounded-2xl
+                hover:bg-white/5">
+
+                Histórico
 
             </button>
 
@@ -51,7 +82,7 @@
     <div class="flex-1 overflow-y-auto pr-2 space-y-8">
 
         <!-- ===================================================== -->
-        <!-- DASHBOARD 1 -->
+        <!-- OPERACIONAL -->
         <!-- ===================================================== -->
 
         <section>
@@ -63,46 +94,58 @@
                 </h2>
 
                 <p class="text-xs text-gray-400">
-                    O que está acontecendo agora?
+                    Visão geral do ambiente neste momento
                 </p>
 
             </div>
 
-            <!-- KPI GRID -->
+            <!-- RESUMO OPERACIONAL -->
 
             <div
-                class="grid
-                grid-cols-2
-                md:grid-cols-4
-                xl:grid-cols-6
-                gap-4 mb-6">
+                class="rounded-3xl
+                bg-gray-800/40
+                backdrop-blur-2xl
+                border border-white/10
+                mb-6">
 
-                <!-- KPI -->
+                <div
+                    class="p-5
+                    border-b border-white/10">
 
-                <template
-                    x-for="card in overviewCards"
-                    :key="card.label">
+                    <h3 class="font-semibold">
+                        Resumo Operacional
+                    </h3>
 
-                    <div
-                        class="rounded-3xl
-                        bg-gray-800/40
-                        backdrop-blur-2xl
-                        border border-white/10
-                        p-5">
+                </div>
 
-                        <div
-                            class="text-xs text-gray-400 mb-2"
-                            x-text="card.label">
+                <div
+                    class="p-5
+                    grid
+                    grid-cols-2
+                    md:grid-cols-4
+                    gap-5">
+
+                    <template
+                        x-for="card in overviewCards"
+                        :key="card.label">
+
+                        <div>
+
+                            <div
+                                class="text-xs text-gray-400 mb-1"
+                                x-text="card.label">
+                            </div>
+
+                            <div
+                                class="text-3xl font-bold"
+                                x-text="card.value">
+                            </div>
+
                         </div>
 
-                        <div
-                            class="text-3xl font-bold"
-                            x-text="card.value">
-                        </div>
+                    </template>
 
-                    </div>
-
-                </template>
+                </div>
 
             </div>
 
@@ -114,7 +157,7 @@
                 xl:grid-cols-2
                 gap-5">
 
-                <!-- TICKETS PARADOS -->
+                <!-- PARADOS -->
 
                 <div
                     class="rounded-3xl
@@ -223,7 +266,7 @@
         </section>
 
         <!-- ===================================================== -->
-        <!-- DASHBOARD 2 -->
+        <!-- PRODUTIVIDADE -->
         <!-- ===================================================== -->
 
         <section>
@@ -254,7 +297,7 @@
         </section>
 
         <!-- ===================================================== -->
-        <!-- DASHBOARD 3 -->
+        <!-- GARGALOS -->
         <!-- ===================================================== -->
 
         <section>
@@ -272,7 +315,10 @@
             </div>
 
             <div
-                class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                class="grid
+                grid-cols-1
+                xl:grid-cols-2
+                gap-5">
 
                 <div
                     class="rounded-3xl
@@ -301,7 +347,7 @@
         </section>
 
         <!-- ===================================================== -->
-        <!-- DASHBOARD 4 -->
+        <!-- VOLUME -->
         <!-- ===================================================== -->
 
         <section>
@@ -315,7 +361,10 @@
             </div>
 
             <div
-                class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                class="grid
+                grid-cols-1
+                xl:grid-cols-2
+                gap-5">
 
                 <div
                     class="rounded-3xl
@@ -344,7 +393,7 @@
         </section>
 
         <!-- ===================================================== -->
-        <!-- DASHBOARD 5 -->
+        <!-- SLA -->
         <!-- ===================================================== -->
 
         <section>
@@ -371,7 +420,7 @@
         </section>
 
         <!-- ===================================================== -->
-        <!-- DASHBOARD 6 -->
+        <!-- HISTÓRICO -->
         <!-- ===================================================== -->
 
         <section>

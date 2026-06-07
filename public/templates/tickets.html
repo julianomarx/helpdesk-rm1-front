@@ -3,7 +3,7 @@
     flex flex-col flex-1
     min-h-0
     overflow-x-hidden
-    gap-3
+    gap-5
     p-3
     text-gray-200"
   >
@@ -16,7 +16,7 @@
       flex
       items-center
       gap-3
-      pb-2
+      pb-1
       border-b
       border-gray-400
       flex-wrap">
@@ -36,49 +36,54 @@
 
     <!-- STATUS -->
 
-    <div class="flex gap-2">
+    <div
+        class="inline-flex
+        items-center
+        gap-1
+        p-1
+        rounded-2xl
+        bg-gray-800/30
+        backdrop-blur-2xl
+        border border-white/10">
 
-      <button
-        id="ticket-status-open-btn"
-        @click="changeStatus('open')"
-        class="px-4 py-2 rounded-xl text-sm transition input-class"
-        :class="
-          ticketFilters.status === 'open'
-            ? 'bg-blue-600 text-white'
-            : 'bg-gray-900/40 border border-white/10'
-        ">
+        <button
+            @click="changeStatus('open')"
+            class="px-4 py-2 rounded-xl text-sm transition"
+            :class="
+                ticketFilters.status === 'open'
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'text-gray-400 hover:text-white'
+            ">
 
-        Abertos
+            Abertos
 
-      </button>
+        </button>
 
-      <button
-        id="ticket-status-closed-btn"
-        @click="changeStatus('closed')"
-        class="px-4 py-2 rounded-xl text-sm transition input-class"
-        :class="
-          ticketFilters.status === 'closed'
-            ? 'bg-emerald-600 text-white'
-            : 'bg-gray-900/40 border border-white/10'
-        ">
+        <button
+            @click="changeStatus('closed')"
+            class="px-4 py-2 rounded-xl text-sm transition"
+            :class="
+                ticketFilters.status === 'closed'
+                ? 'bg-emerald-600 text-white shadow-lg'
+                : 'text-gray-400 hover:text-white'
+            ">
 
-        Concluídos
+            Concluídos
 
-      </button>
+        </button>
 
-      <button
-        id="ticket-status-cancelled-btn"
-        @click="changeStatus('cancelled')"
-        class="px-4 py-2 rounded-xl text-sm transition input-class"
-        :class="
-          ticketFilters.status === 'cancelled'
-            ? 'bg-red-600 text-white'
-            : 'bg-gray-900/40 border border-white/10'
-        ">
+        <button
+            @click="changeStatus('cancelled')"
+            class="px-4 py-2 rounded-xl text-sm transition"
+            :class="
+                ticketFilters.status === 'cancelled'
+                ? 'bg-red-600 text-white shadow-lg'
+                : 'text-gray-400 hover:text-white'
+            ">
 
-        Cancelados
+            Cancelados
 
-      </button>
+        </button>
 
     </div>
 
