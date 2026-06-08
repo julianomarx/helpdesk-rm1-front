@@ -1,4 +1,6 @@
 <div
+  x-init="getTickets()"
+
   class="
     flex flex-col flex-1
     min-h-0
@@ -118,7 +120,6 @@
       </span>
 
       <input
-        id="ticket-search-input"
         type="text"
         x-model="ticketFilters.search"
         placeholder="Buscar chamado..."
@@ -130,8 +131,7 @@
           h-10
           pl-10
           pr-3
-          rounded-xl
-          input-class-search 
+          rounded-2xl
           bg-gray-800/50
           border border-white/10"
          >
@@ -658,7 +658,7 @@
             x-model="newTicket.title"
             maxlength="100"
             placeholder="Digite o título do chamado"
-            class="w-full p-3 rounded-xl input-class
+            class="w-full p-3 rounded-2xl
                   bg-gray-800/50 border border-white/10
                   focus:ring-1 focus:ring-blue-500
                   focus:outline-none
@@ -690,7 +690,7 @@
             <select
               x-model="newTicket.categoryId"
               @change="newTicket.subcategoryId = ''"
-              class="w-full p-3 rounded-xl input-class
+              class="w-full p-3 rounded-2xl
                     bg-gray-800/90 border border-white/10
                     focus:ring-1 focus:ring-blue-500
                     focus:outline-none">
@@ -723,7 +723,7 @@
             <select
               x-model="newTicket.subcategoryId"
               :disabled="!newTicket.categoryId"
-              class="w-full p-3 rounded-xl input-class
+              class="w-full p-3 rounded-2xl
                     bg-gray-800/90 border border-white/10
                     focus:ring-1 focus:ring-blue-500
                     focus:outline-none
@@ -763,7 +763,7 @@
             x-model="newTicket.description"
             rows="10"
             placeholder="Descreva o problema..."
-            class="w-full p-3 rounded-xl h-[200px] input-class
+            class="w-full p-3 rounded-xl h-[200px]
                   bg-gray-800/50 border border-white/10
                   focus:ring-1 focus:ring-blue-500
                   focus:outline-none
@@ -784,7 +784,7 @@
 
             <select
               x-model="newTicket.priority"
-              class="w-full p-3 rounded-xl input-class
+              class="w-full p-3 rounded-2xl
                     bg-gray-800/90 border border-white/10
                     focus:ring-1 focus:ring-blue-500
                     focus:outline-none">
@@ -813,7 +813,7 @@
 
             <select
               x-model="newTicket.hotelId"
-              class="w-full p-3 rounded-xl input-class
+              class="w-full p-3 rounded-2xl
                     bg-gray-800/90 border border-white/10
                     focus:ring-1 focus:ring-blue-500
                     focus:outline-none">

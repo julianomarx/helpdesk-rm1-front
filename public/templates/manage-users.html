@@ -27,7 +27,7 @@
           type="text"
           x-model="userFilters.search"
           placeholder="Nome do usuário..."
-          class="w-full p-3 rounded-xl input-class
+          class="w-full p-3 rounded-2xl
                  bg-gray-800/50 border border-white/10
                  focus:ring-1 focus:ring-blue-500
                  focus:outline-none text-sm
@@ -45,8 +45,8 @@
 
           <select
             x-model="userFilters.hotelId"
-            class="w-full p-3 rounded-xl
-                   bg-gray-800/90 border border-white/10 input-class
+            class="w-full p-3 rounded-2xl
+                   bg-gray-800/90 border border-white/10
                    focus:ring-1 focus:ring-blue-500
                    focus:outline-none text-sm">
 
@@ -81,7 +81,7 @@
 
           <select
             x-model="userFilters.role"
-            class="w-full p-3 rounded-xl input-class
+            class="w-full p-3 rounded-2xl
                    bg-gray-800/90 border border-white/10
                    focus:ring-1 focus:ring-blue-500
                    focus:outline-none text-sm">
@@ -116,10 +116,10 @@
 
         <button
           @click="fetchUsers()"
-          class="w-full input-class
+          class="w-full
                  bg-blue-600/90 hover:bg-blue-700
                  transition-colors
-                 py-3 rounded-xl
+                 py-3 rounded-2xl
                  text-sm font-semibold
                  shadow-md">
 
@@ -296,8 +296,8 @@
           <template x-if="!editor.enabled">
             <button
               @click="editor.enabled = !editor.enabled"
-              class="bg-blue-600 hover:bg-blue-700 input-class
-                    px-4 py-2 rounded-xl
+              class="bg-blue-600 hover:bg-blue-700
+                    px-4 py-2 rounded-xl input-class
                     text-sm font-semibold">
 
               <span>
@@ -333,7 +333,7 @@
                   x-model="editor.user.name"
                   :disabled="!editor.enabled"
                   class="w-full p-3 rounded-xl
-                         bg-gray-800/50 border border-white/10 input-class
+                         bg-gray-800/50 border border-white/10 rounded-2xl
                          disabled:opacity-50
                          focus:outline-none
                          focus:ring-1 focus:ring-blue-500">
@@ -350,7 +350,7 @@
                   type="email"
                   x-model="editor.user.email"
                   :disabled="!editor.enabled"
-                  class="w-full p-3 rounded-xl input-class
+                  class="w-full p-3 rounded-2xl
                          bg-gray-800/50 border border-white/10
                          disabled:opacity-50
                          focus:outline-none
@@ -372,7 +372,7 @@
                 <select
                   x-model="editor.user.role"
                   :disabled="!editor.enabled"
-                  class="w-full p-3 rounded-xl input-class
+                  class="w-full p-3 rounded-2xl 
                          bg-gray-800/50 border border-white/10
                          disabled:opacity-50">
 
@@ -407,7 +407,7 @@
                   x-model="editor.user.password"
                   :disabled="!editor.enabled"
                   placeholder="Deixe vazio para manter"
-                  class="w-full p-3 rounded-xl input-class
+                  class="w-full p-3 rounded-2xl
                          bg-gray-800/50 border border-white/10
                          disabled:opacity-50
                          focus:outline-none
@@ -436,7 +436,7 @@
                   x-model="hotelSearch"
                   :disabled="!editor.enabled"
                   placeholder="Buscar hotel por nome ou código..."
-                  class="w-full p-3 rounded-xl input-class
+                  class="w-full p-3 rounded-2xl
                          bg-gray-800/40 border border-white/10
                          focus:ring-1 focus:ring-blue-500
                          focus:outline-none
@@ -812,7 +812,7 @@
               type="text"
               x-model="creator.name"
               placeholder="Digite o nome do usuário"
-              class="w-full p-3 rounded-xl input-class
+              class="w-full p-3 rounded-2xl
                     bg-gray-800/50 border border-white/10
                     focus:outline-none
                     focus:ring-1 focus:ring-blue-500">
@@ -829,7 +829,7 @@
               type="email"
               x-model="creator.email"
               placeholder="Digite o email"
-              class="w-full p-3 rounded-xl input-class
+              class="w-full p-3 rounded-2xl
                     bg-gray-800/50 border border-white/10
                     focus:outline-none
                     focus:ring-1 focus:ring-blue-500">
@@ -849,7 +849,7 @@
 
             <select
               x-model="creator.role"
-              class="w-full p-3 h-[45px] rounded-xl input-class
+              class="w-full p-3 h-[48px] rounded-2xl
                     bg-gray-800/50 border border-white/10">
 
               <option selected disabled value="">
@@ -886,7 +886,7 @@
               type="password"
               x-model="creator.password"
               placeholder="Digite a senha"
-              class="w-full p-3 rounded-xl input-class
+              class="w-full p-3 rounded-2xl
                     bg-gray-800/50 border border-white/10
                     focus:outline-none
                     focus:ring-1 focus:ring-blue-500">
@@ -903,7 +903,7 @@
               type="password"
               x-model="creator.confirmPassword"
               placeholder="Digite a senha"
-              class="w-full p-3 rounded-xl input-class  
+              class="w-full p-3 rounded-2xl  
                     bg-gray-800/50 border border-white/10
                     focus:outline-none
                     focus:ring-1 focus:ring-blue-500">
@@ -930,7 +930,7 @@
               type="text"
               x-model="hotelSearch"
               placeholder="Buscar hotel por nome ou código..."
-              class="w-full p-3 rounded-xl input-class
+              class="w-full p-3 rounded-2xl
                     bg-gray-800/40 border border-white/10
                     focus:ring-1 focus:ring-blue-500
                     focus:outline-none

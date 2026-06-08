@@ -921,6 +921,39 @@ function dashboard() {
       }
     },
 
+    async validateToken() {
+      
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        this.currentPage = 'login';
+        return;
+      }
+
+      try {
+        const payload = JSON.parse(
+          atob(token.split(".")[1])
+        );
+
+        const now = Math.floor(Date.now() / 1000);
+
+        const safetyMargin = 5 * 60;
+
+        if (payload.exp - safetyMargin <= now) {
+          localStorage.removeItem("access_token")
+          this.currentPage = 'login';
+          return false;
+        }
+
+        return true;
+
+      } catch (error) {
+        localStorage.removeItem("access_token");
+        this.currentPage = "login";
+        return false;
+      }
+
+    },
+
     async fetchTeamSubcategories(categoryId) {
       const token = localStorage.getItem("access_token");
       if (!token) {
@@ -994,11 +1027,26 @@ function dashboard() {
         this.listedUsers = [];
       }
 
+      if (page !== "tickets") {
+        this.ticketList = [];
+
+        this.ticketFilters = {
+          status: 'open',
+          search: '',
+          hotel_id: '',
+          progress: '',
+          priority: '',
+          team_id: '',
+          category_id: ''
+        }
+
+      }
+
       if (cssPath) this.loadCss(cssPath);
       
-      if (page === "tickets") {
+      /*if (page === "tickets") {
         await this.getTickets();
-      }
+      }*/
 
       /*if(page === 'dashboard'){
         await this.loadDashboardOverview()
