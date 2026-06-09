@@ -191,9 +191,9 @@ function dashboard() {
     async loadDashboardOverview() {
 
       const token = localStorage.getItem("access_token");
-      if (!token) {
-        this.currentPage = 'login';
-        return;
+
+      if (!this.validateToken()) {
+       return;
       }
 
       try {
@@ -294,8 +294,7 @@ function dashboard() {
       const token =
       localStorage.getItem("access_token");
 
-      if (!token) {
-        this.currentPage = 'login';
+      if (!this.validateToken()) {
         return;
       }
 
@@ -383,8 +382,7 @@ function dashboard() {
 
       const token = localStorage.getItem("access_token");
 
-      if (!token) {
-        this.currentPage == 'login';
+      if (!this.validateToken()) {
         return;
       }
 
@@ -431,9 +429,8 @@ function dashboard() {
     async createUser() {
       const token = localStorage.getItem("access_token");
 
-      if (!token) {
-        this.currentPage = 'login';
-        return false
+      if (!this.validateToken()) {
+        return;
       }
 
       // limpa erros antes de validar
@@ -522,8 +519,7 @@ function dashboard() {
 
       const token = localStorage.getItem("access_token");
 
-      if (!token) {
-        this.currentPage == 'login';
+      if (!this.validateToken()) {
         return;
       }
 
@@ -779,6 +775,10 @@ function dashboard() {
     async fetchTeamUsers() {
       const token = localStorage.getItem("access_token");
 
+      if (!this.validateToken()) {
+        return;;
+      }
+
       const teamId = this.selectedTicket?.assigned_team_id
 
       if (!token || !teamId) return;
@@ -803,9 +803,8 @@ function dashboard() {
     async submitTicketTransfer(subcategoryId = null) {
       const token = localStorage.getItem("access_token");
 
-      if (!token) {
-        this.showToast("Token inválido", "error");
-        return;
+      if (!this.validateToken()) {
+        return;;
       }
 
       const ticketId = this.selectedTicket?.id;
@@ -921,43 +920,38 @@ function dashboard() {
       }
     },
 
-    async validateToken() {
-      
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        this.currentPage = 'login';
-        return;
-      }
+  validateToken() {
 
-      try {
-        const payload = JSON.parse(
-          atob(token.split(".")[1])
-        );
+    const token = localStorage.getItem("access_token");
 
-        const now = Math.floor(Date.now() / 1000);
+    try {
 
-        const safetyMargin = 5 * 60;
+      const payload = JSON.parse(
+        atob(token.split(".")[1])
+      );
 
-        if (payload.exp - safetyMargin <= now) {
-          localStorage.removeItem("access_token")
-          this.currentPage = 'login';
-          return false;
-        }
+      const now = Math.floor(Date.now() / 1000);
 
-        return true;
+      const safetyMargin = 1 * 60;
 
-      } catch (error) {
-        localStorage.removeItem("access_token");
-        this.currentPage = "login";
+      if (payload.exp - safetyMargin <= now) {
+
+        this.logout();
         return false;
       }
 
-    },
+      return true;
 
+      } catch {
+        this.logout();
+        return false;
+      }
+    },
     async fetchTeamSubcategories(categoryId) {
       const token = localStorage.getItem("access_token");
-      if (!token) {
-        console.error("Token não localizado")
+
+      if (!this.validateToken()) {
+        return;;
       }
 
       console.log(`${API_BASE}/subcategories/?category_id=${categoryId}`);
@@ -992,9 +986,9 @@ function dashboard() {
 
     async changeTicketSubcategory(ticketId, transferSubcategoryId) {
       const token = localStorage.getItem("access_token");
-      if (!token) {
-        console.error("Token not found");
-        return;
+
+      if (!this.validateToken()) {
+        return;;
       }
 
       try {
@@ -1020,6 +1014,11 @@ function dashboard() {
     },
 
     async goTo(page, cssPath) {
+
+      if (!this.validateToken()) {
+        return;
+      }
+
       if (this.currentPage === page) return
       this.currentPage = page;
 
@@ -1081,8 +1080,10 @@ function dashboard() {
     },
 
     logout() {
-      localStorage.removeItem("access_token");
+
       Alpine.store("app").currentView = "login";
+
+      localStorage.removeItem("access_token");
       Alpine.store("app").role = '';
       Alpine.store("app").menus = '';
       Alpine.store("app").hotels = '';
@@ -1097,6 +1098,25 @@ function dashboard() {
       this.transferMode = '';
       this.loadingUsers = false
 
+      this.listedUsers = [];
+      this.ticketList = []; 
+
+      this.userFilters = {
+        search: '',
+        hotelId: '',
+        role: ''
+      },
+
+      this.ticketFilters = {
+        status: 'open',
+        search: '',
+        hotel_id: '',
+        progress: '',
+        priority: '',
+        team_id: '',
+        category_id: ''
+      },
+
       // reset do estado do dashboard
       this.currentPage = "dashboard";
       this.currentTab = "all";
@@ -1109,12 +1129,10 @@ function dashboard() {
 
     async getTickets(resetPage = false) {
 
-      const token =
-        localStorage.getItem("access_token");
+      const token =  localStorage.getItem("access_token");
 
-      if (!token) {
-        this.currentPage = 'login';
-        return;
+      if (!this.validateToken()) {
+        return;;
       }
 
       if (resetPage) {
@@ -1263,9 +1281,9 @@ function dashboard() {
 
     async getTicketById(ticketId) {
       const token = localStorage.getItem("access_token");
-      if (!token) {
-        Alpine.store("app").currentView = "login";
-        return;
+      
+      if (!this.validateToken()) {
+        return;;
       }
 
       try {
@@ -1294,11 +1312,9 @@ function dashboard() {
     async getSelectedTicketLogs(ticketId) {
       const token = localStorage.getItem("access_token");
 
-      if (!token) {
-        Alpine.store("app").currentView = "login";
-        return
+      if (!this.validateToken()) {
+        return;;
       }
-
       try {
         const res = await fetch(`${API_BASE}/ticket-logs/${ticketId}`, {
           headers: {
@@ -1326,9 +1342,8 @@ function dashboard() {
     async startTicket() {
       const token = localStorage.getItem("access_token");
 
-      if (!token) {
-        Alpine.store("app").currentView = "login";
-        return;
+      if (!this.validateToken()) {
+        return;;
       }
 
       const ticketId = this.selectedTicket?.id;
@@ -1375,9 +1390,8 @@ function dashboard() {
     async closeTicket() {
       const token = localStorage.getItem("access_token");
 
-      if (!token) {
-        Alpine.store("app").currentView = "login";
-        return;
+      if (!this.validateToken()) {
+        return;;
       }
 
       const ticketId = this.selectedTicket?.id;
@@ -1411,9 +1425,8 @@ function dashboard() {
     async reopenTicket() {
       const token = localStorage.getItem("access_token");
 
-      if (!token) {
-        Alpine.store("app").currentView = "login";
-        return;
+      if (!this.validateToken()) {
+        return;;
       }
 
       const ticketId = this.selectedTicket?.id;
@@ -1457,9 +1470,8 @@ function dashboard() {
     async returnTicketToQueue() {
       const token = localStorage.getItem("access_token");
 
-      if (!token) {
-        Alpine.store("app").currentView = "login";
-        return;
+      if (!this.validateToken()) {
+        return;;
       }
 
       const ticketId = this.selectedTicket?.id
@@ -1654,49 +1666,47 @@ function dashboard() {
 
     async createTicket(title, description, priority, hotelId, categoryId, subcategoryId) {
       const token = localStorage.getItem("access_token");
-      if (token) {
+      
+      if (!this.validateToken()) {
+        return;;
+      }
 
-        if (title.length > 100) {
-          this.showToast("Título muito longo(max 100), seja mais breve!", "error");
+      if (title.length > 100) {
+         this.showToast("Título muito longo(max 100), seja mais breve!", "error");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/tickets/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify({
+          title,
+          description,
+          priority,
+          category_id: categoryId,
+          subcategory_id: subcategoryId,
+            hotel_id: hotelId
+          })
+        })
+
+
+        if (!res.ok) {
+          this.showToast("Erro ao criar Ticket", "error");
+          console.log("Não foi possível criar o chamado", res.status);
           return;
         }
 
-        try {
-          const res = await fetch(`${API_BASE}/tickets/`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer " + token
-            },
-            body: JSON.stringify({
-              title,
-              description,
-              priority,
-              category_id: categoryId,
-              subcategory_id: subcategoryId,
-              hotel_id: hotelId
-            })
-          })
+        const data = await res.json();
+        console.log("Chamado aberto: ", data)
 
+        this.showToast("Chamado aberto com sucesso!", "success");
 
-          if (!res.ok) {
-            this.showToast("Erro ao criar Ticket", "error");
-            console.log("Não foi possível criar o chamado", res.status);
-            return;
-          }
-
-          const data = await res.json();
-          console.log("Chamado aberto: ", data)
-
-          this.showToast("Chamado aberto com sucesso!", "success");
-
-        } catch (error) {
-          console.error("Erro na abertura do chamado", error);
-        }
-
-      } else {
-        console.log("Token não loclaizado, redirecionando para o login");
-        Alpine.store("app").currentView = "login";
+      } catch (error) {
+        console.error("Erro na abertura do chamado", error);
       }
     },
 
@@ -1737,35 +1747,36 @@ function dashboard() {
     async createComment(commentData, showToast = true) {
       const token = localStorage.getItem("access_token");
 
+      if (!this.validateToken()) {
+        return;;
+      }
+
       console.log(commentData)
 
-      if (token) {
-        try {
-          const res = await fetch(`${API_BASE}/comments/`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer " + token
-            },
-            body: JSON.stringify(commentData)
-          })
+      try {
+        const res = await fetch(`${API_BASE}/comments/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify(commentData)
+        })
 
-          if (!res.ok) {
-            console.error("Erro ao criar comentário!", res.status)
-          }
-
-          const data = await res.json();
-
-          if (showToast) {
-            this.showToast("Comentário criado com sucesso!", "success");
-          }
-
-          return data;
-
-        } catch (error) {
-          console.error("Erro ao criar comentário", error)
+        if (!res.ok) {
+          console.error("Erro ao criar comentário!", res.status)
         }
 
+        const data = await res.json();
+
+        if (showToast) {
+          this.showToast("Comentário criado com sucesso!", "success");
+        }
+
+        return data;
+
+      } catch (error) {
+        console.error("Erro ao criar comentário", error)
       }
     },
 
@@ -1782,9 +1793,14 @@ function dashboard() {
       }
 
       const token = localStorage.getItem("access_token");
+
       const ticketId = this.selectedTicket?.id;
 
-      if (!token || !ticketId) {
+      if (!this.validateToken()) {
+        return;;
+      }
+
+      if (!ticketId) {
         this.showToast("Erro ao localixar o ticket", "error");
         return;
       }
@@ -1831,6 +1847,10 @@ function dashboard() {
 
     async uploadAttachment(ticketId, file) {
       const token = localStorage.getItem("access_token");
+
+      if (!this.validateToken()) {
+        return;;
+      }
 
       if (!file) return;
 
@@ -1921,9 +1941,8 @@ function stayAlive(expireTimestamp) {
       console.log("Renovando o token...");
       const token = localStorage.getItem("access_token");
 
-      if (!token) {
-        Alpine.store("app").currentView = "login";
-        localStorage.removeItem("access_token");
+      if (!this.validateToken()) {
+        return;;
       }
 
       try {
