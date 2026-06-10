@@ -18,6 +18,13 @@ function dashboard() {
       pages: 0
     },
 
+    usersPagination: {
+      page: 1,
+      pageSize: 20,
+      total: 0,
+      pages: 0
+    },
+
     ticketFilters: {
       status: 'open',
       search: '',
@@ -44,7 +51,8 @@ function dashboard() {
     userFilters: {
       search: '',
       hotelId: '',
-      role: ''
+      role: '',
+      page: ''
     },
 
     hotelSearch: '',
@@ -290,8 +298,33 @@ function dashboard() {
         await this.getTickets();
     },
 
+    nextUsersPage() {
+
+      if (
+        this.usersPagination.page >=
+        this.usersPagination.pages
+      ) {
+        return;
+      }
+
+      this.usersPagination.page++;
+
+      this.fetchUsers();
+    },
+
+    previousUsersPage() {
+
+      if (this.usersPagination.page <= 1) {
+          return;
+      }
+
+      this.usersPagination.page--;
+
+      this.fetchUsers();
+    },
+
   
-    async fetchUsers() {
+    async fetchUsers(resetPage = false) {
 
       this.loadingUsers = true;
 
@@ -300,6 +333,10 @@ function dashboard() {
 
       if (!this.validateToken()) {
         return;
+      }
+
+      if (resetPage) {
+        this.usersPagination.page = 1;
       }
 
       try {
@@ -327,6 +364,16 @@ function dashboard() {
           this.userFilters.role
         );
       }
+
+      params.append(
+        'page',
+        this.usersPagination.page
+      );
+
+      params.append(
+        'page_size',
+        this.usersPagination.pageSize
+      );
 
       console.log(
         'QUERY:',
@@ -371,7 +418,12 @@ function dashboard() {
 
     this.loadingUsers = false;
 
-    this.listedUsers = data;
+    this.listedUsers = data.items;
+    this.usersPagination.total = data.total;
+    this.usersPagination.page = data.page;
+    this.usersPagination.pages = data.pages;
+
+
 
   } catch (err) {
 
