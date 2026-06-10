@@ -7,6 +7,8 @@ function dashboard() {
     ticketViewTab: 'details',
 
     loadingTickets: false,
+    loadingUsers: false,
+    
     ticketList: [],
 
     pagination: {
@@ -291,6 +293,8 @@ function dashboard() {
   
     async fetchUsers() {
 
+      this.loadingUsers = true;
+
       const token =
       localStorage.getItem("access_token");
 
@@ -364,6 +368,8 @@ function dashboard() {
       'USERS:',
       data
     );
+
+    this.loadingUsers = false;
 
     this.listedUsers = data;
 
@@ -1097,6 +1103,7 @@ function dashboard() {
       this.selectedUserId = '';
       this.transferMode = '';
       this.loadingUsers = false
+      this.loadingTickets = false
 
       this.listedUsers = [];
       this.ticketList = []; 

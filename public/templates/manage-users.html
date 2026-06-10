@@ -170,71 +170,127 @@
     </div>
 
     <!-- BODY -->
+
+    <!-- BODY -->
     <div class="flex-1 overflow-y-auto">
 
-      <template
-        x-for="user in listedUsers"
-        :key="user.id">
+      <!-- SKELETON -->
+      <template x-if="loadingUsers">
 
-        <div
-          @click="selectUser(user)"
-          class="flex items-center px-5 py-4
-                 border-b border-white/5
-                 hover:bg-white/5
-                 cursor-pointer transition">
+        <div class="divide-y divide-white/5">
 
-          <!-- NAME -->
-          <div
-            class="flex-[1.5] font-medium text-gray-100 truncate"
-            x-text="user.name">
-          </div>
+          <template x-for="i in 8">
 
-          <!-- EMAIL -->
-          <div
-            class="flex-[2] text-sm text-gray-400 truncate"
-            x-text="user.email">
-          </div>
+            <div class="flex items-center px-5 py-4 animate-pulse">
 
-          <!-- ROLE -->
-          <div class="flex-1">
+              <!-- Nome -->
+              <div class="flex-[1.5]">
+                <div class="h-4 w-40 rounded bg-gray-700/60"></div>
+              </div>
 
-            <span
-              class="text-xs rounded-full px-3 py-1 font-semibold"
-              :class="roleMeta(user.role).class"
-              x-text="roleMeta(user.role).label">
-            </span>
+              <!-- Email -->
+              <div class="flex-[2]">
+                <div class="h-4 w-56 rounded bg-gray-700/50"></div>
+              </div>
 
-          </div>
+              <!-- Role -->
+              <div class="flex-1">
+                <div class="h-7 w-24 rounded-full bg-gray-700/50"></div>
+              </div>
 
-          <!-- HOTELS -->
-          <div
-            class="w-24 text-center text-sm text-gray-400"
-            x-text="user.hotels?.length || 0">
-          </div>
+              <!-- Hotels -->
+              <div class="w-24 flex justify-center">
+                <div class="h-4 w-6 rounded bg-gray-700/50"></div>
+              </div>
 
-          <!-- ACTION -->
-          <div class="w-20 text-right text-gray-500">
-            →
-          </div>
+              <!-- Arrow -->
+              <div class="w-20 flex justify-end">
+                <div class="h-4 w-4 rounded bg-gray-700/50"></div>
+              </div>
+
+            </div>
+
+          </template>
 
         </div>
 
       </template>
 
-      <!-- EMPTY -->
-      <template x-if="listedUsers.length === 0">
+      <!-- USERS -->
+      <template x-if="!loadingUsers">
 
-        <div
-          class="flex items-center justify-center
-                 h-full text-gray-500 text-sm">
+        <div>
 
-          Nenhum usuário encontrado
+          <template
+            x-for="user in listedUsers"
+            :key="user.id">
+
+            <div
+              @click="selectUser(user)"
+              class="flex items-center px-5 py-4
+                    border-b border-white/5
+                    hover:bg-white/5
+                    cursor-pointer transition">
+
+              <!-- NAME -->
+              <div
+                class="flex-[1.5] font-medium text-gray-100 truncate"
+                x-text="user.name">
+              </div>
+
+              <!-- EMAIL -->
+              <div
+                class="flex-[2] text-sm text-gray-400 truncate"
+                x-text="user.email">
+              </div>
+
+              <!-- ROLE -->
+              <div class="flex-1">
+
+                <span
+                  class="text-xs rounded-full px-3 py-1 font-semibold"
+                  :class="roleMeta(user.role).class"
+                  x-text="roleMeta(user.role).label">
+                </span>
+
+              </div>
+
+              <!-- HOTELS -->
+              <div
+                class="w-24 text-center text-sm text-gray-400"
+                x-text="user.hotels?.length || 0">
+              </div>
+
+              <!-- ACTION -->
+              <div class="w-20 text-right text-gray-500">
+                →
+              </div>
+
+            </div>
+
+          </template>
+
+          <!-- EMPTY -->
+          <template x-if="listedUsers.length === 0">
+
+            <div
+              class="flex items-center justify-center
+                    h-64 text-gray-500 text-sm">
+
+              Nenhum usuário encontrado
+
+            </div>
+
+          </template>
 
         </div>
 
       </template>
 
     </div>
+
+
+    
 
     <button
     id="create-user-btn"
