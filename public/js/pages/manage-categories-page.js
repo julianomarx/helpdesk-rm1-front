@@ -4,23 +4,38 @@ function manageCategoriesPage() {
     categories: [],
     subcategories: [],
     policies: [],
+    teams: [],
     openCats: [],
-    pending: {},   // sub.id → policy_id (string) or ""
-    saving: {},    // sub.id → bool
+    pending: {},
+    saving: {},
     toast: { visible: false, message: '', error: false, _timer: null },
+
+    showCreateModal: false,
+    createTab: 'subcategory',
+    creating: false,
+    createForm: {
+      catName: '',
+      catTeamId: '',
+      subName: '',
+      subCategoryId: '',
+      subPolicyId: '',
+    },
+    createError: '',
 
     async init() {
       const token = localStorage.getItem('access_token');
       const headers = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
 
-      const [subsRes, polRes] = await Promise.all([
+      const [catsRes, subsRes, polRes] = await Promise.all([
+        fetch('/api/categories/', { headers }).then(r => r.json()),
         fetch('/api/subcategories/', { headers }).then(r => r.json()),
-        fetch('/api/sla-policies/', { headers }).then(r => r.json()),
+        fetch('/api/sla-policies', { headers }).then(r => r.json()),
       ]);
 
-      this.subcategories = subsRes;
-      this.policies = polRes;
-      this.categories = Alpine.store('app').categories || [];
+      this.categories = Array.isArray(catsRes) ? catsRes : [];
+      this.subcategories = Array.isArray(subsRes) ? subsRes : [];
+      this.policies = Array.isArray(polRes) ? polRes : [];
+      this.teams = Alpine.store('app').teams || [];
       this.openCats = this.categories.map(c => c.id);
 
       for (const sub of this.subcategories) {
@@ -63,7 +78,7 @@ function manageCategoriesPage() {
       const newPolicyId = this.pending[sub.id] ? Number(this.pending[sub.id]) : null;
 
       try {
-        const res = await fetch(`/api/subcategories/${sub.id}/`, {
+        const res = await fetch(`/api/subcategories/${sub.id}`, {
           method: 'PUT',
           headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
           body: JSON.stringify({ sla_policy_id: newPolicyId }),
@@ -86,6 +101,101 @@ function manageCategoriesPage() {
       }
     },
 
+    openCreateModal(tab = 'subcategory') {
+      this.createTab = tab;
+      this.createForm = { catName: '', catTeamId: '', subName: '', subCategoryId: '', subPolicyId: '' };
+      this.createError = '';
+      this.showCreateModal = true;
+    },
+
+    async submitCreate() {
+      this.createError = '';
+      this.creating = true;
+      const token = localStorage.getItem('access_token');
+      const headers = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+
+      try {
+        if (this.createTab === 'category') {
+          if (!this.createForm.catName.trim()) {
+            this.createError = 'Nome é obrigatório';
+            return;
+          }
+          if (!this.createForm.catTeamId) {
+            this.createError = 'Selecione uma equipe';
+            return;
+          }
+
+          const res = await fetch('/api/categories/', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              name: this.createForm.catName.trim(),
+              team_id: Number(this.createForm.catTeamId),
+            }),
+          });
+
+          if (!res.ok) {
+            const err = await res.json();
+            this.createError = err.detail || 'Erro ao criar categoria';
+            return;
+          }
+
+          const newCat = await res.json();
+          this.categories.push(newCat);
+          this.openCats.push(newCat.id);
+          this.showCreateModal = false;
+          this.showToast(`Categoria "${newCat.name}" criada com sucesso!`);
+
+        } else {
+          if (!this.createForm.subName.trim()) {
+            this.createError = 'Nome é obrigatório';
+            return;
+          }
+          if (!this.createForm.subCategoryId) {
+            this.createError = 'Selecione uma categoria';
+            return;
+          }
+
+          const createRes = await fetch('/api/subcategories/', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              name: this.createForm.subName.trim(),
+              category_id: Number(this.createForm.subCategoryId),
+            }),
+          });
+
+          if (!createRes.ok) {
+            const err = await createRes.json();
+            this.createError = err.detail || 'Erro ao criar subcategoria';
+            return;
+          }
+
+          let newSub = await createRes.json();
+
+          if (this.createForm.subPolicyId) {
+            const updateRes = await fetch(`/api/subcategories/${newSub.id}`, {
+              method: 'PUT',
+              headers,
+              body: JSON.stringify({ sla_policy_id: Number(this.createForm.subPolicyId) }),
+            });
+            if (updateRes.ok) {
+              newSub = await updateRes.json();
+            }
+          }
+
+          this.subcategories.push(newSub);
+          this.pending[newSub.id] = newSub.sla_policy_id ? String(newSub.sla_policy_id) : '';
+          this.showCreateModal = false;
+          this.showToast(`Subcategoria "${newSub.name}" criada com sucesso!`);
+        }
+      } catch (e) {
+        this.createError = 'Erro inesperado. Tente novamente.';
+      } finally {
+        this.creating = false;
+      }
+    },
+
     policyBadgeClass(priority) {
       const map = {
         critical: 'bg-red-500/15    border-red-500/40    text-red-300',
@@ -102,7 +212,7 @@ function manageCategoriesPage() {
       this.toast.message = message;
       this.toast.error = error;
       this.toast.visible = true;
-      this.toast._timer = setTimeout(() => { this.toast.visible = false; }, 3000);
+      this.toast._timer = setTimeout(() => { this.toast.visible = false; }, 3500);
     },
   };
 }

@@ -1,10 +1,10 @@
 <div
   x-data="manageCategoriesPage()"
   x-init="init()"
-  class="flex flex-col flex-1 min-h-0 gap-5 p-3 text-gray-200">
+  class="flex flex-col flex-1 min-h-0 gap-4 p-4 text-gray-200">
 
   <!-- HEADER -->
-  <div class="shrink-0 flex items-center justify-between">
+  <div class="shrink-0 flex items-start justify-between gap-4">
     <div>
       <h1 class="font-bold text-gray-200 border-b border-gray-400 pb-1">
         Categorias &amp; SLA
@@ -13,10 +13,13 @@
     </div>
 
     <!-- POLICIES LEGEND -->
-    <div class="flex flex-wrap gap-2">
+    <div class="flex flex-wrap justify-end gap-2 max-w-xl">
+      <template x-if="policies.length === 0 && !loading">
+        <span class="text-xs text-gray-500 italic">Nenhuma política SLA cadastrada</span>
+      </template>
       <template x-for="p in policies" :key="p.id">
         <span
-          class="text-xs px-3 py-1 rounded-full border font-semibold"
+          class="text-[11px] px-3 py-1 rounded-full border font-semibold whitespace-nowrap"
           :class="policyBadgeClass(p.priority)"
           x-text="p.name + ' · ' + p.first_response_hours + 'h / ' + p.resolution_hours + 'h'">
         </span>
@@ -26,8 +29,8 @@
 
   <!-- LOADING -->
   <template x-if="loading">
-    <div class="flex flex-col gap-4">
-      <template x-for="i in 5">
+    <div class="flex flex-col gap-3 flex-1">
+      <template x-for="i in 4">
         <div class="rounded-2xl border border-white/10 bg-gray-900/40 animate-pulse p-4">
           <div class="h-5 w-40 rounded bg-gray-700/60 mb-3"></div>
           <div class="space-y-2">
@@ -40,33 +43,39 @@
     </div>
   </template>
 
-  <!-- CATEGORIES -->
+  <!-- CATEGORIES LIST -->
   <template x-if="!loading">
-    <div class="flex flex-col gap-4 overflow-y-auto flex-1 min-h-0 pb-2">
+    <div class="flex flex-col gap-3 overflow-y-auto flex-1 min-h-0 pb-20">
+
+      <template x-if="categories.length === 0">
+        <div class="flex flex-col items-center justify-center flex-1 text-gray-500 gap-2 py-16">
+          <svg class="w-12 h-12 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M3 7a2 2 0 012-2h14a2 2 0 012 2v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7zM3 15a2 2 0 012-2h6a2 2 0 012 2v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2z"/>
+          </svg>
+          <p class="text-sm">Nenhuma categoria cadastrada</p>
+          <p class="text-xs">Clique no botão + para criar a primeira</p>
+        </div>
+      </template>
 
       <template x-for="cat in categories" :key="cat.id">
-        <div
-          class="rounded-2xl border border-white/10
-                 bg-gray-900/40 backdrop-blur-xl backdrop-saturate-150
-                 shadow-xl overflow-hidden">
+        <div class="rounded-2xl border border-white/10 bg-gray-900/40 backdrop-blur-xl shadow-lg">
 
           <!-- CATEGORY HEADER -->
           <div
-            class="flex items-center justify-between
-                   px-5 py-3 border-b border-white/10
-                   bg-white/5 cursor-pointer select-none"
+            class="flex items-center justify-between px-5 py-3 bg-white/5 cursor-pointer select-none rounded-t-2xl"
+            :class="openCats.includes(cat.id) ? '' : 'rounded-b-2xl'"
             @click="toggleCat(cat.id)">
 
             <div class="flex items-center gap-3">
               <span class="font-semibold text-sm" x-text="cat.name"></span>
-              <span
-                class="text-[11px] text-gray-400"
-                x-text="subcategoriesOf(cat.id).length + ' subcategorias'">
+              <span class="text-[11px] text-gray-400"
+                x-text="subcategoriesOf(cat.id).length + ' subcategoria(s)'">
               </span>
             </div>
 
             <svg
-              class="w-4 h-4 text-gray-400 transition-transform"
+              class="w-4 h-4 text-gray-400 transition-transform duration-200"
               :class="openCats.includes(cat.id) ? 'rotate-180' : ''"
               fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
@@ -74,70 +83,75 @@
           </div>
 
           <!-- SUBCATEGORIES -->
-          <div x-show="openCats.includes(cat.id)" x-transition>
+          <div x-show="openCats.includes(cat.id)" x-transition.duration.200ms>
+
+            <template x-if="subcategoriesOf(cat.id).length === 0">
+              <div class="px-5 py-4 text-xs text-gray-500 italic border-t border-white/5">
+                Nenhuma subcategoria nesta categoria
+              </div>
+            </template>
+
             <template x-for="sub in subcategoriesOf(cat.id)" :key="sub.id">
-              <div
-                class="flex items-center gap-3 px-5 py-3
-                       border-b border-white/5 last:border-0
-                       hover:bg-white/3 transition">
+              <div class="border-t border-white/5 last:rounded-b-2xl">
+                <div class="flex items-center gap-3 px-5 py-3 hover:bg-white/[0.02] transition flex-wrap sm:flex-nowrap">
 
-                <!-- NAME -->
-                <div class="flex-1 min-w-0">
-                  <span class="text-sm text-gray-200 truncate" x-text="sub.name"></span>
+                  <!-- NAME -->
+                  <div class="flex-1 min-w-0">
+                    <span class="text-sm text-gray-200 truncate block" x-text="sub.name"></span>
+                  </div>
+
+                  <!-- CURRENT BADGE -->
+                  <div class="shrink-0">
+                    <template x-if="sub.sla_policy">
+                      <span
+                        class="text-[11px] px-2 py-0.5 rounded-full border font-semibold whitespace-nowrap"
+                        :class="policyBadgeClass(sub.sla_policy.priority)"
+                        x-text="sub.sla_policy.name">
+                      </span>
+                    </template>
+                    <template x-if="!sub.sla_policy">
+                      <span class="text-[11px] text-gray-500 italic whitespace-nowrap">sem política</span>
+                    </template>
+                  </div>
+
+                  <!-- DROPDOWN -->
+                  <select
+                    class="shrink-0 w-44 py-2 px-3 rounded-xl text-sm bg-gray-800/60 border border-white/10
+                           focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-200"
+                    :value="pendingPolicy(sub.id)"
+                    @change="setPending(sub.id, $event.target.value)">
+
+                    <option value="">— sem política —</option>
+                    <template x-for="p in policies" :key="p.id">
+                      <option :value="p.id" x-text="p.name"></option>
+                    </template>
+                  </select>
+
+                  <!-- SAVE BUTTON -->
+                  <button
+                    class="shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition whitespace-nowrap"
+                    :class="isDirty(sub.id)
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                      : 'bg-gray-700/40 text-gray-500 cursor-default'"
+                    :disabled="!isDirty(sub.id) || saving[sub.id]"
+                    @click="saveSubcategory(sub)">
+
+                    <template x-if="saving[sub.id]">
+                      <span class="flex items-center gap-1">
+                        <svg class="animate-spin w-3 h-3" viewBox="0 0 24 24" fill="none">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                        </svg>
+                        Salvando
+                      </span>
+                    </template>
+                    <template x-if="!saving[sub.id]">
+                      <span x-text="isDirty(sub.id) ? 'Salvar' : 'Salvo'"></span>
+                    </template>
+
+                  </button>
+
                 </div>
-
-                <!-- CURRENT BADGE -->
-                <div class="shrink-0 w-36 text-right">
-                  <template x-if="sub.sla_policy">
-                    <span
-                      class="text-[11px] px-2 py-0.5 rounded-full border font-semibold"
-                      :class="policyBadgeClass(sub.sla_policy.priority)"
-                      x-text="sub.sla_policy.name">
-                    </span>
-                  </template>
-                  <template x-if="!sub.sla_policy">
-                    <span class="text-[11px] text-gray-500 italic">sem política</span>
-                  </template>
-                </div>
-
-                <!-- DROPDOWN -->
-                <select
-                  class="shrink-0 w-44 py-2 px-3 rounded-xl text-sm
-                         bg-gray-800/60 border border-white/10
-                         focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  :value="pendingPolicy(sub.id)"
-                  @change="setPending(sub.id, $event.target.value)">
-
-                  <option value="">— sem política —</option>
-                  <template x-for="p in policies" :key="p.id">
-                    <option :value="p.id" x-text="p.name"></option>
-                  </template>
-                </select>
-
-                <!-- SAVE BUTTON -->
-                <button
-                  class="shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition"
-                  :class="isDirty(sub.id)
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                    : 'bg-gray-700/40 text-gray-500 cursor-default'"
-                  :disabled="!isDirty(sub.id) || saving[sub.id]"
-                  @click="saveSubcategory(sub)">
-
-                  <template x-if="saving[sub.id]">
-                    <span class="flex items-center gap-1">
-                      <svg class="animate-spin w-3 h-3" viewBox="0 0 24 24" fill="none">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-                      </svg>
-                      Salvando
-                    </span>
-                  </template>
-                  <template x-if="!saving[sub.id]">
-                    <span x-text="isDirty(sub.id) ? 'Salvar' : 'Salvo'"></span>
-                  </template>
-
-                </button>
-
               </div>
             </template>
           </div>
@@ -148,17 +162,165 @@
     </div>
   </template>
 
+  <!-- FLOATING ADD BUTTON -->
+  <button
+    @click="openCreateModal()"
+    class="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700
+           shadow-2xl z-40 flex items-center justify-center transition hover:scale-105 text-white">
+    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+    </svg>
+  </button>
+
+  <!-- CREATE MODAL -->
+  <div
+    x-show="showCreateModal"
+    x-transition.opacity
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+
+    <div
+      @click.away="showCreateModal = false"
+      class="w-full max-w-md mx-4 bg-gray-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
+
+      <!-- Modal header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+        <h2 class="text-base font-semibold text-white">Novo item</h2>
+        <button @click="showCreateModal = false" class="text-gray-400 hover:text-white text-lg leading-none">✕</button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex border-b border-white/10">
+        <button
+          @click="createTab = 'subcategory'; createError = ''"
+          class="flex-1 py-3 text-sm font-medium transition border-b-2"
+          :class="createTab === 'subcategory'
+            ? 'text-blue-400 border-blue-400'
+            : 'text-gray-400 hover:text-gray-200 border-transparent'">
+          Subcategoria
+        </button>
+        <button
+          @click="createTab = 'category'; createError = ''"
+          class="flex-1 py-3 text-sm font-medium transition border-b-2"
+          :class="createTab === 'category'
+            ? 'text-blue-400 border-blue-400'
+            : 'text-gray-400 hover:text-gray-200 border-transparent'">
+          Categoria
+        </button>
+      </div>
+
+      <!-- Form body -->
+      <div class="p-6 space-y-4">
+
+        <!-- SUBCATEGORY FORM -->
+        <template x-if="createTab === 'subcategory'">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs text-gray-400 mb-1.5">Nome da subcategoria *</label>
+              <input
+                type="text"
+                x-model="createForm.subName"
+                @keydown.enter="submitCreate()"
+                class="w-full px-3 py-2.5 rounded-xl text-sm bg-gray-800/60 border border-white/10
+                       focus:outline-none focus:ring-1 focus:ring-blue-500 text-white placeholder-gray-500"
+                placeholder="Ex: Impressoras e Scanners">
+            </div>
+            <div>
+              <label class="block text-xs text-gray-400 mb-1.5">Categoria *</label>
+              <select
+                x-model="createForm.subCategoryId"
+                class="w-full px-3 py-2.5 rounded-xl text-sm bg-gray-800/60 border border-white/10
+                       focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-200">
+                <option value="">— selecione a categoria —</option>
+                <template x-for="cat in categories" :key="cat.id">
+                  <option :value="cat.id" x-text="cat.name"></option>
+                </template>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-gray-400 mb-1.5">
+                Política SLA <span class="text-gray-500">(opcional)</span>
+              </label>
+              <select
+                x-model="createForm.subPolicyId"
+                class="w-full px-3 py-2.5 rounded-xl text-sm bg-gray-800/60 border border-white/10
+                       focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-200">
+                <option value="">— sem política —</option>
+                <template x-for="p in policies" :key="p.id">
+                  <option :value="p.id" x-text="p.name + ' (' + p.first_response_hours + 'h / ' + p.resolution_hours + 'h)'"></option>
+                </template>
+              </select>
+            </div>
+          </div>
+        </template>
+
+        <!-- CATEGORY FORM -->
+        <template x-if="createTab === 'category'">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs text-gray-400 mb-1.5">Nome da categoria *</label>
+              <input
+                type="text"
+                x-model="createForm.catName"
+                @keydown.enter="submitCreate()"
+                class="w-full px-3 py-2.5 rounded-xl text-sm bg-gray-800/60 border border-white/10
+                       focus:outline-none focus:ring-1 focus:ring-blue-500 text-white placeholder-gray-500"
+                placeholder="Ex: TI">
+            </div>
+            <div>
+              <label class="block text-xs text-gray-400 mb-1.5">Equipe responsável *</label>
+              <select
+                x-model="createForm.catTeamId"
+                class="w-full px-3 py-2.5 rounded-xl text-sm bg-gray-800/60 border border-white/10
+                       focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-200">
+                <option value="">— selecione a equipe —</option>
+                <template x-for="t in teams" :key="t.id">
+                  <option :value="t.id" x-text="t.name"></option>
+                </template>
+              </select>
+            </div>
+          </div>
+        </template>
+
+        <!-- ERROR -->
+        <p x-show="createError" x-text="createError" class="text-xs text-red-400 mt-1"></p>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-end gap-3 px-6 py-4 border-t border-white/10">
+        <button
+          @click="showCreateModal = false"
+          class="px-4 py-2 rounded-xl text-sm bg-gray-700/60 hover:bg-gray-700 text-gray-300 transition">
+          Cancelar
+        </button>
+        <button
+          @click="submitCreate()"
+          :disabled="creating"
+          class="px-5 py-2 rounded-xl text-sm bg-blue-600 hover:bg-blue-700 text-white font-semibold transition disabled:opacity-50">
+          <span x-show="!creating">Criar</span>
+          <span x-show="creating" class="flex items-center gap-2">
+            <svg class="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+            </svg>
+            Criando...
+          </span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- TOAST -->
   <div
     x-show="toast.visible"
     x-transition.opacity
-    class="fixed bottom-6 right-6 z-50
+    class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50
            px-5 py-3 rounded-2xl text-sm font-medium shadow-2xl
            flex items-center gap-2"
     :class="toast.error
       ? 'bg-red-700/90 text-white border border-red-500/40'
       : 'bg-emerald-700/90 text-white border border-emerald-500/40'">
-
     <span x-text="toast.message"></span>
   </div>
 
