@@ -1,0 +1,329 @@
+<div
+  x-data="hotelsPage()"
+  x-init="init()"
+  class="flex flex-col flex-1 min-h-0 gap-5 p-3 text-gray-200">
+
+  <!-- HEADER -->
+  <div class="shrink-0">
+    <h1 class="font-bold text-gray-200 border-b border-gray-400 pb-1">
+      Gerenciar Hotéis
+    </h1>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="px-4 py-3 shrink-0
+              bg-gray-900/40 backdrop-blur-xl backdrop-saturate-150
+              border border-white/10 rounded-2xl shadow-xl">
+
+    <div class="flex flex-wrap items-end gap-4">
+
+      <!-- SEARCH -->
+      <div class="flex-[2] min-w-[280px]">
+        <label class="block text-xs mb-1">Buscar hotel</label>
+        <input
+          type="text"
+          x-model="hotelSearch"
+          placeholder="Nome ou código do hotel..."
+          class="w-full p-3 rounded-2xl
+                 bg-gray-800/50 border border-white/10
+                 focus:ring-1 focus:ring-blue-500
+                 focus:outline-none text-sm placeholder-gray-400">
+      </div>
+
+      <!-- BUTTON -->
+      <div class="w-[220px]">
+        <button
+          @click="fetchHotels()"
+          class="w-full bg-blue-600/90 hover:bg-blue-700
+                 transition-colors py-3 rounded-2xl
+                 text-sm font-semibold shadow-md">
+          Atualizar lista
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="flex flex-col flex-1 min-h-0
+              bg-gray-900/40 backdrop-blur-xl backdrop-saturate-150
+              border border-white/10 rounded-2xl shadow-xl
+              overflow-hidden">
+
+    <!-- TABLE HEADER -->
+    <div class="flex items-center px-5 py-4
+                border-b border-white/10
+                text-xs uppercase tracking-wide
+                text-gray-400 shrink-0">
+      <div class="w-28">Código</div>
+      <div class="flex-1">Nome</div>
+      <div class="w-20 text-right">Abrir</div>
+    </div>
+
+    <!-- TABLE BODY -->
+    <div class="flex-1 overflow-y-auto">
+
+      <!-- SKELETON -->
+      <template x-if="loadingHotels">
+        <div class="divide-y divide-white/5">
+          <template x-for="i in 8">
+            <div class="flex items-center px-5 py-4 animate-pulse">
+              <div class="w-28"><div class="h-4 w-16 rounded bg-gray-700/60"></div></div>
+              <div class="flex-1"><div class="h-4 w-48 rounded bg-gray-700/50"></div></div>
+              <div class="w-20 flex justify-end"><div class="h-4 w-4 rounded bg-gray-700/50"></div></div>
+            </div>
+          </template>
+        </div>
+      </template>
+
+      <!-- ROWS -->
+      <template x-if="!loadingHotels">
+        <div>
+          <template x-for="hotel in filteredHotels" :key="hotel.id">
+            <div
+              @click="openEditModal(hotel)"
+              class="flex items-center px-5 py-4
+                     border-b border-white/5
+                     hover:bg-white/5
+                     cursor-pointer transition">
+
+              <div class="w-28">
+                <span class="text-xs font-mono font-semibold
+                             px-2 py-1 rounded-lg
+                             bg-blue-500/10 text-blue-300 border border-blue-500/20"
+                  x-text="hotel.code">
+                </span>
+              </div>
+
+              <div class="flex-1 font-medium text-gray-100 truncate" x-text="hotel.name"></div>
+
+              <div class="w-20 text-right text-gray-500">→</div>
+            </div>
+          </template>
+
+          <!-- EMPTY -->
+          <template x-if="filteredHotels.length === 0">
+            <div class="flex items-center justify-center h-64 text-gray-500 text-sm">
+              Nenhum hotel encontrado
+            </div>
+          </template>
+        </div>
+      </template>
+
+    </div>
+
+    <!-- FAB -->
+    <button
+      @click="openCreateModal()"
+      class="fixed bottom-8 right-8 w-16 h-16 rounded-full
+             bg-blue-600 hover:bg-blue-700 shadow-2xl z-40
+             flex items-center justify-center
+             transition hover:scale-105">
+      <span class="text-4xl leading-none">+</span>
+    </button>
+
+  </div>
+
+  <!-- TOTAL -->
+  <div class="shrink-0 text-sm text-gray-500 pt-1">
+    <span x-text="filteredHotels.length"></span> hotel(s)
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- MODAL: EDITAR HOTEL                                         -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div
+    x-show="showEditModal"
+    x-transition.opacity
+    class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm
+           flex items-center justify-center">
+
+    <div
+      @click.outside="showEditModal = false; deleteConfirmId = null"
+      class="bg-gray-800/40 backdrop-blur-2xl
+             border border-white/10 rounded-[32px] shadow-2xl
+             w-[94vw] max-w-lg p-6 flex flex-col gap-5
+             backdrop-saturate-150">
+
+      <!-- HEADER -->
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="font-bold text-xl">Editar hotel</h2>
+          <p class="text-xs text-gray-400">Atualize as informações do hotel</p>
+        </div>
+        <template x-if="!editEnabled">
+          <button
+            @click="editEnabled = true"
+            class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl input-class text-sm font-semibold">
+            Editar
+          </button>
+        </template>
+      </div>
+
+      <!-- FORM -->
+      <div class="flex flex-col gap-4">
+
+        <!-- CÓDIGO -->
+        <div class="flex flex-col">
+          <label class="block text-xs mb-1">Código</label>
+          <input
+            type="text"
+            x-model="editForm.code"
+            :disabled="!editEnabled"
+            placeholder="Ex: RM01"
+            maxlength="10"
+            class="w-full p-3 rounded-2xl
+                   bg-gray-800/50 border border-white/10
+                   disabled:opacity-50
+                   focus:outline-none focus:ring-1 focus:ring-blue-500">
+        </div>
+
+        <!-- NOME -->
+        <div class="flex flex-col">
+          <label class="block text-xs mb-1">Nome</label>
+          <input
+            type="text"
+            x-model="editForm.name"
+            :disabled="!editEnabled"
+            placeholder="Nome completo do hotel"
+            class="w-full p-3 rounded-2xl
+                   bg-gray-800/50 border border-white/10
+                   disabled:opacity-50
+                   focus:outline-none focus:ring-1 focus:ring-blue-500">
+        </div>
+
+      </div>
+
+      <!-- CONFIRMAÇÃO DE EXCLUSÃO -->
+      <template x-if="deleteConfirmId === selectedHotel?.id">
+        <div class="flex flex-col gap-3 p-4 rounded-2xl bg-red-900/20 border border-red-500/30">
+          <p class="text-sm text-red-300">
+            Tem certeza? Esta ação não pode ser desfeita e pode afetar usuários vinculados a este hotel.
+          </p>
+          <div class="flex gap-3 justify-end">
+            <button
+              @click="deleteConfirmId = null"
+              class="px-4 py-2 rounded-xl input-class bg-gray-700 hover:bg-gray-600 text-sm">
+              Cancelar
+            </button>
+            <button
+              @click="deleteHotel()"
+              class="px-4 py-2 rounded-xl input-class bg-red-700 hover:bg-red-800 text-sm font-semibold">
+              Excluir definitivamente
+            </button>
+          </div>
+        </div>
+      </template>
+
+      <!-- FOOTER -->
+      <div class="flex justify-between items-center pt-1">
+
+        <!-- Botão excluir (lado esquerdo) -->
+        <template x-if="deleteConfirmId !== selectedHotel?.id">
+          <button
+            @click="deleteConfirmId = selectedHotel?.id"
+            class="px-4 py-2 rounded-xl input-class
+                   bg-red-900/30 hover:bg-red-900/50
+                   border border-red-500/20
+                   text-red-400 text-sm transition">
+            Excluir hotel
+          </button>
+        </template>
+        <div x-show="deleteConfirmId === selectedHotel?.id"></div>
+
+        <!-- Ações direita -->
+        <div class="flex gap-3">
+          <button
+            @click="showEditModal = false; deleteConfirmId = null"
+            class="px-5 py-2 rounded-xl input-class bg-gray-700 hover:bg-gray-600 text-sm transition">
+            Cancelar
+          </button>
+          <template x-if="editEnabled">
+            <button
+              @click="saveHotel()"
+              class="px-6 py-2 rounded-xl input-class bg-green-600 hover:bg-green-700 font-semibold text-sm transition">
+              Salvar alterações
+            </button>
+          </template>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- MODAL: CRIAR HOTEL                                          -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div
+    x-show="showCreateModal"
+    x-transition.opacity
+    class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm
+           flex items-center justify-center">
+
+    <div
+      @click.outside="showCreateModal = false"
+      class="bg-gray-800/40 backdrop-blur-2xl
+             border border-white/10 rounded-[32px] shadow-2xl
+             w-[94vw] max-w-lg p-6 flex flex-col gap-5
+             backdrop-saturate-150">
+
+      <!-- HEADER -->
+      <div>
+        <h2 class="font-bold text-xl">Criar hotel</h2>
+        <p class="text-xs text-gray-400">Adicione um novo hotel ao sistema</p>
+      </div>
+
+      <!-- FORM -->
+      <div class="flex flex-col gap-4">
+
+        <!-- CÓDIGO -->
+        <div class="flex flex-col">
+          <label class="block text-xs mb-1">Código <span class="text-gray-500">(máx. 10 caracteres)</span></label>
+          <input
+            type="text"
+            x-model="newHotel.code"
+            placeholder="Ex: RM01"
+            maxlength="10"
+            class="w-full p-3 rounded-2xl
+                   bg-gray-800/50 border border-white/10
+                   focus:outline-none focus:ring-1 focus:ring-blue-500">
+        </div>
+
+        <!-- NOME -->
+        <div class="flex flex-col">
+          <label class="block text-xs mb-1">Nome</label>
+          <input
+            type="text"
+            x-model="newHotel.name"
+            placeholder="Nome completo do hotel"
+            class="w-full p-3 rounded-2xl
+                   bg-gray-800/50 border border-white/10
+                   focus:outline-none focus:ring-1 focus:ring-blue-500">
+        </div>
+
+      </div>
+
+      <!-- FOOTER -->
+      <div class="flex justify-end gap-3 pt-1">
+        <button
+          @click="showCreateModal = false"
+          class="px-5 py-3 rounded-xl input-class bg-gray-700 hover:bg-gray-600 transition text-sm">
+          Cancelar
+        </button>
+        <button
+          @click="createHotel()"
+          :disabled="!newHotel.code?.trim() || !newHotel.name?.trim()"
+          class="px-6 py-3 rounded-xl input-class bg-green-600 hover:bg-green-700
+                 font-semibold transition text-sm
+                 disabled:opacity-40 disabled:cursor-not-allowed">
+          Criar hotel
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

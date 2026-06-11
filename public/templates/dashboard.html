@@ -1,454 +1,743 @@
 <div
-    x-data="dashboardPage()"
-    x-init="loadDashboardOverview()"
-    class="flex p-3 flex-col h-full overflow-hidden text-gray-200">
+  x-data="dashboardPage()"
+  x-init="loadDashboardOverview()"
+  class="flex flex-col h-full overflow-hidden text-gray-200 p-3 gap-3">
 
-    <!-- HEADER -->
-
-    <div class="mb-3">
-
-        <h1 class="text-2xl font-bold border-b pb-2 border-gray-400 ">
-            Dashboard
-        </h1>
-
+  <!-- ── HEADER ───────────────────────────────────────────────────── -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-bold">Dashboard</h1>
+      <p class="text-xs text-gray-500">Visão geral do sistema de chamados</p>
     </div>
-    <!-- TABS -->
+    <button
+      @click="loadDashboardOverview()"
+      class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs
+             bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+      🔄 Atualizar
+    </button>
+  </div>
 
-    <div
-        class="mb-2
-        rounded-3xl
-        bg-gray-800/40
-        backdrop-blur-2xl
-        border border-white/10
-        p-2">
+  <!-- ── TABS ─────────────────────────────────────────────────────── -->
+  <div class="flex flex-wrap gap-1.5 p-1.5 w-full rounded-2xl bg-gray-900/40 backdrop-blur-xl border border-white/10 w-fit">
+    <template x-for="tab in [
+      {id:'operational',  label:'Operação'},
+      {id:'productivity', label:'Produtividade'},
+      {id:'bottlenecks',  label:'Gargalos'},
+      {id:'volume',       label:'Volume'},
+      {id:'sla',          label:'SLA'},
+      {id:'history',      label:'Histórico'},
+    ]" :key="tab.id">
+      <button
+        @click="switchTab(tab.id)"
+        class="px-4 py-2 rounded-xl text-sm transition-all duration-200"
+        :class="dashboardTab === tab.id
+          ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30'
+          : 'text-gray-400 hover:text-white hover:bg-white/5'"
+        x-text="tab.label">
+      </button>
+    </template>
+  </div>
 
-        <div class="flex flex-wrap gap-2">
+  <!-- ── SCROLL AREA ───────────────────────────────────────────────── -->
+  <div class="flex-1 overflow-y-auto custom-scroll pr-1 space-y-4">
 
-            <button
-                class="px-4 py-2 rounded-2xl
-                bg-blue-600 text-white">
 
-                Operacional
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- TAB: OPERAÇÃO                                                   -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div x-show="dashboardTab === 'operational'" class="space-y-4">
 
-            </button>
+      <!-- Counters -->
+      <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">
+        <template x-for="card in overviewCards" :key="card.label">
+          <div class="flex flex-col gap-1 p-4 rounded-2xl
+                      bg-gray-900/40 backdrop-blur-xl border border-white/10">
+            <span class="text-[11px] text-gray-500 leading-tight" x-text="card.label"></span>
+            <span class="text-3xl font-bold mt-1" :class="cardColor(card.color)" x-text="card.value"></span>
+          </div>
+        </template>
+      </div>
 
-            <button
-                class="px-4 py-2 rounded-2xl
-                hover:bg-white/5">
+      <!-- Loading skeleton -->
+      <template x-if="operationalLoading">
+        <div class="flex items-center justify-center py-10 text-gray-600">
+          <span class="text-sm">Carregando...</span>
+        </div>
+      </template>
 
-                Gargalos
+      <!-- Tables grid -->
+      <template x-if="!operationalLoading">
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
 
-            </button>
+          <!-- Tickets Parados (+24h) -->
+          <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+              <span>⏱️</span>
+              <h3 class="text-sm font-semibold">Tickets Parados <span class="text-[11px] text-gray-500 font-normal">(sem atualização há +24h)</span></h3>
+              <span class="ml-auto text-xs text-gray-500" x-text="operational.stale_tickets.length + ' itens'"></span>
+            </div>
+            <div x-show="!operational.stale_tickets.length" class="px-4 py-6 text-sm text-gray-600 text-center">Nenhum ticket parado</div>
+            <div x-show="operational.stale_tickets.length" class="overflow-x-auto">
+              <table class="w-full text-xs">
+                <thead><tr class="border-b border-white/5 text-gray-500">
+                  <th class="text-left px-4 py-2">#</th>
+                  <th class="text-left px-4 py-2">Título</th>
+                  <th class="text-left px-4 py-2">Hotel</th>
+                  <th class="text-left px-4 py-2">Prioridade</th>
+                  <th class="text-left px-4 py-2">Parado há</th>
+                </tr></thead>
+                <tbody>
+                  <template x-for="t in operational.stale_tickets" :key="t.id">
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td class="px-4 py-2.5 text-gray-500" x-text="'#' + t.id"></td>
+                      <td class="px-4 py-2.5 text-gray-200 max-w-[180px] truncate" x-text="t.title"></td>
+                      <td class="px-4 py-2.5 text-gray-400" x-text="t.hotel_name"></td>
+                      <td class="px-4 py-2.5">
+                        <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] border"
+                          :class="priorityBadge(t.priority)" x-text="priorityLabel(t.priority)"></span>
+                      </td>
+                      <td class="px-4 py-2.5 text-amber-400" x-text="timeAgo(t.updated_at)"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-            <button
-                class="px-4 py-2 rounded-2xl
-                hover:bg-white/5">
+          <!-- Tickets Sem Responsável -->
+          <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+              <span>👤</span>
+              <h3 class="text-sm font-semibold">Sem Responsável</h3>
+              <span class="ml-auto text-xs text-gray-500" x-text="operational.unassigned_tickets.length + ' itens'"></span>
+            </div>
+            <div x-show="!operational.unassigned_tickets.length" class="px-4 py-6 text-sm text-gray-600 text-center">Todos os tickets têm responsável</div>
+            <div x-show="operational.unassigned_tickets.length" class="overflow-x-auto">
+              <table class="w-full text-xs">
+                <thead><tr class="border-b border-white/5 text-gray-500">
+                  <th class="text-left px-4 py-2">#</th>
+                  <th class="text-left px-4 py-2">Título</th>
+                  <th class="text-left px-4 py-2">Hotel</th>
+                  <th class="text-left px-4 py-2">Equipe</th>
+                  <th class="text-left px-4 py-2">Aberto há</th>
+                </tr></thead>
+                <tbody>
+                  <template x-for="t in operational.unassigned_tickets" :key="t.id">
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td class="px-4 py-2.5 text-gray-500" x-text="'#' + t.id"></td>
+                      <td class="px-4 py-2.5 text-gray-200 max-w-[180px] truncate" x-text="t.title"></td>
+                      <td class="px-4 py-2.5 text-gray-400" x-text="t.hotel_name"></td>
+                      <td class="px-4 py-2.5 text-gray-400" x-text="t.team_name || '—'"></td>
+                      <td class="px-4 py-2.5 text-red-400" x-text="timeAgo(t.created_at)"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-                Produtividade
+          <!-- Tickets Críticos -->
+          <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+              <span>⚡</span>
+              <h3 class="text-sm font-semibold">Tickets Críticos <span class="text-[11px] text-gray-500 font-normal">(prioridade alta)</span></h3>
+              <span class="ml-auto text-xs text-gray-500" x-text="operational.critical_tickets.length + ' itens'"></span>
+            </div>
+            <div x-show="!operational.critical_tickets.length" class="px-4 py-6 text-sm text-gray-600 text-center">Nenhum ticket crítico</div>
+            <div x-show="operational.critical_tickets.length" class="overflow-x-auto">
+              <table class="w-full text-xs">
+                <thead><tr class="border-b border-white/5 text-gray-500">
+                  <th class="text-left px-4 py-2">#</th>
+                  <th class="text-left px-4 py-2">Título</th>
+                  <th class="text-left px-4 py-2">Hotel</th>
+                  <th class="text-left px-4 py-2">Atendente</th>
+                  <th class="text-left px-4 py-2">Aberto há</th>
+                </tr></thead>
+                <tbody>
+                  <template x-for="t in operational.critical_tickets" :key="t.id">
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td class="px-4 py-2.5 text-gray-500" x-text="'#' + t.id"></td>
+                      <td class="px-4 py-2.5 text-gray-200 max-w-[180px] truncate" x-text="t.title"></td>
+                      <td class="px-4 py-2.5 text-gray-400" x-text="t.hotel_name"></td>
+                      <td class="px-4 py-2.5 text-gray-400" x-text="t.assignee_name || '—'"></td>
+                      <td class="px-4 py-2.5 text-red-400" x-text="timeAgo(t.created_at)"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-            </button>
+          <!-- Aguardando Confirmação -->
+          <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+              <span>✅</span>
+              <h3 class="text-sm font-semibold">Aguardando Confirmação</h3>
+              <span class="ml-auto text-xs text-gray-500" x-text="operational.awaiting_confirmation_tickets.length + ' itens'"></span>
+            </div>
+            <div x-show="!operational.awaiting_confirmation_tickets.length" class="px-4 py-6 text-sm text-gray-600 text-center">Nenhum pendente de confirmação</div>
+            <div x-show="operational.awaiting_confirmation_tickets.length" class="overflow-x-auto">
+              <table class="w-full text-xs">
+                <thead><tr class="border-b border-white/5 text-gray-500">
+                  <th class="text-left px-4 py-2">#</th>
+                  <th class="text-left px-4 py-2">Título</th>
+                  <th class="text-left px-4 py-2">Hotel</th>
+                  <th class="text-left px-4 py-2">Atendente</th>
+                  <th class="text-left px-4 py-2">Aguardando há</th>
+                </tr></thead>
+                <tbody>
+                  <template x-for="t in operational.awaiting_confirmation_tickets" :key="t.id">
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td class="px-4 py-2.5 text-gray-500" x-text="'#' + t.id"></td>
+                      <td class="px-4 py-2.5 text-gray-200 max-w-[180px] truncate" x-text="t.title"></td>
+                      <td class="px-4 py-2.5 text-gray-400" x-text="t.hotel_name"></td>
+                      <td class="px-4 py-2.5 text-gray-400" x-text="t.assignee_name || '—'"></td>
+                      <td class="px-4 py-2.5 text-purple-400" x-text="timeAgo(t.updated_at)"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-            <button
-                class="px-4 py-2 rounded-2xl
-                hover:bg-white/5">
-
-                Volume
-
-            </button>
-
-            <button
-                class="px-4 py-2 rounded-2xl
-                hover:bg-white/5">
-
-                SLA
-
-            </button>
-
-            <button
-                class="px-4 py-2 rounded-2xl
-                hover:bg-white/5">
-
-                Histórico
-
-            </button>
+          <!-- Retorno Solicitante (feedback) — full width -->
+          <div class="xl:col-span-2 bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+              <span>💬</span>
+              <h3 class="text-sm font-semibold">Retorno do Solicitante</h3>
+              <span class="ml-auto text-xs text-gray-500" x-text="operational.feedback_tickets.length + ' itens'"></span>
+            </div>
+            <div x-show="!operational.feedback_tickets.length" class="px-4 py-6 text-sm text-gray-600 text-center">Nenhum ticket aguardando retorno</div>
+            <div x-show="operational.feedback_tickets.length" class="overflow-x-auto">
+              <table class="w-full text-xs">
+                <thead><tr class="border-b border-white/5 text-gray-500">
+                  <th class="text-left px-4 py-2">#</th>
+                  <th class="text-left px-4 py-2">Título</th>
+                  <th class="text-left px-4 py-2">Hotel</th>
+                  <th class="text-left px-4 py-2">Categoria</th>
+                  <th class="text-left px-4 py-2">Atendente</th>
+                  <th class="text-left px-4 py-2">Aguardando há</th>
+                </tr></thead>
+                <tbody>
+                  <template x-for="t in operational.feedback_tickets" :key="t.id">
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td class="px-4 py-2.5 text-gray-500" x-text="'#' + t.id"></td>
+                      <td class="px-4 py-2.5 text-gray-200 max-w-[200px] truncate" x-text="t.title"></td>
+                      <td class="px-4 py-2.5 text-gray-400" x-text="t.hotel_name"></td>
+                      <td class="px-4 py-2.5 text-gray-400" x-text="t.category_name || '—'"></td>
+                      <td class="px-4 py-2.5 text-gray-400" x-text="t.assignee_name || '—'"></td>
+                      <td class="px-4 py-2.5 text-amber-400" x-text="timeAgo(t.updated_at)"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
         </div>
+      </template>
 
     </div>
 
-    <!-- SCROLL -->
 
-    <div class="flex-1 overflow-y-auto pr-2 space-y-8">
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- TAB: PRODUTIVIDADE                                              -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div x-show="dashboardTab === 'productivity'" class="space-y-4">
 
-        <!-- ===================================================== -->
-        <!-- OPERACIONAL -->
-        <!-- ===================================================== -->
+      <p class="text-xs text-gray-500">Ranking do mês atual</p>
 
-        <section>
+      <template x-if="productivityLoading">
+        <div class="flex items-center justify-center py-10 text-gray-600 text-sm">Carregando...</div>
+      </template>
 
-            <div class="mb-4">
+      <template x-if="!productivityLoading && productivityLoaded">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-                <h2 class="text-lg font-semibold">
-                    Operação
-                </h2>
-
-                <p class="text-xs text-gray-400">
-                    Visão geral do ambiente neste momento
-                </p>
-
+          <!-- Top Encerramentos -->
+          <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+              <span>✅</span>
+              <h3 class="text-sm font-semibold">Mais encerramentos</h3>
             </div>
-
-            <!-- RESUMO OPERACIONAL -->
-
-            <div
-                class="rounded-3xl
-                bg-gray-800/40
-                backdrop-blur-2xl
-                border border-white/10
-                mb-6">
-
-                <div
-                    class="p-5
-                    border-b border-white/10">
-
-                    <h3 class="font-semibold">
-                        Resumo Operacional
-                    </h3>
-
+            <div x-show="!productivity.top_closers.length" class="px-4 py-6 text-sm text-gray-600 text-center">Sem dados no mês</div>
+            <div class="p-4 space-y-3">
+              <template x-for="(item, i) in productivity.top_closers" :key="item.user_id">
+                <div class="flex items-center gap-3">
+                  <span class="text-base w-6 text-center shrink-0" x-text="rankMedal(i)"></span>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-center mb-1">
+                      <span class="text-xs text-gray-200 truncate" x-text="item.name"></span>
+                      <span class="text-xs font-bold text-emerald-400 ml-2 shrink-0" x-text="item.count"></span>
+                    </div>
+                    <div class="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                      <div class="h-full rounded-full bg-emerald-500 transition-all"
+                        :style="`width:${Math.round((item.count/maxCount(productivity.top_closers))*100)}%`"></div>
+                    </div>
+                  </div>
                 </div>
+              </template>
+            </div>
+          </div>
 
-                <div
-                    class="p-5
-                    grid
-                    grid-cols-2
-                    md:grid-cols-4
-                    gap-5">
+          <!-- Top Comentários -->
+          <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+              <span>💬</span>
+              <h3 class="text-sm font-semibold">Mais comentários</h3>
+            </div>
+            <div x-show="!productivity.top_commenters.length" class="px-4 py-6 text-sm text-gray-600 text-center">Sem dados no mês</div>
+            <div class="p-4 space-y-3">
+              <template x-for="(item, i) in productivity.top_commenters" :key="item.user_id">
+                <div class="flex items-center gap-3">
+                  <span class="text-base w-6 text-center shrink-0" x-text="rankMedal(i)"></span>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-center mb-1">
+                      <span class="text-xs text-gray-200 truncate" x-text="item.name"></span>
+                      <span class="text-xs font-bold text-blue-400 ml-2 shrink-0" x-text="item.count"></span>
+                    </div>
+                    <div class="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                      <div class="h-full rounded-full bg-blue-500 transition-all"
+                        :style="`width:${Math.round((item.count/maxCount(productivity.top_commenters))*100)}%`"></div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
 
-                    <template
-                        x-for="card in overviewCards"
-                        :key="card.label">
+          <!-- Mais Tickets Ativos -->
+          <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+              <span>📋</span>
+              <h3 class="text-sm font-semibold">Tickets ativos agora</h3>
+            </div>
+            <div x-show="!productivity.most_active.length" class="px-4 py-6 text-sm text-gray-600 text-center">Sem tickets ativos</div>
+            <div class="p-4 space-y-3">
+              <template x-for="(item, i) in productivity.most_active" :key="item.user_id">
+                <div class="flex items-center gap-3">
+                  <span class="text-base w-6 text-center shrink-0" x-text="rankMedal(i)"></span>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-center mb-1">
+                      <span class="text-xs text-gray-200 truncate" x-text="item.name"></span>
+                      <span class="text-xs font-bold text-amber-400 ml-2 shrink-0" x-text="item.count"></span>
+                    </div>
+                    <div class="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                      <div class="h-full rounded-full bg-amber-500 transition-all"
+                        :style="`width:${Math.round((item.count/maxCount(productivity.most_active))*100)}%`"></div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
 
-                        <div>
+        </div>
+      </template>
 
-                            <div
-                                class="text-xs text-gray-400 mb-1"
-                                x-text="card.label">
-                            </div>
+    </div>
 
-                            <div
-                                class="text-3xl font-bold"
-                                x-text="card.value">
-                            </div>
 
-                        </div>
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- TAB: GARGALOS                                                   -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div x-show="dashboardTab === 'bottlenecks'" class="space-y-4">
 
+      <p class="text-xs text-gray-500">Tempo médio de resolução em chamados encerrados</p>
+
+      <template x-if="bottlenecksLoading">
+        <div class="flex items-center justify-center py-10 text-gray-600 text-sm">Carregando...</div>
+      </template>
+
+      <template x-if="!bottlenecksLoading && bottlenecksLoaded">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+          <template x-for="[key, icon, title] in [['by_team','👥','Por Equipe'],['by_category','📂','Por Categoria'],['by_hotel','🏨','Por Hotel']]" :key="key">
+            <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+                <span x-text="icon"></span>
+                <h3 class="text-sm font-semibold" x-text="title"></h3>
+              </div>
+              <div x-show="!bottlenecks[key].length" class="px-4 py-6 text-sm text-gray-600 text-center">Sem dados</div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-xs">
+                  <thead><tr class="border-b border-white/5 text-gray-500">
+                    <th class="text-left px-4 py-2">Nome</th>
+                    <th class="text-right px-4 py-2">Tempo médio</th>
+                    <th class="text-right px-4 py-2">Chamados</th>
+                  </tr></thead>
+                  <tbody>
+                    <template x-for="item in bottlenecks[key]" :key="item.name">
+                      <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                        <td class="px-4 py-2.5 text-gray-200 max-w-[140px] truncate" x-text="item.name"></td>
+                        <td class="px-4 py-2.5 text-right font-medium"
+                            :class="item.avg_hours > 48 ? 'text-red-400' : item.avg_hours > 24 ? 'text-amber-400' : 'text-emerald-400'"
+                            x-text="hoursLabel(item.avg_hours)"></td>
+                        <td class="px-4 py-2.5 text-right text-gray-400" x-text="item.ticket_count"></td>
+                      </tr>
                     </template>
-
-                </div>
-
+                  </tbody>
+                </table>
+              </div>
             </div>
+          </template>
 
-            <!-- TABELAS -->
-
-            <div
-                class="grid
-                grid-cols-1
-                xl:grid-cols-2
-                gap-5">
-
-                <!-- PARADOS -->
-
-                <div
-                    class="rounded-3xl
-                    bg-gray-800/40
-                    border border-white/10
-                    backdrop-blur-2xl">
-
-                    <div class="p-5 border-b border-white/10">
-
-                        <h3 class="font-semibold">
-                            Tickets Parados
-                        </h3>
-
-                    </div>
-
-                    <div class="p-5">
-
-                        <div class="text-sm text-gray-500">
-                            Endpoint futuro
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <!-- SEM RESPONSÁVEL -->
-
-                <div
-                    class="rounded-3xl
-                    bg-gray-800/40
-                    border border-white/10
-                    backdrop-blur-2xl">
-
-                    <div class="p-5 border-b border-white/10">
-
-                        <h3 class="font-semibold">
-                            Tickets Sem Responsável
-                        </h3>
-
-                    </div>
-
-                    <div class="p-5">
-
-                        <div class="text-sm text-gray-500">
-                            Endpoint futuro
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <!-- CRÍTICOS -->
-
-                <div
-                    class="rounded-3xl
-                    bg-gray-800/40
-                    border border-white/10
-                    backdrop-blur-2xl">
-
-                    <div class="p-5 border-b border-white/10">
-
-                        <h3 class="font-semibold">
-                            Tickets Críticos
-                        </h3>
-
-                    </div>
-
-                    <div class="p-5">
-
-                        <div class="text-sm text-gray-500">
-                            Endpoint futuro
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <!-- AGUARDANDO CLIENTE -->
-
-                <div
-                    class="rounded-3xl
-                    bg-gray-800/40
-                    border border-white/10
-                    backdrop-blur-2xl">
-
-                    <div class="p-5 border-b border-white/10">
-
-                        <h3 class="font-semibold">
-                            Aguardando Cliente
-                        </h3>
-
-                    </div>
-
-                    <div class="p-5">
-
-                        <div class="text-sm text-gray-500">
-                            Endpoint futuro
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
-
-        <!-- ===================================================== -->
-        <!-- PRODUTIVIDADE -->
-        <!-- ===================================================== -->
-
-        <section>
-
-            <div class="mb-4">
-
-                <h2 class="text-lg font-semibold">
-                    Produtividade Individual
-                </h2>
-
-                <p class="text-xs text-gray-400">
-                    Quem está produzindo?
-                </p>
-
-            </div>
-
-            <div
-                class="rounded-3xl
-                bg-gray-800/40
-                border border-white/10
-                backdrop-blur-2xl
-                p-6">
-
-                Ranking de atendentes
-
-            </div>
-
-        </section>
-
-        <!-- ===================================================== -->
-        <!-- GARGALOS -->
-        <!-- ===================================================== -->
-
-        <section>
-
-            <div class="mb-4">
-
-                <h2 class="text-lg font-semibold">
-                    Gargalos
-                </h2>
-
-                <p class="text-xs text-gray-400">
-                    Onde estamos perdendo tempo?
-                </p>
-
-            </div>
-
-            <div
-                class="grid
-                grid-cols-1
-                xl:grid-cols-2
-                gap-5">
-
-                <div
-                    class="rounded-3xl
-                    bg-gray-800/40
-                    border border-white/10
-                    backdrop-blur-2xl
-                    p-6">
-
-                    Tempo médio por equipe
-
-                </div>
-
-                <div
-                    class="rounded-3xl
-                    bg-gray-800/40
-                    border border-white/10
-                    backdrop-blur-2xl
-                    p-6">
-
-                    Tempo médio por categoria
-
-                </div>
-
-            </div>
-
-        </section>
-
-        <!-- ===================================================== -->
-        <!-- VOLUME -->
-        <!-- ===================================================== -->
-
-        <section>
-
-            <div class="mb-4">
-
-                <h2 class="text-lg font-semibold">
-                    Volume
-                </h2>
-
-            </div>
-
-            <div
-                class="grid
-                grid-cols-1
-                xl:grid-cols-2
-                gap-5">
-
-                <div
-                    class="rounded-3xl
-                    bg-gray-800/40
-                    border border-white/10
-                    backdrop-blur-2xl
-                    p-6">
-
-                    Gráfico por Categoria
-
-                </div>
-
-                <div
-                    class="rounded-3xl
-                    bg-gray-800/40
-                    border border-white/10
-                    backdrop-blur-2xl
-                    p-6">
-
-                    Hotéis que mais abrem tickets
-
-                </div>
-
-            </div>
-
-        </section>
-
-        <!-- ===================================================== -->
-        <!-- SLA -->
-        <!-- ===================================================== -->
-
-        <section>
-
-            <div class="mb-4">
-
-                <h2 class="text-lg font-semibold">
-                    SLA
-                </h2>
-
-            </div>
-
-            <div
-                class="rounded-3xl
-                bg-gray-800/40
-                border border-white/10
-                backdrop-blur-2xl
-                p-6">
-
-                Indicadores SLA
-
-            </div>
-
-        </section>
-
-        <!-- ===================================================== -->
-        <!-- HISTÓRICO -->
-        <!-- ===================================================== -->
-
-        <section>
-
-            <div class="mb-4">
-
-                <h2 class="text-lg font-semibold">
-                    Histórico
-                </h2>
-
-                <p class="text-xs text-gray-400">
-                    Estamos melhorando ou piorando?
-                </p>
-
-            </div>
-
-            <div
-                class="rounded-3xl
-                bg-gray-800/40
-                border border-white/10
-                backdrop-blur-2xl
-                p-6">
-
-                Gráfico mensal
-
-            </div>
-
-        </section>
+        </div>
+      </template>
 
     </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- TAB: VOLUME                                                     -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div x-show="dashboardTab === 'volume'" class="space-y-4">
+
+      <template x-if="volumeLoading">
+        <div class="flex items-center justify-center py-10 text-gray-600 text-sm">Carregando...</div>
+      </template>
+
+      <template x-if="!volumeLoading && volumeLoaded">
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+
+          <!-- Gráfico: por categoria -->
+          <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+              <span>📂</span>
+              <h3 class="text-sm font-semibold">Chamados por Categoria</h3>
+            </div>
+            <div class="p-4" style="height:280px">
+              <canvas id="volumeCategoryChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Gráfico: por hotel -->
+          <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+              <span>🏨</span>
+              <h3 class="text-sm font-semibold">Hotéis que mais abrem chamados</h3>
+            </div>
+            <div class="p-4" style="height:280px">
+              <canvas id="volumeHotelChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Tabela: subcategorias -->
+          <div class="xl:col-span-2 bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+              <span>📁</span>
+              <h3 class="text-sm font-semibold">Volume por Subcategoria</h3>
+            </div>
+            <div x-show="!volume.by_subcategory.length" class="px-4 py-6 text-sm text-gray-600 text-center">Sem dados</div>
+            <div x-show="volume.by_subcategory.length" class="overflow-x-auto">
+              <table class="w-full text-xs">
+                <thead><tr class="border-b border-white/5 text-gray-500">
+                  <th class="text-left px-4 py-2">Subcategoria</th>
+                  <th class="text-right px-4 py-2">Chamados</th>
+                  <th class="px-4 py-2 w-40"></th>
+                </tr></thead>
+                <tbody>
+                  <template x-for="item in volume.by_subcategory" :key="item.name">
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td class="px-4 py-2.5 text-gray-200" x-text="item.name"></td>
+                      <td class="px-4 py-2.5 text-right font-bold text-purple-400" x-text="item.count"></td>
+                      <td class="px-4 py-2.5">
+                        <div class="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                          <div class="h-full rounded-full bg-purple-500"
+                            :style="`width:${Math.round((item.count/maxCount(volume.by_subcategory))*100)}%`"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </template>
+
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- TAB: SLA                                                        -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div x-show="dashboardTab === 'sla'" class="space-y-4">
+
+      <template x-if="slaLoading">
+        <div class="flex items-center justify-center py-10 text-gray-600 text-sm">Carregando...</div>
+      </template>
+
+      <template x-if="!slaLoading && slaLoaded">
+        <div class="space-y-4">
+
+          <!-- ── Counters SLA ───────────────────────────────────────────── -->
+          <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+
+            <div class="flex flex-col gap-1 p-4 rounded-2xl bg-gray-900/40 backdrop-blur-xl border border-white/10">
+              <span class="text-[11px] text-gray-500">Total com SLA</span>
+              <span class="text-3xl font-bold text-gray-300" x-text="sla.summary.total_with_sla"></span>
+            </div>
+
+            <div class="flex flex-col gap-1 p-4 rounded-2xl bg-gray-900/40 backdrop-blur-xl border border-white/10">
+              <span class="text-[11px] text-gray-500">SLA Ativos</span>
+              <span class="text-3xl font-bold text-cyan-400" x-text="sla.summary.active_sla"></span>
+            </div>
+
+            <div class="flex flex-col gap-1 p-4 rounded-2xl bg-gray-900/40 backdrop-blur-xl border border-emerald-500/20">
+              <span class="text-[11px] text-gray-500">% Cumprimento</span>
+              <span class="text-3xl font-bold text-emerald-400"
+                    x-text="sla.summary.overall_compliance_pct.toFixed(1) + '%'"></span>
+            </div>
+
+            <div class="flex flex-col gap-1 p-4 rounded-2xl bg-gray-900/40 backdrop-blur-xl border border-red-500/20">
+              <span class="text-[11px] text-gray-500">Violados (abertos)</span>
+              <span class="text-3xl font-bold text-red-400" x-text="sla.summary.resolution_breached_open"></span>
+            </div>
+
+            <div class="flex flex-col gap-1 p-4 rounded-2xl bg-gray-900/40 backdrop-blur-xl border border-amber-500/20">
+              <span class="text-[11px] text-gray-500">Em Risco (&lt;8h)</span>
+              <span class="text-3xl font-bold text-amber-400" x-text="sla.summary.at_risk"></span>
+            </div>
+
+            <div class="flex flex-col gap-1 p-4 rounded-2xl bg-gray-900/40 backdrop-blur-xl border border-white/10">
+              <span class="text-[11px] text-gray-500">Tempo médio resposta</span>
+              <span class="text-3xl font-bold text-blue-400"
+                    x-text="sla.summary.avg_response_hours !== null ? slaHoursLabel(sla.summary.avg_response_hours) : '—'"></span>
+            </div>
+
+          </div>
+
+          <!-- ── Gráficos ────────────────────────────────────────────────── -->
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+
+            <!-- Donut cumprimento geral -->
+            <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+                <span>🎯</span>
+                <h3 class="text-sm font-semibold">Cumprimento Geral</h3>
+                <span class="ml-auto text-[11px] text-gray-500">tickets finalizados</span>
+              </div>
+              <div class="p-4 flex flex-col items-center" style="height:260px">
+                <template x-if="sla.summary.overall_compliance_pct === 0 && sla.summary.total_with_sla === 0">
+                  <div class="flex flex-col items-center justify-center h-full text-gray-600">
+                    <div class="text-4xl mb-2">📊</div>
+                    <p class="text-sm">Nenhum dado ainda</p>
+                  </div>
+                </template>
+                <template x-if="sla.summary.total_with_sla > 0">
+                  <div class="relative w-full h-full">
+                    <canvas id="slaDonutChart"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style="top:-20px">
+                      <span class="text-2xl font-bold text-emerald-400"
+                            x-text="sla.summary.overall_compliance_pct.toFixed(1) + '%'"></span>
+                      <span class="text-[10px] text-gray-500 mt-0.5">no prazo</span>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+
+            <!-- Barras por equipe -->
+            <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+                <span>👥</span>
+                <h3 class="text-sm font-semibold">Cumprimento por Equipe</h3>
+              </div>
+              <div class="p-4" :style="`height:${Math.max(200, sla.by_team.length * 38 + 40)}px`">
+                <template x-if="!sla.by_team.length">
+                  <div class="flex flex-col items-center justify-center h-full text-gray-600">
+                    <p class="text-sm">Sem dados de equipe</p>
+                  </div>
+                </template>
+                <canvas id="slaTeamChart" x-show="sla.by_team.length"></canvas>
+              </div>
+            </div>
+
+            <!-- Barras por política -->
+            <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+                <span>📋</span>
+                <h3 class="text-sm font-semibold">Chamados por Política</h3>
+              </div>
+              <div class="p-4" style="height:260px">
+                <template x-if="!sla.by_policy.length">
+                  <div class="flex flex-col items-center justify-center h-full text-gray-600">
+                    <p class="text-sm">Sem dados de política</p>
+                  </div>
+                </template>
+                <canvas id="slaPolicyChart" x-show="sla.by_policy.length"></canvas>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ── Tabela: % por equipe detalhada ─────────────────────────── -->
+          <template x-if="sla.by_team.length">
+            <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+                <span>👥</span>
+                <h3 class="text-sm font-semibold">Detalhamento por Equipe</h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-xs">
+                  <thead><tr class="border-b border-white/5 text-gray-500">
+                    <th class="text-left px-4 py-2">Equipe</th>
+                    <th class="text-right px-4 py-2">Total</th>
+                    <th class="text-right px-4 py-2">Cumpridos</th>
+                    <th class="text-right px-4 py-2">Violados</th>
+                    <th class="text-right px-4 py-2">% SLA</th>
+                    <th class="text-right px-4 py-2">Tempo médio resposta</th>
+                    <th class="px-4 py-2 w-32"></th>
+                  </tr></thead>
+                  <tbody>
+                    <template x-for="row in sla.by_team" :key="row.team_name">
+                      <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                        <td class="px-4 py-2.5 font-medium text-gray-200" x-text="row.team_name"></td>
+                        <td class="px-4 py-2.5 text-right text-gray-400" x-text="row.total"></td>
+                        <td class="px-4 py-2.5 text-right text-emerald-400" x-text="row.compliant"></td>
+                        <td class="px-4 py-2.5 text-right text-red-400" x-text="row.breached"></td>
+                        <td class="px-4 py-2.5 text-right font-bold" :class="slaStatusClass(row)"
+                            x-text="row.compliance_pct.toFixed(1) + '%'"></td>
+                        <td class="px-4 py-2.5 text-right text-gray-400"
+                            x-text="slaHoursLabel(row.avg_response_hours)"></td>
+                        <td class="px-4 py-2.5">
+                          <div class="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                            <div class="h-full rounded-full transition-all"
+                              :class="row.compliance_pct >= 80 ? 'bg-emerald-500' : row.compliance_pct >= 60 ? 'bg-amber-500' : 'bg-red-500'"
+                              :style="`width:${row.compliance_pct}%`"></div>
+                          </div>
+                        </td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </template>
+
+          <!-- ── Dois painéis lado a lado ───────────────────────────────── -->
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+
+            <!-- Em Risco -->
+            <div class="bg-gray-900/40 backdrop-blur-xl border border-amber-500/15 rounded-2xl overflow-hidden">
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+                <span>⚠️</span>
+                <h3 class="text-sm font-semibold">Em Risco <span class="text-[11px] text-gray-500 font-normal">(vence em &lt;8h)</span></h3>
+                <span class="ml-auto text-xs text-amber-400" x-text="sla.at_risk_tickets.length + ' itens'"></span>
+              </div>
+              <div x-show="!sla.at_risk_tickets.length" class="px-4 py-6 text-sm text-gray-600 text-center">
+                Nenhum ticket em risco
+              </div>
+              <div x-show="sla.at_risk_tickets.length" class="overflow-x-auto">
+                <table class="w-full text-xs">
+                  <thead><tr class="border-b border-white/5 text-gray-500">
+                    <th class="text-left px-4 py-2">#</th>
+                    <th class="text-left px-4 py-2">Título</th>
+                    <th class="text-left px-4 py-2">Equipe</th>
+                    <th class="text-left px-4 py-2">Política</th>
+                    <th class="text-right px-4 py-2">Restam</th>
+                  </tr></thead>
+                  <tbody>
+                    <template x-for="t in sla.at_risk_tickets" :key="t.id">
+                      <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                        <td class="px-4 py-2.5 text-gray-500" x-text="'#' + t.id"></td>
+                        <td class="px-4 py-2.5 text-gray-200 max-w-[160px] truncate" x-text="t.title"></td>
+                        <td class="px-4 py-2.5 text-gray-400 truncate" x-text="t.team_name || '—'"></td>
+                        <td class="px-4 py-2.5">
+                          <span class="inline-flex px-1.5 py-0.5 rounded text-[10px] border"
+                                :class="slaPriorityBadge(t.priority)"
+                                x-text="t.policy_name || '—'"></span>
+                        </td>
+                        <td class="px-4 py-2.5 text-right font-bold text-amber-400"
+                            x-text="slaHoursLabel(t.hours_diff)"></td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Violados abertos -->
+            <div class="bg-gray-900/40 backdrop-blur-xl border border-red-500/15 rounded-2xl overflow-hidden">
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+                <span>🚨</span>
+                <h3 class="text-sm font-semibold">Violados em Aberto</h3>
+                <span class="ml-auto text-xs text-red-400" x-text="sla.breached_open_tickets.length + ' itens'"></span>
+              </div>
+              <div x-show="!sla.breached_open_tickets.length" class="px-4 py-6 text-sm text-gray-600 text-center">
+                Nenhum ticket violado em aberto
+              </div>
+              <div x-show="sla.breached_open_tickets.length" class="overflow-x-auto">
+                <table class="w-full text-xs">
+                  <thead><tr class="border-b border-white/5 text-gray-500">
+                    <th class="text-left px-4 py-2">#</th>
+                    <th class="text-left px-4 py-2">Título</th>
+                    <th class="text-left px-4 py-2">Equipe</th>
+                    <th class="text-left px-4 py-2">Política</th>
+                    <th class="text-right px-4 py-2">Atraso</th>
+                  </tr></thead>
+                  <tbody>
+                    <template x-for="t in sla.breached_open_tickets" :key="t.id">
+                      <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                        <td class="px-4 py-2.5 text-gray-500" x-text="'#' + t.id"></td>
+                        <td class="px-4 py-2.5 text-gray-200 max-w-[160px] truncate" x-text="t.title"></td>
+                        <td class="px-4 py-2.5 text-gray-400 truncate" x-text="t.team_name || '—'"></td>
+                        <td class="px-4 py-2.5">
+                          <span class="inline-flex px-1.5 py-0.5 rounded text-[10px] border"
+                                :class="slaPriorityBadge(t.priority)"
+                                x-text="t.policy_name || '—'"></span>
+                        </td>
+                        <td class="px-4 py-2.5 text-right font-bold text-red-400"
+                            x-text="'+' + slaHoursLabel(Math.abs(t.hours_diff))"></td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </template>
+
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- TAB: HISTÓRICO                                                  -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div x-show="dashboardTab === 'history'" class="space-y-4">
+
+      <p class="text-xs text-gray-500">Últimos 12 meses</p>
+
+      <template x-if="historyLoading">
+        <div class="flex items-center justify-center py-10 text-gray-600 text-sm">Carregando...</div>
+      </template>
+
+      <template x-if="!historyLoading && historyLoaded">
+        <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+          <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+            <span>📈</span>
+            <h3 class="text-sm font-semibold">Chamados criados vs encerrados por mês</h3>
+          </div>
+          <div class="p-4" style="height:320px">
+            <canvas id="historyChart"></canvas>
+          </div>
+        </div>
+      </template>
+
+      <template x-if="historyLoaded && !historyLoading && !history.monthly.length">
+        <div class="flex flex-col items-center justify-center py-16 text-gray-600">
+          <div class="text-4xl mb-3">📊</div>
+          <p class="text-sm">Nenhum dado histórico disponível ainda</p>
+        </div>
+      </template>
+
+    </div>
+
+  </div>
 
 </div>

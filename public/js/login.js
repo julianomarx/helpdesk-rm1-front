@@ -1,14 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("login-form");
-
-  const API_BASE = "/api";
+  const API_BASE  = "/api";
 
   if (!loginForm) return;
 
   loginForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const email = document.getElementById("email").value;
+    const email    = document.getElementById("email").value;
     const password = document.getElementById("password").value;
 
     try {
@@ -19,50 +18,36 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (!res.ok) {
-        document.getElementById("login-error").textContent =
-          "Email e/ou senha inválidos!";
+        document.getElementById("login-error").textContent = "Email e/ou senha inválidos!";
         return;
       }
 
-      const data = await res.json();
+      const data  = await res.json();
       const token = data.access_token;
       localStorage.setItem("access_token", token);
 
       const payload = JSON.parse(atob(token.split(".")[1]));
+      const store   = Alpine.store("app");
 
-      console.log(payload)
+      store.userId        = payload.sub;
+      store.userName      = payload.name;
+      store.userEmail     = payload.email;
+      store.role          = payload.role;
+      store.avatarUrl     = payload.avatar_url    || '';
+      store.menus         = payload.menus         || [];
+      store.hotels        = payload.hotels        || [];
+      store.teams         = payload.teams         || [];
+      store.categories    = payload.categories    || [];
+      store.subcategories = payload.subcategories || [];
+      store.tokenExpire   = payload.exp;
+      store.currentPage   = "dashboard";
 
-
-      //aqui iremos guardar as informações de hoteis e permissões em localstorage
-
-      // Atualiza store do Alpine
-      Alpine.store("app").userId = payload.sub;
-      Alpine.store("app").userName = payload.name
-      Alpine.store("app").role = payload.role;
-      Alpine.store("app").menus = payload.menus;
-      Alpine.store("app").hotels = payload.hotels;
-      Alpine.store("app").teams = payload.teams;
-      Alpine.store("app").tokenExpire = payload.exp;
-      Alpine.store("app").categories = payload.categories;
-      Alpine.store("app").subcategories = payload.subcategories
-
-      Alpine.store("app").currentPage = "dashboard";  
-      Alpine.store("app").currentTab = "all";
-      // Alpine.store("app").selectedTicket = "null";
-
-      //muda a view para dashboard
-      Alpine.store("app").currentView = "dashboard";
-
-      //chama inicializa função stay alive para monitorar expire do token
-      //initStayAlive(Alpine.store("app").tokenExpire);
-
-      console.log(Alpine.store("app"))
-
+      store.currentView = "dashboard";
+      await store.navigate("dashboard");
 
     } catch (e) {
       console.error("Erro no login:", e);
-      document.getElementById("login-error").textContent =
-        "Erro de conexão..";
+      document.getElementById("login-error").textContent = "Erro de conexão..";
     }
   });
 });

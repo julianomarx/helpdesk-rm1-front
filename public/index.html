@@ -7,14 +7,26 @@
 
   <link rel="stylesheet" href="/css/style.css">
 
-  <!-- Scripts na ordem correta -->
-  <!-- <script src="/js/services.js"></script> -->
-  <script src="/js/dashboard.js"></script>
+  <!-- Utilitários globais -->
+  <script src="/js/utils/toast.js"></script>
+  <script src="/js/utils/token.js"></script>
+
+  <!-- Componentes de página -->
+  <script src="/js/pages/dashboard-page.js"></script>
+  <script src="/js/pages/tickets-page.js"></script>
+  <script src="/js/pages/ticket-view-page.js"></script>
+  <script src="/js/pages/users-page.js"></script>
+  <script src="/js/pages/hotels-page.js"></script>
+  <script src="/js/pages/manage-categories-page.js"></script>
+
+  <!-- Shell e bootstrap -->
+  <script src="/js/shell.js"></script>
   <script src="/js/main.js"></script>
   <script src="/js/login.js"></script>
-  
+
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dayjs@1/locale/pt-br.js"></script>
   <script>
@@ -56,7 +68,7 @@
         <ul>
           <template x-for="item in $store.app.menus" :key="item.page">
             <li>
-              <a href="#" class="menu-item text-sm" :class="{ 'bg-gray-700': currentPage === item.page }"
+              <a href="#" class="menu-item text-sm" :class="{ 'bg-gray-700': $store.app.currentPage === item.page }"
                 @click.prevent="goTo(item.page)" x-text="item.label">
               </a>
             </li>
@@ -97,6 +109,7 @@
               w-12 h-12
               shrink-0
               rounded-full
+              overflow-hidden
               bg-gradient-to-br
               from-blue-500
               to-cyan-600
@@ -107,17 +120,23 @@
               font-semibold"
           >
 
-            <span
-              x-text="
-                ($store.app.userName || 'U')
-                  .split(' ')
-                  .filter(p => p.length)
-                  .map(p => p[0])
-                  .slice(0, 2)
-                  .join('')
-                  .toUpperCase()
-              ">
-            </span>
+            <template x-if="$store.app.avatarUrl">
+              <img :src="$store.app.avatarUrl" class="w-full h-full object-cover">
+            </template>
+
+            <template x-if="!$store.app.avatarUrl">
+              <span
+                x-text="
+                  ($store.app.userName || 'U')
+                    .split(' ')
+                    .filter(p => p.length)
+                    .map(p => p[0])
+                    .slice(0, 2)
+                    .join('')
+                    .toUpperCase()
+                ">
+              </span>
+            </template>
 
           </div>
 

@@ -1,0 +1,165 @@
+<div
+  x-data="manageCategoriesPage()"
+  x-init="init()"
+  class="flex flex-col flex-1 min-h-0 gap-5 p-3 text-gray-200">
+
+  <!-- HEADER -->
+  <div class="shrink-0 flex items-center justify-between">
+    <div>
+      <h1 class="font-bold text-gray-200 border-b border-gray-400 pb-1">
+        Categorias &amp; SLA
+      </h1>
+      <p class="text-xs text-gray-400 mt-1">Atribua políticas SLA a cada subcategoria</p>
+    </div>
+
+    <!-- POLICIES LEGEND -->
+    <div class="flex flex-wrap gap-2">
+      <template x-for="p in policies" :key="p.id">
+        <span
+          class="text-xs px-3 py-1 rounded-full border font-semibold"
+          :class="policyBadgeClass(p.priority)"
+          x-text="p.name + ' · ' + p.first_response_hours + 'h / ' + p.resolution_hours + 'h'">
+        </span>
+      </template>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <template x-if="loading">
+    <div class="flex flex-col gap-4">
+      <template x-for="i in 5">
+        <div class="rounded-2xl border border-white/10 bg-gray-900/40 animate-pulse p-4">
+          <div class="h-5 w-40 rounded bg-gray-700/60 mb-3"></div>
+          <div class="space-y-2">
+            <template x-for="j in 3">
+              <div class="h-11 rounded-xl bg-gray-700/40"></div>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+  </template>
+
+  <!-- CATEGORIES -->
+  <template x-if="!loading">
+    <div class="flex flex-col gap-4 overflow-y-auto flex-1 min-h-0 pb-2">
+
+      <template x-for="cat in categories" :key="cat.id">
+        <div
+          class="rounded-2xl border border-white/10
+                 bg-gray-900/40 backdrop-blur-xl backdrop-saturate-150
+                 shadow-xl overflow-hidden">
+
+          <!-- CATEGORY HEADER -->
+          <div
+            class="flex items-center justify-between
+                   px-5 py-3 border-b border-white/10
+                   bg-white/5 cursor-pointer select-none"
+            @click="toggleCat(cat.id)">
+
+            <div class="flex items-center gap-3">
+              <span class="font-semibold text-sm" x-text="cat.name"></span>
+              <span
+                class="text-[11px] text-gray-400"
+                x-text="subcategoriesOf(cat.id).length + ' subcategorias'">
+              </span>
+            </div>
+
+            <svg
+              class="w-4 h-4 text-gray-400 transition-transform"
+              :class="openCats.includes(cat.id) ? 'rotate-180' : ''"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </div>
+
+          <!-- SUBCATEGORIES -->
+          <div x-show="openCats.includes(cat.id)" x-transition>
+            <template x-for="sub in subcategoriesOf(cat.id)" :key="sub.id">
+              <div
+                class="flex items-center gap-3 px-5 py-3
+                       border-b border-white/5 last:border-0
+                       hover:bg-white/3 transition">
+
+                <!-- NAME -->
+                <div class="flex-1 min-w-0">
+                  <span class="text-sm text-gray-200 truncate" x-text="sub.name"></span>
+                </div>
+
+                <!-- CURRENT BADGE -->
+                <div class="shrink-0 w-36 text-right">
+                  <template x-if="sub.sla_policy">
+                    <span
+                      class="text-[11px] px-2 py-0.5 rounded-full border font-semibold"
+                      :class="policyBadgeClass(sub.sla_policy.priority)"
+                      x-text="sub.sla_policy.name">
+                    </span>
+                  </template>
+                  <template x-if="!sub.sla_policy">
+                    <span class="text-[11px] text-gray-500 italic">sem política</span>
+                  </template>
+                </div>
+
+                <!-- DROPDOWN -->
+                <select
+                  class="shrink-0 w-44 py-2 px-3 rounded-xl text-sm
+                         bg-gray-800/60 border border-white/10
+                         focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  :value="pendingPolicy(sub.id)"
+                  @change="setPending(sub.id, $event.target.value)">
+
+                  <option value="">— sem política —</option>
+                  <template x-for="p in policies" :key="p.id">
+                    <option :value="p.id" x-text="p.name"></option>
+                  </template>
+                </select>
+
+                <!-- SAVE BUTTON -->
+                <button
+                  class="shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition"
+                  :class="isDirty(sub.id)
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                    : 'bg-gray-700/40 text-gray-500 cursor-default'"
+                  :disabled="!isDirty(sub.id) || saving[sub.id]"
+                  @click="saveSubcategory(sub)">
+
+                  <template x-if="saving[sub.id]">
+                    <span class="flex items-center gap-1">
+                      <svg class="animate-spin w-3 h-3" viewBox="0 0 24 24" fill="none">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                      </svg>
+                      Salvando
+                    </span>
+                  </template>
+                  <template x-if="!saving[sub.id]">
+                    <span x-text="isDirty(sub.id) ? 'Salvar' : 'Salvo'"></span>
+                  </template>
+
+                </button>
+
+              </div>
+            </template>
+          </div>
+
+        </div>
+      </template>
+
+    </div>
+  </template>
+
+  <!-- TOAST -->
+  <div
+    x-show="toast.visible"
+    x-transition.opacity
+    class="fixed bottom-6 right-6 z-50
+           px-5 py-3 rounded-2xl text-sm font-medium shadow-2xl
+           flex items-center gap-2"
+    :class="toast.error
+      ? 'bg-red-700/90 text-white border border-red-500/40'
+      : 'bg-emerald-700/90 text-white border border-emerald-500/40'">
+
+    <span x-text="toast.message"></span>
+  </div>
+
+</div>
