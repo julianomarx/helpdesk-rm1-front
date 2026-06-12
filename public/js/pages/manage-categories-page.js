@@ -8,7 +8,9 @@ function manageCategoriesPage() {
     openCats: [],
     pending: {},
     saving: {},
-    toast: { visible: false, message: '', error: false, _timer: null },
+    deleting: {},
+    confirmDeleteCat: null,
+    confirmDeleteSub: null,
 
     showCreateModal: false,
     createTab: 'subcategory',
@@ -55,14 +57,6 @@ function manageCategoriesPage() {
       else this.openCats.splice(idx, 1);
     },
 
-    pendingPolicy(subId) {
-      return this.pending[subId] ?? '';
-    },
-
-    setPending(subId, value) {
-      this.pending[subId] = value;
-    },
-
     isDirty(subId) {
       const sub = this.subcategories.find(s => s.id === subId);
       if (!sub) return false;
@@ -72,7 +66,7 @@ function manageCategoriesPage() {
 
     async saveSubcategory(sub) {
       if (!this.isDirty(sub.id) || this.saving[sub.id]) return;
-      this.saving[sub.id] = true;
+      this.saving = { ...this.saving, [sub.id]: true };
 
       const token = localStorage.getItem('access_token');
       const newPolicyId = this.pending[sub.id] ? Number(this.pending[sub.id]) : null;
@@ -84,20 +78,79 @@ function manageCategoriesPage() {
           body: JSON.stringify({ sla_policy_id: newPolicyId }),
         });
 
-        if (!res.ok) throw new Error(await res.text());
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          showToast(err.detail || 'Erro ao salvar. Tente novamente.', 'error');
+          return;
+        }
 
         const updated = await res.json();
         const idx = this.subcategories.findIndex(s => s.id === sub.id);
         if (idx !== -1) {
-          this.subcategories[idx] = updated;
-          this.pending[sub.id] = updated.sla_policy_id ? String(updated.sla_policy_id) : '';
+          this.subcategories.splice(idx, 1, updated);
+          this.pending = { ...this.pending, [sub.id]: updated.sla_policy_id ? String(updated.sla_policy_id) : '' };
         }
 
-        this.showToast(`Política SLA atualizada para "${sub.name}"`);
+        showToast(`Política SLA atualizada para "${sub.name}"`, 'success');
       } catch (e) {
-        this.showToast('Erro ao salvar. Tente novamente.', true);
+        showToast('Erro inesperado. Tente novamente.', 'error');
       } finally {
-        this.saving[sub.id] = false;
+        this.saving = { ...this.saving, [sub.id]: false };
+      }
+    },
+
+    async deleteCategory(cat) {
+      this.deleting = { ...this.deleting, ['cat_' + cat.id]: true };
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch(`/api/categories/${cat.id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token },
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          showToast(err.detail || 'Erro ao excluir categoria', 'error');
+          return;
+        }
+        const subIds = this.subcategories.filter(s => s.category_id === cat.id).map(s => s.id);
+        this.subcategories = this.subcategories.filter(s => s.category_id !== cat.id);
+        const newPending = { ...this.pending };
+        subIds.forEach(id => { delete newPending[id]; });
+        this.pending = newPending;
+        this.categories = this.categories.filter(c => c.id !== cat.id);
+        this.openCats = this.openCats.filter(id => id !== cat.id);
+        this.confirmDeleteCat = null;
+        showToast(`Categoria "${cat.name}" excluída`, 'success');
+      } catch {
+        showToast('Erro ao excluir categoria', 'error');
+      } finally {
+        this.deleting = { ...this.deleting, ['cat_' + cat.id]: false };
+      }
+    },
+
+    async deleteSubcategory(sub) {
+      this.deleting = { ...this.deleting, ['sub_' + sub.id]: true };
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch(`/api/subcategories/${sub.id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token },
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          showToast(err.detail || 'Erro ao excluir subcategoria', 'error');
+          return;
+        }
+        this.subcategories = this.subcategories.filter(s => s.id !== sub.id);
+        const newPending = { ...this.pending };
+        delete newPending[sub.id];
+        this.pending = newPending;
+        this.confirmDeleteSub = null;
+        showToast(`Subcategoria "${sub.name}" excluída`, 'success');
+      } catch {
+        showToast('Erro ao excluir subcategoria', 'error');
+      } finally {
+        this.deleting = { ...this.deleting, ['sub_' + sub.id]: false };
       }
     },
 
@@ -135,7 +188,7 @@ function manageCategoriesPage() {
           });
 
           if (!res.ok) {
-            const err = await res.json();
+            const err = await res.json().catch(() => ({}));
             this.createError = err.detail || 'Erro ao criar categoria';
             return;
           }
@@ -144,7 +197,7 @@ function manageCategoriesPage() {
           this.categories.push(newCat);
           this.openCats.push(newCat.id);
           this.showCreateModal = false;
-          this.showToast(`Categoria "${newCat.name}" criada com sucesso!`);
+          showToast(`Categoria "${newCat.name}" criada com sucesso!`, 'success');
 
         } else {
           if (!this.createForm.subName.trim()) {
@@ -166,7 +219,7 @@ function manageCategoriesPage() {
           });
 
           if (!createRes.ok) {
-            const err = await createRes.json();
+            const err = await createRes.json().catch(() => ({}));
             this.createError = err.detail || 'Erro ao criar subcategoria';
             return;
           }
@@ -185,9 +238,9 @@ function manageCategoriesPage() {
           }
 
           this.subcategories.push(newSub);
-          this.pending[newSub.id] = newSub.sla_policy_id ? String(newSub.sla_policy_id) : '';
+          this.pending = { ...this.pending, [newSub.id]: newSub.sla_policy_id ? String(newSub.sla_policy_id) : '' };
           this.showCreateModal = false;
-          this.showToast(`Subcategoria "${newSub.name}" criada com sucesso!`);
+          showToast(`Subcategoria "${newSub.name}" criada com sucesso!`, 'success');
         }
       } catch (e) {
         this.createError = 'Erro inesperado. Tente novamente.';
@@ -205,14 +258,6 @@ function manageCategoriesPage() {
         planned:  'bg-purple-500/15 border-purple-500/40 text-purple-300',
       };
       return map[priority] || map.medium;
-    },
-
-    showToast(message, error = false) {
-      if (this.toast._timer) clearTimeout(this.toast._timer);
-      this.toast.message = message;
-      this.toast.error = error;
-      this.toast.visible = true;
-      this.toast._timer = setTimeout(() => { this.toast.visible = false; }, 3500);
     },
   };
 }

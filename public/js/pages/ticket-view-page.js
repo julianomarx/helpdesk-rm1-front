@@ -18,10 +18,74 @@ function ticketViewPage() {
     attachments: [],
     loadingAttachments: false,
     deletingAttachmentId: null,
+    mentionUsers: [],
+    mentionMatches: [],
+    showMentionDropdown: false,
+    _mentionStart: -1,
+    _mentionEnd: -1,
 
     init() {
       const stored = Alpine.store("app").selectedTicket;
-      if (stored) this.selectedTicket = stored;
+      if (stored) {
+        this.selectedTicket = stored;
+        // Ticket vindo de notificação tem só o id — busca dados completos
+        if (!stored.title) {
+          this.getTicketById(stored.id);
+        }
+      }
+      this.loadMentionUsers();
+    },
+
+    async loadMentionUsers() {
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch('/api/users/mentionable', {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (res.ok) this.mentionUsers = await res.json();
+      } catch {}
+    },
+
+    onCommentInput(event) {
+      const ta = event.target;
+      const val = ta.value;
+      const cursor = ta.selectionStart;
+      const textBefore = val.slice(0, cursor);
+      const match = textBefore.match(/@(\w*)$/);
+      if (match) {
+        this._mentionStart = cursor - match[0].length;
+        this._mentionEnd = cursor;
+        const query = match[1].toLowerCase();
+        this.mentionMatches = query.length === 0
+          ? this.mentionUsers.slice(0, 6)
+          : this.mentionUsers.filter(u =>
+              u.name.toLowerCase().startsWith(query) ||
+              u.name.toLowerCase().includes(' ' + query)
+            ).slice(0, 6);
+        this.showMentionDropdown = this.mentionMatches.length > 0;
+      } else {
+        this.showMentionDropdown = false;
+        this._mentionStart = -1;
+        this._mentionEnd = -1;
+      }
+    },
+
+    selectMention(user) {
+      const firstName = user.name.split(' ')[0];
+      const before = this.newComment.slice(0, this._mentionStart);
+      const after = this.newComment.slice(this._mentionEnd > -1 ? this._mentionEnd : this.newComment.length);
+      this.newComment = before + '@' + firstName + ' ' + after;
+      this.showMentionDropdown = false;
+      this._mentionStart = -1;
+      this._mentionEnd = -1;
+      this.$nextTick(() => {
+        const ta = document.getElementById('comment-textarea');
+        if (ta) {
+          const pos = before.length + firstName.length + 2;
+          ta.focus();
+          ta.selectionStart = ta.selectionEnd = pos;
+        }
+      });
     },
 
     goTo(page) {
@@ -306,15 +370,15 @@ function ticketViewPage() {
     },
 
     fileIcon(mimeType) {
-      if (!mimeType) return "📎";
-      if (mimeType.startsWith("image/"))          return "🖼️";
-      if (mimeType === "application/pdf")          return "📄";
-      if (mimeType.includes("word"))               return "📝";
-      if (mimeType.includes("excel") || mimeType.includes("spreadsheet")) return "📊";
-      if (mimeType === "text/plain")               return "📃";
-      if (mimeType === "text/csv")                 return "📊";
-      if (mimeType.includes("zip"))                return "🗜️";
-      return "📎";
+      if (!mimeType) return "file";
+      if (mimeType.startsWith("image/"))          return "img";
+      if (mimeType === "application/pdf")          return "pdf";
+      if (mimeType.includes("word"))               return "doc";
+      if (mimeType.includes("excel") || mimeType.includes("spreadsheet")) return "xls";
+      if (mimeType === "text/plain")               return "txt";
+      if (mimeType === "text/csv")                 return "csv";
+      if (mimeType.includes("zip"))                return "zip";
+      return "file";
     },
 
     formatFileSize(bytes) {
@@ -446,34 +510,45 @@ function ticketViewPage() {
 
     logMeta(log) {
       const map = {
-        created:             { label: 'Chamado aberto',        icon: '🎫', color: 'emerald' },
-        ticket_started:      { label: 'Atendimento iniciado',  icon: '▶️',  color: 'blue'    },
-        ticket_closed:       { label: 'Chamado encerrado',     icon: '✅',  color: 'emerald' },
-        ticket_reopened:     { label: 'Chamado reaberto',      icon: '🔄',  color: 'amber'   },
-        ticket_cancelled:    { label: 'Chamado cancelado',     icon: '🚫',  color: 'red'     },
-        ticket_returned:     { label: 'Retornado para fila',   icon: '↩️',  color: 'amber'   },
-        status_changed:      { label: 'Status alterado',       icon: '🔁',  color: 'blue'    },
-        progress_changed:    { label: 'Progresso alterado',    icon: '📊',  color: 'blue'    },
-        assigned_changed:    { label: 'Responsável alterado',  icon: '👤',  color: 'purple'  },
-        priority_changed:    { label: 'Prioridade alterada',   icon: '⚡',  color: 'amber'   },
-        team_changed:        { label: 'Equipe alterada',       icon: '👥',  color: 'purple'  },
-        category_changed:    { label: 'Categoria alterada',    icon: '📂',  color: 'blue'    },
-        subcategory_changed: { label: 'Subcategoria alterada', icon: '📁',  color: 'blue'    },
-        comment_updated:     { label: 'Comentário editado',    icon: '✏️',  color: 'gray'    },
-        comment_deleted:     { label: 'Comentário removido',   icon: '🗑️',  color: 'red'     },
-        agent_joined:        { label: 'Agente entrou',         icon: '➕',  color: 'emerald' },
-        agent_left:          { label: 'Agente removido',       icon: '➖',  color: 'red'     },
-        time_started:        { label: 'Cronômetro iniciado',   icon: '⏱️',  color: 'cyan'    },
-        time_paused:         { label: 'Cronômetro pausado',    icon: '⏸️',  color: 'amber'   },
-        time_resumed:        { label: 'Cronômetro retomado',   icon: '▶️',  color: 'cyan'    },
-        time_stopped:        { label: 'Cronômetro encerrado',  icon: '⏹️',  color: 'gray'    },
-        sla_started:         { label: 'SLA iniciado',          icon: '🟢',  color: 'emerald' },
-        sla_paused:          { label: 'SLA pausado',           icon: '🟡',  color: 'amber'   },
-        sla_resumed:         { label: 'SLA retomado',          icon: '🟢',  color: 'emerald' },
-        sla_breached:        { label: 'SLA violado',           icon: '🔴',  color: 'red'     },
-        sla_stopped:         { label: 'SLA encerrado',         icon: '⭕',  color: 'gray'    },
+        created:             { label: 'Chamado aberto',        icon: '·', color: 'emerald' },
+        ticket_started:      { label: 'Atendimento iniciado',  icon: '›', color: 'blue'    },
+        ticket_closed:       { label: 'Chamado encerrado',     icon: '·', color: 'emerald' },
+        ticket_reopened:     { label: 'Chamado reaberto',      icon: '·', color: 'amber'   },
+        ticket_cancelled:    { label: 'Chamado cancelado',     icon: '·', color: 'red'     },
+        ticket_returned:     { label: 'Retornado para fila',   icon: '‹', color: 'amber'   },
+        status_changed:      { label: 'Status alterado',       icon: '·', color: 'blue'    },
+        progress_changed:    { label: 'Progresso alterado',    icon: '·', color: 'blue'    },
+        assigned_changed:    { label: 'Responsável alterado',  icon: '·', color: 'purple'  },
+        priority_changed:    { label: 'Prioridade alterada',   icon: '·', color: 'amber'   },
+        team_changed:        { label: 'Equipe alterada',       icon: '·', color: 'purple'  },
+        category_changed:    { label: 'Categoria alterada',    icon: '·', color: 'blue'    },
+        subcategory_changed: { label: 'Subcategoria alterada', icon: '·', color: 'blue'    },
+        comment_updated:     { label: 'Comentário editado',    icon: '·', color: 'gray'    },
+        comment_deleted:     { label: 'Comentário removido',   icon: '·', color: 'red'     },
+        agent_joined:        { label: 'Agente entrou',         icon: '+', color: 'emerald' },
+        agent_left:          { label: 'Agente removido',       icon: '−', color: 'red'     },
+        time_started:        { label: 'Cronômetro iniciado',   icon: '›', color: 'cyan'    },
+        time_paused:         { label: 'Cronômetro pausado',    icon: '‖', color: 'amber'   },
+        time_resumed:        { label: 'Cronômetro retomado',   icon: '›', color: 'cyan'    },
+        time_stopped:        { label: 'Cronômetro encerrado',  icon: '·', color: 'gray'    },
+        sla_started:         { label: 'SLA iniciado',          icon: '·', color: 'emerald' },
+        sla_paused:          { label: 'SLA pausado',           icon: '‖', color: 'amber'   },
+        sla_resumed:         { label: 'SLA retomado',          icon: '›', color: 'emerald' },
+        sla_breached:        { label: 'SLA violado',           icon: '!', color: 'red'     },
+        sla_stopped:         { label: 'SLA encerrado',         icon: '·', color: 'gray'    },
       };
-      return map[log.action] || { label: log.action, icon: '•', color: 'gray' };
+      return map[log.action] || { label: log.action, icon: '·', color: 'gray' };
+    },
+
+    renderMentions(text) {
+      if (!text) return '';
+      const escaped = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+      return escaped.replace(/@([\wÀ-ſ]+)/g,
+        '<span class="text-blue-400 font-medium">@$1</span>');
     },
 
     translateValue(value) {

@@ -58,6 +58,7 @@ document.addEventListener("alpine:init", () => {
 
         this.currentView = "dashboard";
         await this.navigate(this.currentPage);
+        sessionWatcher.start();
 
       } catch {
         localStorage.removeItem("access_token");

@@ -2,11 +2,20 @@ function dashboard() {
   return {
     showProfileModal: false,
     savingProfile: false,
+    showNotifPanel: false,
+    notifications: [],
+    notifUnread: 0,
+    notifLoading: false,
+    _notifInterval: null,
     profile: {
       name: '',
       email: '',
       password: '',
       confirmPassword: ''
+    },
+
+    init() {
+      this.startNotifPolling();
     },
 
     goTo(page) {
@@ -15,8 +24,116 @@ function dashboard() {
     },
 
     logout() {
+      if (this._notifInterval) clearInterval(this._notifInterval);
       logoutUser();
     },
+
+    // ── NOTIFICATIONS ──────────────────────────────────────────
+    startNotifPolling() {
+      this.fetchNotifCount();
+      this._notifInterval = setInterval(() => this.fetchNotifCount(), 30000);
+    },
+
+    async fetchNotifCount() {
+      if (!validateToken()) return;
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch('/api/notifications/unread-count', {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          this.notifUnread = data.count;
+        }
+      } catch {}
+    },
+
+    async toggleNotifPanel() {
+      this.showNotifPanel = !this.showNotifPanel;
+      if (this.showNotifPanel) await this.loadNotifications();
+    },
+
+    async loadNotifications() {
+      if (!validateToken()) return;
+      this.notifLoading = true;
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch('/api/notifications', {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (res.ok) this.notifications = await res.json();
+      } catch {} finally {
+        this.notifLoading = false;
+      }
+    },
+
+    async markAllRead() {
+      const token = localStorage.getItem('access_token');
+      try {
+        await fetch('/api/notifications/read-all', {
+          method: 'PUT',
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        this.notifications = this.notifications.map(n => ({ ...n, read: true }));
+        this.notifUnread = 0;
+      } catch {}
+    },
+
+    async markOneRead(notif) {
+      if (notif.read) return;
+      const token = localStorage.getItem('access_token');
+      try {
+        await fetch(`/api/notifications/${notif.id}/read`, {
+          method: 'PUT',
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        notif.read = true;
+        this.notifUnread = Math.max(0, this.notifUnread - 1);
+      } catch {}
+    },
+
+    async deleteNotif(notif) {
+      const token = localStorage.getItem('access_token');
+      try {
+        await fetch(`/api/notifications/${notif.id}`, {
+          method: 'DELETE',
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        this.notifications = this.notifications.filter(n => n.id !== notif.id);
+        if (!notif.read) this.notifUnread = Math.max(0, this.notifUnread - 1);
+      } catch {}
+    },
+
+    notifIcon(type) {
+      const icons = {
+        ticket_assigned: `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>`,
+        ticket_started:  `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+        mention:         `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/></svg>`,
+        client_reply:    `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>`,
+      };
+      return icons[type] || `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>`;
+    },
+
+    notifTime(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      const now = new Date();
+      const diff = Math.floor((now - d) / 60000);
+      if (diff < 1)   return 'agora';
+      if (diff < 60)  return diff + 'min atrás';
+      if (diff < 1440) return Math.floor(diff / 60) + 'h atrás';
+      return d.toLocaleDateString('pt-BR');
+    },
+
+    goToTicketFromNotif(notif) {
+      this.markOneRead(notif);
+      if (!notif.ticket_id) return;
+      const store = Alpine.store('app');
+      store.selectedTicket = { id: notif.ticket_id };
+      store.navigate('ticket-view');
+      this.showNotifPanel = false;
+    },
+    // ────────────────────────────────────────────────────────────
 
     openProfileModal() {
       this.profile = {

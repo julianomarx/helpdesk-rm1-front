@@ -13,7 +13,8 @@
       @click="loadDashboardOverview()"
       class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs
              bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
-      🔄 Atualizar
+      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      Atualizar
     </button>
   </div>
 
@@ -60,8 +61,44 @@
 
       <!-- Loading skeleton -->
       <template x-if="operationalLoading">
-        <div class="flex items-center justify-center py-10 text-gray-600">
-          <span class="text-sm">Carregando...</span>
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 animate-pulse">
+          <template x-for="i in 4" :key="i">
+            <div class="bg-gray-900/40 border border-white/10 rounded-2xl overflow-hidden">
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+                <div class="w-4 h-4 rounded bg-gray-700/60 shrink-0"></div>
+                <div class="h-3.5 w-44 rounded bg-gray-700/50"></div>
+                <div class="ml-auto h-3 w-12 rounded bg-gray-700/40"></div>
+              </div>
+              <div class="p-4 space-y-3">
+                <template x-for="j in 5" :key="j">
+                  <div class="flex items-center gap-3">
+                    <div class="h-3 w-6 rounded bg-gray-700/50"></div>
+                    <div class="h-3 flex-1 rounded bg-gray-700/40"></div>
+                    <div class="h-3 w-14 rounded bg-gray-700/40"></div>
+                    <div class="h-3 w-12 rounded bg-gray-700/30"></div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+          <div class="xl:col-span-2 bg-gray-900/40 border border-white/10 rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+              <div class="w-4 h-4 rounded bg-gray-700/60 shrink-0"></div>
+              <div class="h-3.5 w-52 rounded bg-gray-700/50"></div>
+              <div class="ml-auto h-3 w-12 rounded bg-gray-700/40"></div>
+            </div>
+            <div class="p-4 space-y-3">
+              <template x-for="j in 4" :key="j">
+                <div class="flex items-center gap-3">
+                  <div class="h-3 w-6 rounded bg-gray-700/50"></div>
+                  <div class="h-3 flex-1 rounded bg-gray-700/40"></div>
+                  <div class="h-3 w-20 rounded bg-gray-700/40"></div>
+                  <div class="h-3 w-16 rounded bg-gray-700/30"></div>
+                  <div class="h-3 w-14 rounded bg-gray-700/30"></div>
+                </div>
+              </template>
+            </div>
+          </div>
         </div>
       </template>
 
@@ -72,7 +109,7 @@
           <!-- Tickets Parados (+24h) -->
           <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
             <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-              <span>⏱️</span>
+              <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               <h3 class="text-sm font-semibold">Tickets Parados <span class="text-[11px] text-gray-500 font-normal">(sem atualização há +24h)</span></h3>
               <span class="ml-auto text-xs text-gray-500" x-text="operational.stale_tickets.length + ' itens'"></span>
             </div>
@@ -107,7 +144,7 @@
           <!-- Tickets Sem Responsável -->
           <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
             <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-              <span>👤</span>
+              <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
               <h3 class="text-sm font-semibold">Sem Responsável</h3>
               <span class="ml-auto text-xs text-gray-500" x-text="operational.unassigned_tickets.length + ' itens'"></span>
             </div>
@@ -139,7 +176,7 @@
           <!-- Tickets Críticos -->
           <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
             <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-              <span>⚡</span>
+              <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
               <h3 class="text-sm font-semibold">Tickets Críticos <span class="text-[11px] text-gray-500 font-normal">(prioridade alta)</span></h3>
               <span class="ml-auto text-xs text-gray-500" x-text="operational.critical_tickets.length + ' itens'"></span>
             </div>
@@ -171,7 +208,7 @@
           <!-- Aguardando Confirmação -->
           <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
             <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-              <span>✅</span>
+              <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               <h3 class="text-sm font-semibold">Aguardando Confirmação</h3>
               <span class="ml-auto text-xs text-gray-500" x-text="operational.awaiting_confirmation_tickets.length + ' itens'"></span>
             </div>
@@ -203,7 +240,7 @@
           <!-- Retorno Solicitante (feedback) — full width -->
           <div class="xl:col-span-2 bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
             <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-              <span>💬</span>
+              <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
               <h3 class="text-sm font-semibold">Retorno do Solicitante</h3>
               <span class="ml-auto text-xs text-gray-500" x-text="operational.feedback_tickets.length + ' itens'"></span>
             </div>
@@ -248,7 +285,30 @@
       <p class="text-xs text-gray-500">Ranking do mês atual</p>
 
       <template x-if="productivityLoading">
-        <div class="flex items-center justify-center py-10 text-gray-600 text-sm">Carregando...</div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 animate-pulse">
+          <template x-for="i in 3" :key="i">
+            <div class="bg-gray-900/40 border border-white/10 rounded-2xl overflow-hidden">
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+                <div class="w-4 h-4 rounded bg-gray-700/60 shrink-0"></div>
+                <div class="h-3.5 w-36 rounded bg-gray-700/50"></div>
+              </div>
+              <div class="p-4 space-y-4">
+                <template x-for="j in 5" :key="j">
+                  <div class="flex items-center gap-3">
+                    <div class="w-6 h-5 rounded bg-gray-700/50 shrink-0"></div>
+                    <div class="flex-1 space-y-1.5">
+                      <div class="flex justify-between">
+                        <div class="h-3 w-28 rounded bg-gray-700/50"></div>
+                        <div class="h-3 w-6 rounded bg-gray-700/40"></div>
+                      </div>
+                      <div class="h-1.5 w-full rounded-full bg-gray-700/40"></div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
       </template>
 
       <template x-if="!productivityLoading && productivityLoaded">
@@ -257,7 +317,7 @@
           <!-- Top Encerramentos -->
           <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
             <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-              <span>✅</span>
+              <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
               <h3 class="text-sm font-semibold">Mais encerramentos</h3>
             </div>
             <div x-show="!productivity.top_closers.length" class="px-4 py-6 text-sm text-gray-600 text-center">Sem dados no mês</div>
@@ -283,7 +343,7 @@
           <!-- Top Comentários -->
           <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
             <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-              <span>💬</span>
+              <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
               <h3 class="text-sm font-semibold">Mais comentários</h3>
             </div>
             <div x-show="!productivity.top_commenters.length" class="px-4 py-6 text-sm text-gray-600 text-center">Sem dados no mês</div>
@@ -309,7 +369,7 @@
           <!-- Mais Tickets Ativos -->
           <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
             <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-              <span>📋</span>
+              <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
               <h3 class="text-sm font-semibold">Tickets ativos agora</h3>
             </div>
             <div x-show="!productivity.most_active.length" class="px-4 py-6 text-sm text-gray-600 text-center">Sem tickets ativos</div>
@@ -346,16 +406,39 @@
       <p class="text-xs text-gray-500">Tempo médio de resolução em chamados encerrados</p>
 
       <template x-if="bottlenecksLoading">
-        <div class="flex items-center justify-center py-10 text-gray-600 text-sm">Carregando...</div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 animate-pulse">
+          <template x-for="i in 3" :key="i">
+            <div class="bg-gray-900/40 border border-white/10 rounded-2xl overflow-hidden">
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+                <div class="w-4 h-4 rounded bg-gray-700/60 shrink-0"></div>
+                <div class="h-3.5 w-28 rounded bg-gray-700/50"></div>
+              </div>
+              <div class="p-3 space-y-2.5">
+                <div class="flex gap-2 pb-1 border-b border-white/5">
+                  <div class="h-3 flex-1 rounded bg-gray-700/40"></div>
+                  <div class="h-3 w-16 rounded bg-gray-700/40"></div>
+                  <div class="h-3 w-12 rounded bg-gray-700/40"></div>
+                </div>
+                <template x-for="j in 6" :key="j">
+                  <div class="flex gap-2">
+                    <div class="h-3 flex-1 rounded bg-gray-700/40"></div>
+                    <div class="h-3 w-16 rounded bg-gray-700/30"></div>
+                    <div class="h-3 w-12 rounded bg-gray-700/30"></div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
       </template>
 
       <template x-if="!bottlenecksLoading && bottlenecksLoaded">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-          <template x-for="[key, icon, title] in [['by_team','👥','Por Equipe'],['by_category','📂','Por Categoria'],['by_hotel','🏨','Por Hotel']]" :key="key">
+          <template x-for="[key, title] in [['by_team','Por Equipe'],['by_category','Por Categoria'],['by_hotel','Por Hotel']]" :key="key">
             <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
               <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-                <span x-text="icon"></span>
+                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                 <h3 class="text-sm font-semibold" x-text="title"></h3>
               </div>
               <div x-show="!bottlenecks[key].length" class="px-4 py-6 text-sm text-gray-600 text-center">Sem dados</div>
@@ -394,7 +477,38 @@
     <div x-show="dashboardTab === 'volume'" class="space-y-4">
 
       <template x-if="volumeLoading">
-        <div class="flex items-center justify-center py-10 text-gray-600 text-sm">Carregando...</div>
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 animate-pulse">
+          <!-- chart placeholders -->
+          <template x-for="i in 2" :key="i">
+            <div class="bg-gray-900/40 border border-white/10 rounded-2xl overflow-hidden">
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+                <div class="w-4 h-4 rounded bg-gray-700/60 shrink-0"></div>
+                <div class="h-3.5 w-44 rounded bg-gray-700/50"></div>
+              </div>
+              <div class="p-4 flex items-end gap-2" style="height:280px">
+                <template x-for="j in 8" :key="j">
+                  <div class="flex-1 rounded-t bg-gray-700/40" :style="`height:${20 + Math.random() * 60}%`"></div>
+                </template>
+              </div>
+            </div>
+          </template>
+          <!-- subcategory table -->
+          <div class="xl:col-span-2 bg-gray-900/40 border border-white/10 rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+              <div class="w-4 h-4 rounded bg-gray-700/60 shrink-0"></div>
+              <div class="h-3.5 w-48 rounded bg-gray-700/50"></div>
+            </div>
+            <div class="p-3 space-y-2.5">
+              <template x-for="j in 8" :key="j">
+                <div class="flex gap-3 items-center">
+                  <div class="h-3 flex-1 rounded bg-gray-700/40"></div>
+                  <div class="h-3 w-10 rounded bg-gray-700/50"></div>
+                  <div class="h-1.5 w-40 rounded-full bg-gray-700/30"></div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
       </template>
 
       <template x-if="!volumeLoading && volumeLoaded">
@@ -403,7 +517,7 @@
           <!-- Gráfico: por categoria -->
           <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
             <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-              <span>📂</span>
+              <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
               <h3 class="text-sm font-semibold">Chamados por Categoria</h3>
             </div>
             <div class="p-4" style="height:280px">
@@ -414,7 +528,7 @@
           <!-- Gráfico: por hotel -->
           <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
             <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-              <span>🏨</span>
+              <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
               <h3 class="text-sm font-semibold">Hotéis que mais abrem chamados</h3>
             </div>
             <div class="p-4" style="height:280px">
@@ -425,7 +539,7 @@
           <!-- Tabela: subcategorias -->
           <div class="xl:col-span-2 bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
             <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-              <span>📁</span>
+              <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10a2 2 0 012-2h3.586a1 1 0 01.707.293l1.414 1.414A1 1 0 0011.414 10H19a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-9z"/></svg>
               <h3 class="text-sm font-semibold">Volume por Subcategoria</h3>
             </div>
             <div x-show="!volume.by_subcategory.length" class="px-4 py-6 text-sm text-gray-600 text-center">Sem dados</div>
@@ -466,7 +580,31 @@
     <div x-show="dashboardTab === 'sla'" class="space-y-4">
 
       <template x-if="slaLoading">
-        <div class="flex items-center justify-center py-10 text-gray-600 text-sm">Carregando...</div>
+        <div class="space-y-4 animate-pulse">
+          <!-- 6 counter cards -->
+          <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+            <template x-for="i in 6" :key="i">
+              <div class="flex flex-col gap-2 p-4 rounded-2xl bg-gray-900/40 border border-white/10">
+                <div class="h-3 w-20 rounded bg-gray-700/50"></div>
+                <div class="h-8 w-14 rounded bg-gray-700/60"></div>
+              </div>
+            </template>
+          </div>
+          <!-- 3 chart boxes -->
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+            <template x-for="i in 3" :key="i">
+              <div class="bg-gray-900/40 border border-white/10 rounded-2xl overflow-hidden">
+                <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+                  <div class="w-4 h-4 rounded bg-gray-700/60 shrink-0"></div>
+                  <div class="h-3.5 w-40 rounded bg-gray-700/50"></div>
+                </div>
+                <div class="p-4 flex items-center justify-center" style="height:260px">
+                  <div class="w-32 h-32 rounded-full border-8 border-gray-700/50"></div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
       </template>
 
       <template x-if="!slaLoading && slaLoaded">
@@ -515,14 +653,14 @@
             <!-- Donut cumprimento geral -->
             <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
               <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-                <span>🎯</span>
+                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v2m0 16v2M2 12h2m16 0h2m-3.343-6.657l-1.414 1.414M6.757 17.243l-1.414 1.414m12.728 0l-1.414-1.414M6.757 6.757L5.343 5.343"/></svg>
                 <h3 class="text-sm font-semibold">Cumprimento Geral</h3>
                 <span class="ml-auto text-[11px] text-gray-500">tickets finalizados</span>
               </div>
               <div class="p-4 flex flex-col items-center" style="height:260px">
                 <template x-if="sla.summary.overall_compliance_pct === 0 && sla.summary.total_with_sla === 0">
                   <div class="flex flex-col items-center justify-center h-full text-gray-600">
-                    <div class="text-4xl mb-2">📊</div>
+                    <svg class="w-10 h-10 opacity-30 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                     <p class="text-sm">Nenhum dado ainda</p>
                   </div>
                 </template>
@@ -542,7 +680,7 @@
             <!-- Barras por equipe -->
             <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
               <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-                <span>👥</span>
+                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 <h3 class="text-sm font-semibold">Cumprimento por Equipe</h3>
               </div>
               <div class="p-4" :style="`height:${Math.max(200, sla.by_team.length * 38 + 40)}px`">
@@ -558,7 +696,7 @@
             <!-- Barras por política -->
             <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
               <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-                <span>📋</span>
+                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                 <h3 class="text-sm font-semibold">Chamados por Política</h3>
               </div>
               <div class="p-4" style="height:260px">
@@ -577,7 +715,7 @@
           <template x-if="sla.by_team.length">
             <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
               <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-                <span>👥</span>
+                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 <h3 class="text-sm font-semibold">Detalhamento por Equipe</h3>
               </div>
               <div class="overflow-x-auto">
@@ -623,7 +761,7 @@
             <!-- Em Risco -->
             <div class="bg-gray-900/40 backdrop-blur-xl border border-amber-500/15 rounded-2xl overflow-hidden">
               <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-                <span>⚠️</span>
+                <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
                 <h3 class="text-sm font-semibold">Em Risco <span class="text-[11px] text-gray-500 font-normal">(vence em &lt;8h)</span></h3>
                 <span class="ml-auto text-xs text-amber-400" x-text="sla.at_risk_tickets.length + ' itens'"></span>
               </div>
@@ -662,7 +800,7 @@
             <!-- Violados abertos -->
             <div class="bg-gray-900/40 backdrop-blur-xl border border-red-500/15 rounded-2xl overflow-hidden">
               <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-                <span>🚨</span>
+                <svg class="w-4 h-4 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-1.414 1.414M6.05 17.95l-1.414 1.414M5.636 5.636l1.414 1.414M17.95 17.95l1.414 1.414M12 2v2m0 16v2M2 12h2m16 0h2"/><circle cx="12" cy="12" r="4"/></svg>
                 <h3 class="text-sm font-semibold">Violados em Aberto</h3>
                 <span class="ml-auto text-xs text-red-400" x-text="sla.breached_open_tickets.length + ' itens'"></span>
               </div>
@@ -714,13 +852,27 @@
       <p class="text-xs text-gray-500">Últimos 12 meses</p>
 
       <template x-if="historyLoading">
-        <div class="flex items-center justify-center py-10 text-gray-600 text-sm">Carregando...</div>
+        <div class="bg-gray-900/40 border border-white/10 rounded-2xl overflow-hidden animate-pulse">
+          <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+            <div class="w-4 h-4 rounded bg-gray-700/60 shrink-0"></div>
+            <div class="h-3.5 w-64 rounded bg-gray-700/50"></div>
+          </div>
+          <div class="p-4 flex items-end gap-2" style="height:320px">
+            <template x-for="i in 12" :key="i">
+              <div class="flex-1 flex flex-col gap-1 items-center">
+                <div class="w-full rounded-t bg-blue-700/20" :style="`height:${30 + Math.random() * 50}%`"></div>
+                <div class="w-full rounded-t bg-emerald-700/20" :style="`height:${20 + Math.random() * 40}%`"></div>
+                <div class="h-2.5 w-full rounded bg-gray-700/30 mt-1"></div>
+              </div>
+            </template>
+          </div>
+        </div>
       </template>
 
       <template x-if="!historyLoading && historyLoaded">
         <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
           <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-            <span>📈</span>
+            <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
             <h3 class="text-sm font-semibold">Chamados criados vs encerrados por mês</h3>
           </div>
           <div class="p-4" style="height:320px">
@@ -731,7 +883,7 @@
 
       <template x-if="historyLoaded && !historyLoading && !history.monthly.length">
         <div class="flex flex-col items-center justify-center py-16 text-gray-600">
-          <div class="text-4xl mb-3">📊</div>
+          <svg class="w-10 h-10 opacity-30 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
           <p class="text-sm">Nenhum dado histórico disponível ainda</p>
         </div>
       </template>
