@@ -2,6 +2,8 @@ function showToast(message, type = "success") {
   const container = document.getElementById("toast-container");
   if (!container) return;
 
+  const isLight = document.documentElement.getAttribute("data-theme") === "light";
+
   const icons = {
     success: `<svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
       <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
@@ -14,13 +16,24 @@ function showToast(message, type = "success") {
     </svg>`,
   };
 
+  let colorClass;
+  if (isLight) {
+    colorClass =
+      type === "success" ? "bg-white border border-emerald-400/60 text-emerald-700 shadow-lg shadow-emerald-100/50" :
+      type === "error"   ? "bg-white border border-red-400/60 text-red-700 shadow-lg shadow-red-100/50" :
+                           "bg-white border border-blue-400/60 text-blue-700 shadow-lg shadow-blue-100/50";
+  } else {
+    colorClass =
+      type === "success" ? "bg-gray-900 border border-green-500/50 text-green-400" :
+      type === "error"   ? "bg-gray-900 border border-red-500/50 text-red-400" :
+                           "bg-gray-900 border border-blue-500/50 text-blue-400";
+  }
+
   const toast = document.createElement("div");
   toast.className = [
-    "flex items-center gap-2 px-4 py-2.5 mb-2 rounded-lg shadow-xl text-sm font-medium",
+    "flex items-center gap-2 px-4 py-2.5 mb-2 rounded-lg text-sm font-medium",
     "transform translate-x-full opacity-0 transition-all duration-300 ease-out",
-    type === "success" ? "bg-gray-900 border border-green-500/50 text-green-400" :
-    type === "error"   ? "bg-gray-900 border border-red-500/50 text-red-400" :
-                         "bg-gray-900 border border-blue-500/50 text-blue-400",
+    colorClass,
   ].join(" ");
 
   const icon = document.createElement("span");

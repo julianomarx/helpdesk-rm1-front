@@ -7,7 +7,6 @@ html {
   padding: 0;
   font-family: Arial, sans-serif;
   height: 100%;
-  /* background-color: #1a1a1a; */
   color: #f2f2f2;
 }
 
@@ -18,11 +17,8 @@ html {
 .login-container {
   display: flex;
   align-items: center;
-  /* Centraliza vertical */
   justify-content: center;
-  /* Centraliza horizontal */
   height: 100vh;
-  /* Ocupa tela inteira */
 }
 
 .login-container .container {
@@ -41,8 +37,6 @@ html {
   align-self: center;
 }
 
-
-
 input {
   background: #555;
   color: #f2f2f2;
@@ -57,7 +51,6 @@ input {
 
 #login-btn:hover {
   background: #5f0202;
-
 }
 
 .error {
@@ -69,16 +62,11 @@ input {
    DASHBOARD LAYOUT
 ======================= */
 
-/* .dashboard-sidebar {
-  width: 190px;
-} */
-
 .dashboard-container {
   display: flex;
   height: 100vh;
 }
 
-/* Sidebar */
 .dashboard-container .w-64 {
   width: 16rem;
   background-color: #2e2e2e;
@@ -112,17 +100,13 @@ input {
   cursor: pointer;
 }
 
-/* Item ativo: será controlado dinamicamente pelo Alpine.js */
 .menu-item.active {
   background-color: #805454;
   font-weight: 600;
 }
 
-/* Abas de navegação */
 .tab-btn {
   font-size: small;
-
-  /* font-weight: bold; */
   transition: background 0.3s;
 }
 
@@ -145,19 +129,12 @@ input {
 
 .logout-btn:hover {
   background: #5f0202;
-
 }
 
 /* Main content */
 #page-container {
   flex: 1;
-  /* padding: 20px; */
   overflow-y: hidden;
-  /* background-color: #1f1f1f; */
-}
-
-#page-container h1 {
-  font-size: 2rem;
 }
 
 #page-container p {
@@ -165,68 +142,38 @@ input {
 }
 
 /* =======================
-   CREATE TICKET 
+   UTILIDADES LEGADAS
+   (sobrescritas pelo Tailwind v4 em runtime — mantidas para compatibilidade)
 ======================= */
-
-
-
-/* =======================
-   UTILIDADES
-======================= */
-.bg-gray-700 {
-  background-color: #444;
+.input-class {
+  padding: 10px;
+  border-radius: 4px;
 }
 
-.bg-gray-800 {
-  background-color: #2e2e2e;
+.input-class-search {
+  border-radius: 4px;
 }
-
-.bg-gray-900 {
-  background-color: #1a1a1a;
-}
-
-.text-red-500 {
-  color: #ff5555;
-}
-
-.flex {
-  display: flex;
-}
-
-.flex-1 {
-  flex: 1;
-}
-
-.flex-col {
-  flex-direction: column;
-}
-
-.justify-between {
-  justify-content: space-between;
-}
-
-.h-screen {
-  height: 100vh;
-}
-
-.w-64 {
-  width: 16rem;
-}
-
-.p-4 {
-  padding: 1rem;
-}
-
-.p-6 {
-  padding: 1.5rem;
-}
-
-
 
 /* SCROLL BAR */
 #page-container {
   scrollbar-width: thin;
   scrollbar-color: #8d8d8dbb #2d2d2d;
+}
+
+.custom-scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+  background: #1e293b;
+  border-radius: 9999px;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 9999px;
+}
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
 }
 
 #create-user-btn {
@@ -237,15 +184,191 @@ input {
   flex-shrink: 0;
 }
 
-.input-class {
-  padding: 10px;
-  border-radius: 4px;
+
+/* =========================================================
+   LIGHT THEME
+   Ativado por data-theme="light" no elemento <html>
+========================================================= */
+
+/* ── Anti-FOUC: o script inline no <head> já aplica o atributo
+      antes do paint. Este bloco garante a aparência correta. ── */
+
+/* ── 1. Tailwind v4 CSS variable remapping ──────────────────
+   O Tailwind v4 gera utilities usando var(--color-*).
+   Redefinindo essas variáveis dentro do escopo [data-theme="light"],
+   todas as classes bg-gray-*, text-gray-* etc. se adaptam
+   automaticamente sem alterar os templates. ─────────────────── */
+[data-theme="light"] {
+
+  /* Escala gray — invertida para light mode:
+     900 (mais escuro em dark) → mais claro em light
+     200 (texto claro em dark) → texto escuro em light    */
+  --color-gray-950: #f8fafc;
+  --color-gray-900: #f1f5f9;
+  --color-gray-800: #e8edf4;
+  --color-gray-700: #cbd5e1;
+  --color-gray-600: #64748b;
+  --color-gray-500: #94a3b8;
+  --color-gray-400: #475569;
+  --color-gray-300: #334155;
+  --color-gray-200: #1e293b;
+  --color-gray-100: #0f172a;
+  --color-gray-50:  #020617;
+
+  /* Cores de acento — versões mais escuras para contraste em fundo claro
+     text-blue-300 seria #93c5fd (claro demais em branco: ~2.3:1)
+     Mapeamos para azul-700 (#1d4ed8: ~9:1 em branco)            */
+  --color-blue-300:    #1d4ed8;
+  --color-blue-400:    #2563eb;
+  --color-red-300:     #b91c1c;
+  --color-red-400:     #dc2626;
+  --color-emerald-300: #047857;
+  --color-emerald-400: #059669;
+  --color-green-300:   #15803d;
+  --color-green-400:   #16a34a;
+  --color-amber-300:   #92400e;
+  --color-amber-400:   #b45309;
+  --color-yellow-300:  #854d0e;
+  --color-yellow-400:  #a16207;
+  --color-purple-300:  #6d28d9;
+  --color-purple-400:  #7c3aed;
+  --color-cyan-300:    #0e7490;
+  --color-cyan-400:    #0891b2;
+  --color-orange-300:  #c2410c;
+  --color-orange-400:  #ea580c;
+  --color-slate-300:   #475569;
+  --color-slate-400:   #64748b;
 }
 
-.input-class-search {
-  border-radius: 4px;
+/* ── 2. Body e fundo da página ──────────────────────────────── */
+[data-theme="light"] body {
+  background-color: #eef2f7;
+  color: #1e293b;
 }
 
+/* ── 3. Glassmorphic cards (opacity-modified backgrounds) ────
+   Não são remapeáveis via CSS variables pois usam color-mix().
+   Substituímos por white transparente sobre fundo azulado.     */
+[data-theme="light"] .bg-gray-900\/30  { background-color: rgba(255,255,255,0.60) !important; }
+[data-theme="light"] .bg-gray-900\/40  { background-color: rgba(255,255,255,0.75) !important; }
+[data-theme="light"] .bg-gray-900\/60  { background-color: rgba(255,255,255,0.88) !important; }
+[data-theme="light"] .bg-gray-900\/95  { background-color: rgba(255,255,255,0.97) !important; }
+[data-theme="light"] .bg-gray-800\/30  { background-color: rgba(255,255,255,0.60) !important; }
+[data-theme="light"] .bg-gray-800\/40  { background-color: rgba(255,255,255,0.72) !important; }
+[data-theme="light"] .bg-gray-800\/50  { background-color: rgba(255,255,255,0.82) !important; }
+[data-theme="light"] .bg-gray-800\/60  { background-color: rgba(255,255,255,0.88) !important; }
+[data-theme="light"] .bg-gray-800\/90  { background-color: rgba(255,255,255,0.96) !important; }
+[data-theme="light"] .bg-gray-700\/20  { background-color: rgba(100,116,139,0.10) !important; }
+[data-theme="light"] .bg-gray-700\/60  { background-color: rgba(100,116,139,0.22) !important; }
 
+/* ── 4. White-opacity → dark-opacity ────────────────────────
+   border-white/10 em dark = borda sutil claro.
+   Em light, precisa ser borda sutil escuro.                   */
+[data-theme="light"] .border-white\/5  { border-color: rgba(15,23,42,0.06)  !important; }
+[data-theme="light"] .border-white\/10 { border-color: rgba(15,23,42,0.10)  !important; }
+[data-theme="light"] .border-white\/20 { border-color: rgba(15,23,42,0.14)  !important; }
 
+[data-theme="light"] .bg-white\/5             { background-color: rgba(15,23,42,0.04) !important; }
+[data-theme="light"] .bg-white\/\[0\.02\]     { background-color: rgba(15,23,42,0.02) !important; }
+[data-theme="light"] .bg-white\/\[0\.03\]     { background-color: rgba(15,23,42,0.03) !important; }
+[data-theme="light"] .bg-white\/\[0\.04\]     { background-color: rgba(15,23,42,0.04) !important; }
+[data-theme="light"] .bg-white\/\[0\.06\]     { background-color: rgba(15,23,42,0.05) !important; }
 
+/* divide-y divide-white/5 (skeleton animations) */
+[data-theme="light"] .divide-white\/5 > * + * {
+  border-color: rgba(15,23,42,0.06) !important;
+}
+
+/* ── 5. Hover states ─────────────────────────────────────── */
+[data-theme="light"] .hover\:bg-white\/5:hover            { background-color: rgba(15,23,42,0.04) !important; }
+[data-theme="light"] .hover\:bg-white\/10:hover           { background-color: rgba(15,23,42,0.07) !important; }
+[data-theme="light"] .hover\:bg-white\/\[0\.06\]:hover   { background-color: rgba(15,23,42,0.05) !important; }
+
+[data-theme="light"] .hover\:bg-gray-700:hover  { background-color: #dde3ed !important; }
+[data-theme="light"] .hover\:bg-gray-600:hover  { background-color: #cdd4e1 !important; }
+
+/* ── 6. Status/semantic backgrounds (dark-900 variants) ───── */
+[data-theme="light"] .bg-red-900\/10              { background-color: rgba(239,68,68,0.08)   !important; }
+[data-theme="light"] .bg-red-900\/20              { background-color: rgba(239,68,68,0.10)   !important; }
+[data-theme="light"] .bg-red-900\/30              { background-color: rgba(239,68,68,0.10)   !important; }
+[data-theme="light"] .hover\:bg-red-900\/50:hover { background-color: rgba(239,68,68,0.18)  !important; }
+[data-theme="light"] .bg-blue-900\/10             { background-color: rgba(59,130,246,0.08)  !important; }
+[data-theme="light"] .bg-blue-900\/30             { background-color: rgba(59,130,246,0.10)  !important; }
+[data-theme="light"] .bg-purple-900\/10           { background-color: rgba(139,92,246,0.08)  !important; }
+[data-theme="light"] .bg-purple-900\/30           { background-color: rgba(139,92,246,0.10)  !important; }
+[data-theme="light"] .bg-amber-900\/30            { background-color: rgba(245,158,11,0.10)  !important; }
+[data-theme="light"] .bg-cyan-900\/30             { background-color: rgba(6,182,212,0.10)   !important; }
+[data-theme="light"] .bg-emerald-900\/30          { background-color: rgba(16,185,129,0.10)  !important; }
+[data-theme="light"] .bg-green-900\/30            { background-color: rgba(34,197,94,0.10)   !important; }
+
+/* ── 7. Session modal ────────────────────────────────────── */
+[data-theme="light"] #session-modal > div {
+  background-color: rgba(255,255,255,0.97) !important;
+  border-color: rgba(15,23,42,0.10) !important;
+}
+[data-theme="light"] #session-modal h3 { color: #0f172a; }
+[data-theme="light"] #session-modal p  { color: #475569; }
+[data-theme="light"] #session-modal button:last-child {
+  background-color: rgba(15,23,42,0.08) !important;
+  color: #334155 !important;
+}
+
+/* ── 8. Login ────────────────────────────────────────────── */
+[data-theme="light"] .login-container {
+  background-color: #eef2f7;
+}
+[data-theme="light"] .login-container .container {
+  background: #ffffff;
+  color: #1e293b;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+}
+[data-theme="light"] .login-container input {
+  background: #f1f5f9;
+  color: #1e293b;
+  border: 1px solid #e2e8f0;
+}
+[data-theme="light"] #login-btn {
+  background: #2563eb;
+  color: #ffffff;
+}
+[data-theme="light"] #login-btn:hover {
+  background: #1d4ed8;
+}
+
+/* ── 9. Sidebar / menu ───────────────────────────────────── */
+[data-theme="light"] .menu-item {
+  color: #334155;
+}
+[data-theme="light"] .menu-item:hover {
+  background-color: rgba(15,23,42,0.06);
+  color: #0f172a;
+}
+
+/* ── 10. Logo ────────────────────────────────────────────── */
+/* Logo branca no sidebar → invertida para dark no light theme */
+[data-theme="light"] #logo {
+  filter: brightness(0) saturate(100%);
+  opacity: 0.75;
+}
+
+/* ── 11. Scrollbar ───────────────────────────────────────── */
+[data-theme="light"] #page-container {
+  scrollbar-color: #94a3b8 #e2e8f0;
+}
+[data-theme="light"] .custom-scroll::-webkit-scrollbar-track {
+  background: #e8edf4;
+}
+[data-theme="light"] .custom-scroll::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+}
+[data-theme="light"] .custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* ── 12. Profile modal inputs ────────────────────────────── */
+[data-theme="light"] .bg-gray-800 {
+  background-color: #f1f5f9 !important;
+}
+
+/* ── 13. Chart.js canvas background ─────────────────────── */
+/* Canvas herda background transparente — funciona em ambos os modos */

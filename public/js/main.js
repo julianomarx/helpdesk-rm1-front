@@ -16,6 +16,19 @@ document.addEventListener("alpine:init", () => {
     tokenExpire:   '',
     avatarUrl:     '',
     selectedTicket: null,
+    theme:         'dark',
+
+    setTheme(t) {
+      this.theme = t;
+      localStorage.setItem('theme', t);
+      document.documentElement.setAttribute('data-theme', t);
+      // Notifica componentes que possam ter charts para refazer com as novas cores
+      window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: t } }));
+    },
+
+    toggleTheme() {
+      this.setTheme(this.theme === 'dark' ? 'light' : 'dark');
+    },
 
     async navigate(page) {
       this.currentPage = page;
@@ -32,6 +45,11 @@ document.addEventListener("alpine:init", () => {
     },
 
     async init() {
+      // Sync store theme with what the anti-FOUC script already applied
+      const saved = localStorage.getItem('theme') || 'dark';
+      this.theme = saved;
+      document.documentElement.setAttribute('data-theme', saved);
+
       const token = localStorage.getItem("access_token");
       if (!token) {
         this.currentView = "login";

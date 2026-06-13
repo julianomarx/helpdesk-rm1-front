@@ -1,6 +1,11 @@
 <div
   x-data="dashboardPage()"
-  x-init="loadDashboardOverview()"
+  x-init="
+    loadDashboardOverview();
+    _themeHandler = () => refreshChartsForTheme();
+    window.addEventListener('theme-changed', _themeHandler);
+  "
+  @destroy.window="window.removeEventListener('theme-changed', _themeHandler)"
   class="flex flex-col h-full overflow-hidden text-gray-200 p-3 gap-3">
 
   <!-- ── HEADER ───────────────────────────────────────────────────── -->

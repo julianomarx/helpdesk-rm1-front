@@ -5,6 +5,15 @@ function dashboardPage() {
     if (_charts[key]) { try { _charts[key].destroy(); } catch (_) {} _charts[key] = null; }
   }
 
+  function _chartTheme() {
+    const light = document.documentElement.getAttribute('data-theme') === 'light';
+    return {
+      text:   light ? '#334155' : '#9ca3af',
+      muted:  light ? '#64748b' : '#6b7280',
+      grid:   light ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)',
+    };
+  }
+
   return {
     dashboardTab: 'operational',
 
@@ -76,6 +85,16 @@ function dashboardPage() {
       if (tab === 'history'      && this.historyLoaded)        this.initHistoryChart();
       if (tab === 'volume'       && this.volumeLoaded)         this.initVolumeCharts();
     },
+
+    // Chamado pelo toggle de tema para recriar charts com novas cores
+    async refreshChartsForTheme() {
+      await this.$nextTick();
+      if (this.dashboardTab === 'sla'     && this.slaLoaded)     this.initSLACharts();
+      if (this.dashboardTab === 'history' && this.historyLoaded) this.initHistoryChart();
+      if (this.dashboardTab === 'volume'  && this.volumeLoaded)  this.initVolumeCharts();
+    },
+
+    _themeHandler: null,
 
     // ── Loaders ─────────────────────────────────────────────────────
     async loadDashboardOverview() {
@@ -213,6 +232,7 @@ function dashboardPage() {
       destroyChart('slaDonut');
       destroyChart('slaTeam');
       destroyChart('slaPolicy');
+      const th = _chartTheme();
 
       // Donut — cumprimento geral
       const donutCanvas = document.getElementById('slaDonutChart');
@@ -234,7 +254,7 @@ function dashboardPage() {
           options: {
             responsive: true, maintainAspectRatio: false, cutout: '72%',
             plugins: {
-              legend: { position: 'bottom', labels: { color: '#9ca3af', font: { size: 11 }, padding: 16 } },
+              legend: { position: 'bottom', labels: { color: th.text, font: { size: 11 }, padding: 16 } },
               tooltip: { callbacks: { label: ctx => ` ${ctx.raw.toFixed(1)}%` } },
             }
           }
@@ -262,8 +282,8 @@ function dashboardPage() {
             indexAxis: 'y', responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-              x: { min: 0, max: 100, ticks: { color: '#6b7280', callback: v => v + '%' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-              y: { ticks: { color: '#9ca3af', font: { size: 11 } }, grid: { display: false } }
+              x: { min: 0, max: 100, ticks: { color: th.muted, callback: v => v + '%' }, grid: { color: th.grid } },
+              y: { ticks: { color: th.text, font: { size: 11 } }, grid: { display: false } }
             }
           }
         });
@@ -293,10 +313,10 @@ function dashboardPage() {
           },
           options: {
             responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { labels: { color: '#9ca3af', font: { size: 11 } } } },
+            plugins: { legend: { labels: { color: th.text, font: { size: 11 } } } },
             scales: {
-              x: { ticks: { color: '#9ca3af', font: { size: 11 } }, grid: { display: false } },
-              y: { ticks: { color: '#6b7280' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+              x: { ticks: { color: th.text, font: { size: 11 } }, grid: { display: false } },
+              y: { ticks: { color: th.muted }, grid: { color: th.grid }, beginAtZero: true }
             }
           }
         });
@@ -335,6 +355,7 @@ function dashboardPage() {
       destroyChart('history');
       const canvas = document.getElementById('historyChart');
       if (!canvas || !this.history.monthly.length) return;
+      const th = _chartTheme();
       _charts['history'] = new Chart(canvas, {
         type: 'line',
         data: {
@@ -358,10 +379,10 @@ function dashboardPage() {
         },
         options: {
           responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#9ca3af', font: { size: 12 } } } },
+          plugins: { legend: { labels: { color: th.text, font: { size: 12 } } } },
           scales: {
-            x: { ticks: { color: '#6b7280' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            y: { ticks: { color: '#6b7280' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+            x: { ticks: { color: th.muted }, grid: { color: th.grid } },
+            y: { ticks: { color: th.muted }, grid: { color: th.grid }, beginAtZero: true }
           }
         }
       });
@@ -370,6 +391,7 @@ function dashboardPage() {
     initVolumeCharts() {
       destroyChart('volumeCat');
       destroyChart('volumeHotel');
+      const th = _chartTheme();
 
       const catCanvas = document.getElementById('volumeCategoryChart');
       if (catCanvas && this.volume.by_category.length) {
@@ -389,8 +411,8 @@ function dashboardPage() {
             indexAxis: 'y', responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-              x: { ticks: { color: '#6b7280' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true },
-              y: { ticks: { color: '#9ca3af', font: { size: 11 } }, grid: { display: false } }
+              x: { ticks: { color: th.muted }, grid: { color: th.grid }, beginAtZero: true },
+              y: { ticks: { color: th.text, font: { size: 11 } }, grid: { display: false } }
             }
           }
         });
@@ -414,8 +436,8 @@ function dashboardPage() {
             indexAxis: 'y', responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-              x: { ticks: { color: '#6b7280' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true },
-              y: { ticks: { color: '#9ca3af', font: { size: 11 } }, grid: { display: false } }
+              x: { ticks: { color: th.muted }, grid: { color: th.grid }, beginAtZero: true },
+              y: { ticks: { color: th.text, font: { size: 11 } }, grid: { display: false } }
             }
           }
         });
