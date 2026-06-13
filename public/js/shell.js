@@ -226,8 +226,21 @@ function dashboard() {
 
     get filteredTodos() {
       const myId = Alpine.store('app').userId;
-      if (this.todoTab === 'mine') return this.todos.filter(t => String(t.assignee.id) === String(myId));
-      return this.todos.filter(t => String(t.creator.id) === String(myId));
+      if (this.todoTab === 'mine')
+        return this.todos.filter(t => String(t.assignee.id) === String(myId) && !t.done);
+      if (this.todoTab === 'sent')
+        return this.todos.filter(t => String(t.creator.id) === String(myId) && !t.done);
+      if (this.todoTab === 'done') {
+        const seen = new Set();
+        return this.todos.filter(t => {
+          if (!t.done) return false;
+          const involved = String(t.assignee.id) === String(myId) || String(t.creator.id) === String(myId);
+          if (!involved || seen.has(t.id)) return false;
+          seen.add(t.id);
+          return true;
+        });
+      }
+      return [];
     },
 
     get pendingMine() {

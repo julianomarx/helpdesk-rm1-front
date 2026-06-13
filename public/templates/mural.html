@@ -97,7 +97,7 @@
                 </div>
                 <div>
                   <span class="text-sm font-medium text-gray-200" x-text="post.author.name"></span>
-                  <span class="text-[11px] text-gray-600 ml-2" x-text="postTime(post.created_at)"></span>
+                  <span class="text-[11px] text-gray-600 ml-2" x-text="formatDateTime(post.created_at)"></span>
                 </div>
               </div>
 
@@ -135,6 +135,14 @@
                 </template>
               </button>
 
+              <!-- ACK names -->
+              <template x-if="post.acks && post.acks.length > 0">
+                <span class="text-[10px] text-gray-500 ml-1">
+                  <span class="text-gray-600">Confirmado por:</span>
+                  <span x-text="ackNames(post)"></span>
+                </span>
+              </template>
+
               <!-- Comments toggle -->
               <button @click="toggleComments(post.id)"
                 class="flex items-center gap-1.5 text-[11px] text-gray-500 hover:text-blue-400 transition
@@ -159,7 +167,7 @@
                     <div class="flex-1 min-w-0">
                       <div class="flex items-baseline gap-1.5">
                         <span class="text-xs font-medium text-gray-300" x-text="comment.author.name"></span>
-                        <span class="text-[10px] text-gray-600" x-text="postTime(comment.created_at)"></span>
+                        <span class="text-[10px] text-gray-600" x-text="formatDateTime(comment.created_at)"></span>
                       </div>
                       <p class="text-xs text-gray-400 mt-0.5 leading-relaxed"
                         x-html="highlightMentions(comment.body)"></p>

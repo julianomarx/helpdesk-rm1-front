@@ -179,6 +179,10 @@ function muralPage() {
           const data = await res.json();
           post.acked_by_me = true;
           post.ack_count = data.ack_count;
+          if (data.new_ack) {
+            post.acks = post.acks || [];
+            post.acks.push(data.new_ack);
+          }
         }
       } catch {}
     },
@@ -200,15 +204,24 @@ function muralPage() {
     },
 
     // ── Helpers ──────────────────────────────────────────────────
-    postTime(iso) {
+    formatDateTime(iso) {
       if (!iso) return '';
       const d = new Date(iso);
-      const now = new Date();
-      const diff = Math.floor((now - d) / 60000);
-      if (diff < 1)    return 'agora';
-      if (diff < 60)   return diff + 'min atrás';
-      if (diff < 1440) return Math.floor(diff / 60) + 'h atrás';
-      return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+      const day   = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year  = d.getFullYear();
+      const hour  = String(d.getHours()).padStart(2, '0');
+      const min   = String(d.getMinutes()).padStart(2, '0');
+      return `${day}/${month}/${year} ${hour}:${min}`;
+    },
+
+    ackNames(post) {
+      const acks = post.acks || [];
+      if (!acks.length) return '';
+      const MAX = 3;
+      const names = acks.slice(0, MAX).map(a => a.user.name.split(' ')[0]);
+      const extra = acks.length - MAX;
+      return names.join(', ') + (extra > 0 ? ` e +${extra}` : '');
     },
 
     initials(name) {
