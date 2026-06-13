@@ -28,6 +28,7 @@
   <script src="/js/pages/manage-categories-page.js"></script>
   <script src="/js/pages/activity-report-page.js"></script>
   <script src="/js/pages/teams-page.js"></script>
+  <script src="/js/pages/mural-page.js"></script>
 
   <!-- Shell e bootstrap -->
   <script src="/js/shell.js"></script>
@@ -591,7 +592,7 @@
       </div>
 
       <div class="flex items-center justify-between mt-1.5">
-        <span class="text-[10px] text-gray-600">Mencione @usuario para atribuir</span>
+        <span class="text-[10px] text-gray-600">Use @usuario para atribuir ou escreva sem menção para criar para você</span>
         <button @click="submitTodo()" :disabled="todoSubmitting || !todoInput.trim()"
           class="text-[11px] px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white
                  disabled:opacity-50 disabled:cursor-not-allowed transition">
@@ -644,12 +645,26 @@
                 </button>
               </template>
               <template x-if="todoTab === 'sent'">
-                <div class="shrink-0 mt-0.5 w-4 h-4 rounded border flex items-center justify-center"
-                  :class="todo.done ? 'border-emerald-500 bg-emerald-500/20' : 'border-white/20'">
-                  <svg x-show="todo.done" class="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                  </svg>
-                </div>
+                <!-- If self-assigned, allow checking; otherwise just visual indicator -->
+                <template x-if="String(todo.assignee.id) === String($store.app.userId)">
+                  <button @click="checkTodo(todo)" :disabled="todo.done"
+                    class="shrink-0 mt-0.5 w-4 h-4 rounded border transition flex items-center justify-center"
+                    :class="todo.done
+                      ? 'border-emerald-500 bg-emerald-500/20'
+                      : 'border-white/30 hover:border-blue-400 bg-transparent'">
+                    <svg x-show="todo.done" class="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
+                </template>
+                <template x-if="String(todo.assignee.id) !== String($store.app.userId)">
+                  <div class="shrink-0 mt-0.5 w-4 h-4 rounded border flex items-center justify-center"
+                    :class="todo.done ? 'border-emerald-500 bg-emerald-500/20' : 'border-white/20'">
+                    <svg x-show="todo.done" class="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </div>
+                </template>
               </template>
 
               <!-- Body -->

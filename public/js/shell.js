@@ -143,6 +143,10 @@ function dashboard() {
         ticket_started:  `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
         mention:         `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/></svg>`,
         client_reply:    `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>`,
+        mural_mention:   `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`,
+        mural_comment:   `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>`,
+        todo_assigned:   `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>`,
+        todo_done:       `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`,
       };
       return icons[type] || `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>`;
     },
@@ -160,8 +164,13 @@ function dashboard() {
 
     goToTicketFromNotif(notif) {
       this.markOneRead(notif);
-      if (!notif.ticket_id) return;
       const store = Alpine.store('app');
+      if (notif.mural_post_id) {
+        store.navigate('mural');
+        this.showNotifPanel = false;
+        return;
+      }
+      if (!notif.ticket_id) return;
       store.selectedTicket = { id: notif.ticket_id };
       store.navigate('ticket-view');
       this.showNotifPanel = false;
@@ -282,12 +291,15 @@ function dashboard() {
           method: 'PUT',
           headers: { Authorization: 'Bearer ' + token },
         });
-        if (res.ok) {
-          todo.done = true;
-          todo.done_at = new Date().toISOString();
-          this.todoPendingCount = Math.max(0, this.todoPendingCount - 1);
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          showToast(err.detail || 'Erro ao concluir TODO', 'error');
+          return;
         }
-      } catch {}
+        todo.done = true;
+        todo.done_at = new Date().toISOString();
+        this.todoPendingCount = Math.max(0, this.todoPendingCount - 1);
+      } catch { showToast('Erro ao concluir TODO', 'error'); }
     },
 
     todoTime(iso) {
