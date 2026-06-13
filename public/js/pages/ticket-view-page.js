@@ -8,6 +8,10 @@ function ticketViewPage() {
     maxDescLength: 400,
     showFinishModal: false,
     finishReason: '',
+    finishing: false,
+    showScheduleModal: false,
+    scheduleDate: '',
+    schedulingVisit: false,
     showTransferModal: false,
     transferSubcategoryId: '',
     teamSubcategories: [],
@@ -225,6 +229,7 @@ function ticketViewPage() {
       if (!this.newComment?.trim()) { showToast('Comentário vazio!', 'error'); return; }
       const ticketId = this.selectedTicket?.id;
       if (!ticketId) { showToast('Nenhum ticket selecionado', 'error'); return; }
+      const hasMention = /@\w+/.test(this.newComment);
       try {
         await this.createComment({
           ticket_id: ticketId,
@@ -234,6 +239,7 @@ function ticketViewPage() {
         this.newComment = '';
         await this.getTicketById(ticketId);
         showToast('Comentário enviado!', 'success');
+        if (hasMention) window.dispatchEvent(new CustomEvent('notif:refresh'));
       } catch {
         showToast('Erro ao enviar comentário', 'error');
       }
@@ -252,11 +258,13 @@ function ticketViewPage() {
     },
 
     async confirmFinishTicket() {
+      if (this.finishing) return;
       if (!this.finishReason.trim()) { alert("Informe a conclusão antes de encerrar."); return; }
       if (!validateToken()) return;
       const ticketId = this.selectedTicket?.id;
       if (!ticketId) { showToast("Ticket não encontrado", "error"); return; }
       const token = localStorage.getItem("access_token");
+      this.finishing = true;
       try {
         await this.createComment({
           ticket_id: ticketId,
@@ -279,7 +287,38 @@ function ticketViewPage() {
         this.finishReason = '';
       } catch {
         showToast("Erro ao encerrar ticket", "error");
+      } finally {
+        this.finishing = false;
       }
+    },
+
+    openScheduleModal() {
+      if (this.selectedTicket.scheduled_visit_at) {
+        const d = new Date(this.selectedTicket.scheduled_visit_at);
+        const pad = n => String(n).padStart(2, '0');
+        this.scheduleDate = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      } else {
+        this.scheduleDate = '';
+      }
+      this.showScheduleModal = true;
+    },
+
+    async confirmScheduleVisit() {
+      if (!this.scheduleDate || this.schedulingVisit) return;
+      if (!validateToken()) return;
+      this.schedulingVisit = true;
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch(`/api/tickets/${this.selectedTicket.id}/schedule-visit`, {
+          method: 'PUT',
+          headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scheduled_at: new Date(this.scheduleDate).toISOString() }),
+        });
+        if (!res.ok) { const e = await res.json(); showToast(e.detail || 'Erro ao agendar', 'error'); return; }
+        await this.refreshSelectedTicket();
+        showToast('Visita agendada!', 'success');
+        this.showScheduleModal = false;
+      } catch { showToast('Erro ao agendar visita', 'error'); } finally { this.schedulingVisit = false; }
     },
 
     validateAttachment(file) {

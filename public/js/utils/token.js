@@ -16,6 +16,7 @@ function validateToken() {
 
 function logoutUser() {
   sessionWatcher.stop();
+  window.dispatchEvent(new CustomEvent('auth:logout'));
   localStorage.removeItem("access_token");
   const store = Alpine.store("app");
   if (!store) return;

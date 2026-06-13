@@ -1,0 +1,121 @@
+<div x-data="teamsPage()" x-init="init()"
+  class="flex flex-1 flex-col min-h-0 gap-4 p-4 text-gray-200 overflow-y-auto custom-scroll">
+
+  <!-- HEADER -->
+  <div class="flex items-center justify-between shrink-0">
+    <div>
+      <h1 class="text-xl font-bold">Equipes</h1>
+      <p class="text-xs text-gray-400 mt-0.5">Status em tempo real — online, carga de chamados</p>
+    </div>
+    <button @click="load()" :disabled="loading"
+      class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs bg-white/5 border border-white/10
+             hover:bg-white/10 text-gray-300 disabled:opacity-50 transition">
+      <svg class="w-3.5 h-3.5" :class="loading ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      Atualizar
+    </button>
+  </div>
+
+  <!-- LOADING -->
+  <template x-if="loading">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 animate-pulse">
+      <template x-for="i in 5" :key="i">
+        <div class="bg-gray-900/40 border border-white/10 rounded-2xl p-4 space-y-3">
+          <div class="h-4 w-32 rounded bg-gray-700/60"></div>
+          <template x-for="j in 3" :key="j">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-gray-700/60 shrink-0"></div>
+              <div class="flex-1 space-y-1.5">
+                <div class="h-3 w-24 rounded bg-gray-700/50"></div>
+                <div class="h-2.5 w-16 rounded bg-gray-700/40"></div>
+              </div>
+              <div class="h-3 w-10 rounded bg-gray-700/40"></div>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+  </template>
+
+  <!-- TEAMS GRID -->
+  <template x-if="!loading">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <template x-for="team in teams" :key="team.id">
+        <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+
+          <!-- Team Header -->
+          <div class="flex items-center gap-2 px-4 py-3 border-b border-white/5">
+            <div class="w-2 h-2 rounded-full" :class="onlineCount(team) > 0 ? 'bg-emerald-400' : 'bg-gray-600'"></div>
+            <h2 class="text-sm font-semibold flex-1" x-text="team.name"></h2>
+            <span class="text-[10px] text-gray-500"
+              x-text="onlineCount(team) + '/' + team.members.length + ' online'"></span>
+          </div>
+
+          <!-- Members -->
+          <div class="divide-y divide-white/5">
+            <template x-if="team.members.length === 0">
+              <div class="px-4 py-6 text-xs text-gray-600 text-center">Nenhum membro</div>
+            </template>
+            <template x-for="member in team.members" :key="member.id">
+              <div class="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors">
+
+                <!-- Avatar + online dot -->
+                <div class="relative shrink-0">
+                  <div class="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-cyan-600
+                               flex items-center justify-center text-[11px] font-semibold text-white">
+                    <template x-if="member.avatar_url">
+                      <img :src="member.avatar_url" class="w-full h-full object-cover">
+                    </template>
+                    <template x-if="!member.avatar_url">
+                      <span x-text="initials(member.name)"></span>
+                    </template>
+                  </div>
+                  <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-gray-900"
+                    :class="member.online ? 'bg-emerald-400' : 'bg-gray-600'"></span>
+                </div>
+
+                <!-- Name + role -->
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-medium truncate" x-text="member.name"></p>
+                  <p class="text-[10px] text-gray-500" x-text="roleLabel(member.role)"></p>
+                </div>
+
+                <!-- Active tickets badge -->
+                <div class="shrink-0 flex items-center gap-1">
+                  <template x-if="member.active_tickets > 0">
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold"
+                      :class="member.active_tickets >= 5 ? 'bg-red-900/40 text-red-300 border border-red-600/30'
+                            : member.active_tickets >= 3 ? 'bg-amber-900/40 text-amber-300 border border-amber-600/30'
+                            : 'bg-blue-900/30 text-blue-300 border border-blue-600/20'">
+                      <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                      </svg>
+                      <span x-text="member.active_tickets"></span>
+                    </span>
+                  </template>
+                  <template x-if="member.active_tickets === 0">
+                    <span class="text-[10px] text-gray-600">livre</span>
+                  </template>
+                </div>
+
+              </div>
+            </template>
+          </div>
+
+        </div>
+      </template>
+    </div>
+  </template>
+
+  <!-- EMPTY -->
+  <template x-if="!loading && teams.length === 0">
+    <div class="flex flex-col items-center justify-center py-20 text-gray-600">
+      <svg class="w-12 h-12 mb-3 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
+      <p class="text-sm">Nenhuma equipe encontrada</p>
+    </div>
+  </template>
+
+</div>

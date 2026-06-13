@@ -7,6 +7,20 @@ function dashboard() {
     notifUnread: 0,
     notifLoading: false,
     _notifInterval: null,
+
+    // ── TODO ─────────────────────────────────────────────────────────
+    showTodoPanel: false,
+    todos: [],
+    todoLoading: false,
+    todoPendingCount: 0,
+    todoTab: 'mine',
+    todoInput: '',
+    todoSubmitting: false,
+    todoMentionOpen: false,
+    todoMentionResults: [],
+    _todoMentionStart: -1,
+    _todoInterval: null,
+
     profile: {
       name: '',
       email: '',
@@ -16,6 +30,25 @@ function dashboard() {
 
     init() {
       this.startNotifPolling();
+      this.startTodoPolling();
+      window.addEventListener('auth:login', () => {
+        this.notifUnread = 0;
+        this.notifications = [];
+        this.todoPendingCount = 0;
+        this.todos = [];
+        this.startNotifPolling();
+        this.startTodoPolling();
+      });
+      window.addEventListener('auth:logout', () => {
+        if (this._notifInterval) { clearInterval(this._notifInterval); this._notifInterval = null; }
+        if (this._todoInterval) { clearInterval(this._todoInterval); this._todoInterval = null; }
+        this.notifUnread = 0;
+        this.notifications = [];
+        this.todoPendingCount = 0;
+        this.todos = [];
+        this.showTodoPanel = false;
+      });
+      window.addEventListener('notif:refresh', () => this.fetchNotifCount());
     },
 
     goTo(page) {
@@ -24,12 +57,12 @@ function dashboard() {
     },
 
     logout() {
-      if (this._notifInterval) clearInterval(this._notifInterval);
       logoutUser();
     },
 
     // ── NOTIFICATIONS ──────────────────────────────────────────
     startNotifPolling() {
+      if (this._notifInterval) { clearInterval(this._notifInterval); this._notifInterval = null; }
       this.fetchNotifCount();
       this._notifInterval = setInterval(() => this.fetchNotifCount(), 30000);
     },
@@ -134,6 +167,140 @@ function dashboard() {
       this.showNotifPanel = false;
     },
     // ────────────────────────────────────────────────────────────
+
+    // ── TODO ─────────────────────────────────────────────────────
+    startTodoPolling() {
+      if (this._todoInterval) { clearInterval(this._todoInterval); this._todoInterval = null; }
+      const role = Alpine.store('app').role;
+      if (!['admin', 'agent'].includes(role)) return;
+      this.fetchTodoPendingCount();
+      this._todoInterval = setInterval(() => this.fetchTodoPendingCount(), 30000);
+    },
+
+    async fetchTodoPendingCount() {
+      if (!validateToken()) return;
+      const role = Alpine.store('app').role;
+      if (!['admin', 'agent'].includes(role)) return;
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch('/api/todos/pending-count', { headers: { Authorization: 'Bearer ' + token } });
+        if (res.ok) { const d = await res.json(); this.todoPendingCount = d.count; }
+      } catch {}
+    },
+
+    async toggleTodoPanel() {
+      this.showTodoPanel = !this.showTodoPanel;
+      if (this.showTodoPanel) {
+        this.showNotifPanel = false;
+        await Promise.all([this.loadTodos(), this.loadTodoMentionUsers()]);
+      }
+    },
+
+    async loadTodoMentionUsers() {
+      if (!validateToken()) return;
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch('/api/users/mentionable', { headers: { Authorization: 'Bearer ' + token } });
+        if (res.ok) Alpine.store('app').users = await res.json();
+      } catch {}
+    },
+
+    async loadTodos() {
+      if (!validateToken()) return;
+      this.todoLoading = true;
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch('/api/todos', { headers: { Authorization: 'Bearer ' + token } });
+        if (res.ok) this.todos = await res.json();
+      } catch {} finally { this.todoLoading = false; }
+    },
+
+    get filteredTodos() {
+      const myId = Alpine.store('app').userId;
+      if (this.todoTab === 'mine') return this.todos.filter(t => String(t.assignee.id) === String(myId));
+      return this.todos.filter(t => String(t.creator.id) === String(myId));
+    },
+
+    get pendingMine() {
+      const myId = Alpine.store('app').userId;
+      return this.todos.filter(t => String(t.assignee.id) === String(myId) && !t.done).length;
+    },
+
+    onTodoInput(event) {
+      const val = this.todoInput;
+      const pos = event.target.selectionStart;
+      const before = val.slice(0, pos);
+      const match = before.match(/@(\w*)$/);
+      if (match) {
+        this._todoMentionStart = before.length - match[0].length;
+        const q = match[1].toLowerCase();
+        const allUsers = Alpine.store('app').users || [];
+        this.todoMentionResults = allUsers.filter(u => u.name.toLowerCase().startsWith(q)).slice(0, 5);
+        this.todoMentionOpen = this.todoMentionResults.length > 0;
+      } else {
+        this.todoMentionOpen = false;
+        this.todoMentionResults = [];
+      }
+    },
+
+    insertTodoMention(user) {
+      const firstName = user.name.split(' ')[0];
+      const before = this.todoInput.slice(0, this._todoMentionStart);
+      const after = this.todoInput.slice(this._todoMentionStart).replace(/@\w*/, '@' + firstName + ' ');
+      this.todoInput = before + after;
+      this.todoMentionOpen = false;
+    },
+
+    async submitTodo() {
+      if (this.todoSubmitting || !this.todoInput.trim()) return;
+      if (!validateToken()) return;
+      this.todoSubmitting = true;
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch('/api/todos', {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ body: this.todoInput.trim() }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          showToast(err.detail || 'Erro ao criar TODO', 'error'); return;
+        }
+        const todo = await res.json();
+        this.todos.unshift(todo);
+        this.todoInput = '';
+        showToast('TODO criado!', 'success');
+      } catch { showToast('Erro ao criar TODO', 'error'); } finally { this.todoSubmitting = false; }
+    },
+
+    async checkTodo(todo) {
+      if (todo.done) return;
+      if (!validateToken()) return;
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch(`/api/todos/${todo.id}/done`, {
+          method: 'PUT',
+          headers: { Authorization: 'Bearer ' + token },
+        });
+        if (res.ok) {
+          todo.done = true;
+          todo.done_at = new Date().toISOString();
+          this.todoPendingCount = Math.max(0, this.todoPendingCount - 1);
+        }
+      } catch {}
+    },
+
+    todoTime(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      const now = new Date();
+      const diff = Math.floor((now - d) / 60000);
+      if (diff < 1)    return 'agora';
+      if (diff < 60)   return diff + 'min atrás';
+      if (diff < 1440) return Math.floor(diff / 60) + 'h atrás';
+      return d.toLocaleDateString('pt-BR');
+    },
+    // ─────────────────────────────────────────────────────────────
 
     openProfileModal() {
       this.profile = {

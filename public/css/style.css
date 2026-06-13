@@ -372,3 +372,73 @@ input {
 
 /* ── 13. Chart.js canvas background ─────────────────────── */
 /* Canvas herda background transparente — funciona em ambos os modos */
+
+/* ── 14. Input/select/textarea text em light mode ───────── */
+/* O seletor global `input { color: #f2f2f2 }` causaria texto branco
+   em fundos claros. Este bloco o corrige para todos os campos. */
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  color: #1e293b;
+}
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: #94a3b8;
+}
+/* color-scheme para date/time pickers seguirem o tema do OS */
+[data-theme="light"] input[type="date"],
+[data-theme="light"] input[type="time"],
+[data-theme="light"] input[type="datetime-local"] {
+  color-scheme: light;
+}
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="time"],
+[data-theme="dark"] input[type="datetime-local"] {
+  color-scheme: dark;
+}
+
+/* ── 15. hover:text-white → text escuro em light mode ────── */
+/* Tabs, botões e links usam hover:text-white mas em fundo claro
+   resultaria em texto branco invisível. */
+[data-theme="light"] .hover\:text-white:hover {
+  color: #0f172a !important;
+}
+/* group-hover:text-white (ex: botões do sidebar de notificações) */
+[data-theme="light"] .group:hover .group-hover\:text-white {
+  color: #0f172a !important;
+}
+
+/* ── 16. Hover nos cards de ticket em light mode ────────── */
+/* hover:bg-white/[0.04] em fundo claro fica invisível;
+   remapeamos para um leve escurecimento. */
+[data-theme="light"] .hover\:bg-white\/\[0\.04\]:hover {
+  background-color: rgba(15, 23, 42, 0.06) !important;
+}
+[data-theme="light"] .hover\:border-white\/20:hover {
+  border-color: rgba(15, 23, 42, 0.16) !important;
+}
+
+/* ── 17. gray-500 mais legível em light mode ────────────── */
+/* O valor padrão #94a3b8 tem baixo contraste em fundos claros. */
+[data-theme="light"] {
+  --color-gray-500: #64748b;
+}
+
+/* ── 18. Botões primários azuis → sempre texto branco ───── */
+/* Garante legibilidade mesmo quando text-color é herdado do tema. */
+[data-theme="light"] .bg-blue-600,
+[data-theme="light"] .bg-blue-700,
+[data-theme="light"] .hover\:bg-blue-600:hover,
+[data-theme="light"] .hover\:bg-blue-700:hover {
+  color: #ffffff;
+}
+
+/* ── 19. Painel de notificações — texto visível em ambos os temas ── */
+/* O painel tem bg-gray-900/95 que em light vira quase branco,
+   então textos text-white ficariam invisíveis. */
+[data-theme="light"] .notif-panel-title {
+  color: #0f172a !important;
+}
+[data-theme="light"] .notif-item-title {
+  color: #1e293b !important;
+}

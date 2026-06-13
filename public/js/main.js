@@ -17,6 +17,8 @@ document.addEventListener("alpine:init", () => {
     avatarUrl:     '',
     selectedTicket: null,
     theme:         'dark',
+    users:         [],
+    _heartbeatInterval: null,
 
     setTheme(t) {
       this.theme = t;
@@ -77,11 +79,21 @@ document.addEventListener("alpine:init", () => {
         this.currentView = "dashboard";
         await this.navigate(this.currentPage);
         sessionWatcher.start();
+        this.startHeartbeat();
 
       } catch {
         localStorage.removeItem("access_token");
         this.currentView = "login";
       }
-    }
+    },
+
+    startHeartbeat() {
+      if (this._heartbeatInterval) clearInterval(this._heartbeatInterval);
+      this._heartbeatInterval = setInterval(() => {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+        fetch(`${API_BASE}/auth/me`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+      }, 5 * 60 * 1000);
+    },
   });
 });

@@ -188,6 +188,7 @@
           <option value="in_progress">Em andamento</option>
           <option value="feedback">Feedback</option>
           <option value="awaiting_confirmation">Confirmação</option>
+          <option value="scheduled_visit">Visita agendada</option>
           <option value="done">Finalizado</option>
 
         </select>
@@ -322,6 +323,7 @@
           input-class
           bg-blue-600
           hover:bg-blue-700
+          text-white
           transition
           shrink-0">
 
@@ -484,14 +486,15 @@
             class="px-3 py-1 rounded-full text-xs font-semibold"
 
             :class="{
-              'bg-red-500/15 text-red-300': ticket.progress === 'waiting',
-              'bg-blue-500/15 text-blue-300': ticket.progress === 'in_progress',
+              'bg-red-500/15 text-red-300':    ticket.progress === 'waiting',
+              'bg-blue-500/15 text-blue-300':  ticket.progress === 'in_progress',
               'bg-yellow-500/15 text-yellow-300': ticket.progress === 'feedback',
-              'bg-gray-500/15 text-gray-300': ticket.progress === 'awaiting_confirmation',
+              'bg-gray-500/15 text-gray-300':  ticket.progress === 'awaiting_confirmation',
+              'bg-indigo-500/15 text-indigo-300': ticket.progress === 'scheduled_visit',
               'bg-emerald-500/15 text-emerald-300': ticket.progress === 'done'
             }">
 
-            <span x-text="ticket.progress"></span>
+            <span x-text="({'waiting':'Aguardando','in_progress':'Em atendimento','feedback':'Retorno','awaiting_confirmation':'Ag. confirmação','scheduled_visit':'Visita agendada','done':'Concluído'})[ticket.progress] || ticket.progress"></span>
 
           </span>
 
@@ -643,6 +646,7 @@
       rounded-full
       bg-blue-600
       hover:bg-blue-700
+      text-white
       shadow-2xl
       flex items-center justify-center
       transition

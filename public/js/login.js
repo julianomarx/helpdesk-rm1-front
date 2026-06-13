@@ -45,6 +45,8 @@ document.addEventListener("DOMContentLoaded", () => {
       store.currentView = "dashboard";
       await store.navigate("dashboard");
       sessionWatcher.start();
+      store.startHeartbeat();
+      window.dispatchEvent(new CustomEvent('auth:login'));
 
     } catch (e) {
       console.error("Erro no login:", e);

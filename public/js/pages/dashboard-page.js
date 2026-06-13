@@ -20,10 +20,12 @@ function dashboardPage() {
     // ── Overview counters ──────────────────────────────────────────
     dashboardOverview: {
       created_today_tickets: 0,
+      closed_today_tickets: 0,
       open_tickets: 0,
       in_progress_tickets: 0,
       feedback_tickets: 0,
       awaiting_confirmation_tickets: 0,
+      scheduled_visit_tickets: 0,
       unassigned_tickets: 0,
       stale_48h_tickets: 0,
       high_priority_tickets: 0
@@ -70,6 +72,13 @@ function dashboardPage() {
     historyLoaded: false,
     historyLoading: false,
     history: { monthly: [] },
+
+    // ── Bottleneck hotels modal ─────────────────────────────────────
+    showBottleneckHotelsModal: false,
+    bottleneckHotelsLoading: false,
+    bottleneckHotelsItems: [],
+    bottleneckHotelsPage: 1,
+    bottleneckHotelsPages: 1,
 
     // ── Tab switching ───────────────────────────────────────────────
     async switchTab(tab) {
@@ -164,6 +173,31 @@ function dashboardPage() {
         showToast("Erro ao carregar gargalos", "error");
       } finally {
         this.bottlenecksLoading = false;
+      }
+    },
+
+    async openBottleneckHotelsModal() {
+      this.showBottleneckHotelsModal = true;
+      await this.loadBottleneckHotels(1);
+    },
+
+    async loadBottleneckHotels(page) {
+      if (!validateToken()) return;
+      this.bottleneckHotelsLoading = true;
+      this.bottleneckHotelsPage = page;
+      const token = localStorage.getItem("access_token");
+      try {
+        const res = await fetch(`/api/dashboard/bottlenecks/hotels?page=${page}&page_size=10`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        this.bottleneckHotelsItems = data.items;
+        this.bottleneckHotelsPages = data.pages;
+      } catch {
+        showToast("Erro ao carregar hotéis", "error");
+      } finally {
+        this.bottleneckHotelsLoading = false;
       }
     },
 
@@ -447,26 +481,30 @@ function dashboardPage() {
     // ── Formatters / helpers ─────────────────────────────────────────
     get overviewCards() {
       return [
-        { label: "Criados Hoje",           value: this.dashboardOverview.created_today_tickets, color: 'blue'   },
-        { label: "Abertos",                value: this.dashboardOverview.open_tickets,           color: 'gray'   },
-        { label: "Em Atendimento",         value: this.dashboardOverview.in_progress_tickets,    color: 'cyan'   },
-        { label: "Retorno Solicitante",    value: this.dashboardOverview.feedback_tickets,        color: 'amber'  },
-        { label: "Aguardando Confirmação", value: this.dashboardOverview.awaiting_confirmation_tickets, color: 'purple' },
-        { label: "Sem Responsável",        value: this.dashboardOverview.unassigned_tickets,     color: 'red'    },
-        { label: "Parados +48h",           value: this.dashboardOverview.stale_48h_tickets,      color: 'orange' },
-        { label: "Alta Prioridade",        value: this.dashboardOverview.high_priority_tickets,  color: 'red'    },
+        { label: "Criados Hoje",           value: this.dashboardOverview.created_today_tickets,           color: 'blue'   },
+        { label: "Encerrados Hoje",        value: this.dashboardOverview.closed_today_tickets,            color: 'emerald'},
+        { label: "Abertos",                value: this.dashboardOverview.open_tickets,                    color: 'gray'   },
+        { label: "Em Atendimento",         value: this.dashboardOverview.in_progress_tickets,             color: 'cyan'   },
+        { label: "Retorno Solicitante",    value: this.dashboardOverview.feedback_tickets,                color: 'amber'  },
+        { label: "Ag. Confirmação",        value: this.dashboardOverview.awaiting_confirmation_tickets,   color: 'purple' },
+        { label: "Visitas Agendadas",      value: this.dashboardOverview.scheduled_visit_tickets,         color: 'indigo' },
+        { label: "Sem Responsável",        value: this.dashboardOverview.unassigned_tickets,              color: 'red'    },
+        { label: "Parados +48h",           value: this.dashboardOverview.stale_48h_tickets,              color: 'orange' },
+        { label: "Alta Prioridade",        value: this.dashboardOverview.high_priority_tickets,           color: 'red'    },
       ];
     },
 
     cardColor(color) {
       return {
-        blue:   'text-blue-400',
-        gray:   'text-gray-300',
-        cyan:   'text-cyan-400',
-        amber:  'text-amber-400',
-        purple: 'text-purple-400',
-        red:    'text-red-400',
-        orange: 'text-orange-400',
+        blue:    'text-blue-400',
+        gray:    'text-gray-300',
+        cyan:    'text-cyan-400',
+        amber:   'text-amber-400',
+        purple:  'text-purple-400',
+        red:     'text-red-400',
+        orange:  'text-orange-400',
+        emerald: 'text-emerald-400',
+        indigo:  'text-indigo-400',
       }[color] || 'text-gray-300';
     },
 

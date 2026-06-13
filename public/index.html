@@ -27,6 +27,7 @@
   <script src="/js/pages/hotels-page.js"></script>
   <script src="/js/pages/manage-categories-page.js"></script>
   <script src="/js/pages/activity-report-page.js"></script>
+  <script src="/js/pages/teams-page.js"></script>
 
   <!-- Shell e bootstrap -->
   <script src="/js/shell.js"></script>
@@ -103,6 +104,25 @@
               x-text="notifUnread > 9 ? '9+' : notifUnread">
             </span>
           </button>
+
+          <!-- TODO BUTTON (admin/agent only) -->
+          <template x-if="['admin','agent'].includes($store.app.role)">
+            <button
+              @click="toggleTodoPanel()"
+              class="mt-1 w-full flex items-center justify-between px-3 py-2.5 rounded-xl
+                     hover:bg-white/[0.06] transition text-left group">
+              <span class="flex items-center gap-2.5 text-sm text-gray-300 group-hover:text-white transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                </svg>
+                TODOs
+              </span>
+              <span x-show="todoPendingCount > 0"
+                class="text-[10px] bg-blue-500 text-white font-bold px-1.5 py-0.5 rounded-full min-w-5 text-center leading-tight"
+                x-text="todoPendingCount > 9 ? '9+' : todoPendingCount">
+              </span>
+            </button>
+          </template>
 
           <!-- THEME TOGGLE -->
           <button
@@ -442,7 +462,7 @@
     <!-- Panel header -->
     <div class="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
       <div class="flex items-center gap-2">
-        <span class="text-sm font-semibold text-white">Notificações</span>
+        <span class="text-sm font-semibold text-gray-100 notif-panel-title">Notificações</span>
         <span
           x-show="notifUnread > 0"
           class="text-[10px] bg-red-500 text-white font-bold px-1.5 py-0.5 rounded-full"
@@ -455,7 +475,7 @@
           class="text-[11px] text-blue-400 hover:text-blue-300 transition">
           Marcar todas como lidas
         </button>
-        <button @click="showNotifPanel = false" class="text-gray-500 hover:text-white transition ml-1">
+        <button @click="showNotifPanel = false" class="text-gray-500 hover:text-gray-100 transition ml-1">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
           </svg>
@@ -495,7 +515,7 @@
           <!-- Content -->
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-medium text-white truncate" x-text="notif.title"></span>
+              <span class="text-xs font-medium text-gray-100 notif-item-title truncate" x-text="notif.title"></span>
               <span x-show="!notif.read" class="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0"></span>
             </div>
             <p x-show="notif.body" class="text-[11px] text-gray-400 mt-0.5 line-clamp-2" x-text="notif.body"></p>
@@ -512,6 +532,154 @@
           </button>
         </div>
       </template>
+    </div>
+  </div>
+
+  <!-- TODO PANEL -->
+  <div
+    x-show="showTodoPanel"
+    x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="opacity-0 translate-y-2"
+    x-transition:enter-end="opacity-100 translate-y-0"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100 translate-y-0"
+    x-transition:leave-end="opacity-0 translate-y-2"
+    @click.away="showTodoPanel = false"
+    class="fixed bottom-20 left-2 w-96 z-[200]
+           bg-gray-900/95 backdrop-blur-xl
+           border border-white/10 rounded-2xl shadow-2xl
+           flex flex-col overflow-hidden"
+    style="max-height: 520px;">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
+      <div class="flex items-center gap-2">
+        <span class="text-sm font-semibold text-gray-100">TODOs</span>
+        <span x-show="todoPendingCount > 0"
+          class="text-[10px] bg-blue-500 text-white font-bold px-1.5 py-0.5 rounded-full"
+          x-text="todoPendingCount"></span>
+      </div>
+      <button @click="showTodoPanel = false" class="text-gray-500 hover:text-gray-100 transition">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Create TODO form -->
+    <div class="px-4 py-3 border-b border-white/5 shrink-0 relative">
+      <textarea
+        x-model="todoInput"
+        @input="onTodoInput($event)"
+        @keydown.enter.prevent="submitTodo()"
+        rows="2"
+        placeholder="@nome O que precisa ser feito... (Enter para enviar)"
+        class="w-full text-xs rounded-xl bg-gray-800/60 border border-white/10 px-3 py-2
+               focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none placeholder-gray-600">
+      </textarea>
+
+      <!-- Mention autocomplete -->
+      <div x-show="todoMentionOpen && todoMentionResults.length > 0"
+        class="absolute left-4 right-4 mt-1 bg-gray-800 border border-white/10 rounded-xl shadow-xl z-10 overflow-hidden">
+        <template x-for="u in todoMentionResults" :key="u.id">
+          <div @click="insertTodoMention(u)"
+            class="flex items-center gap-2 px-3 py-2 hover:bg-white/10 cursor-pointer">
+            <span class="text-xs font-medium text-gray-200" x-text="u.name"></span>
+            <span class="text-[10px] text-gray-500" x-text="u.email"></span>
+          </div>
+        </template>
+      </div>
+
+      <div class="flex items-center justify-between mt-1.5">
+        <span class="text-[10px] text-gray-600">Mencione @usuario para atribuir</span>
+        <button @click="submitTodo()" :disabled="todoSubmitting || !todoInput.trim()"
+          class="text-[11px] px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white
+                 disabled:opacity-50 disabled:cursor-not-allowed transition">
+          Criar
+        </button>
+      </div>
+    </div>
+
+    <!-- TODO list -->
+    <div class="flex-1 overflow-y-auto custom-scroll">
+
+      <!-- Tabs: atribuídos a mim / criados por mim -->
+      <div class="flex border-b border-white/5 shrink-0">
+        <button @click="todoTab = 'mine'"
+          class="flex-1 py-2 text-[11px] font-medium transition"
+          :class="todoTab === 'mine' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-500 hover:text-gray-300'">
+          Para mim
+          <span x-show="pendingMine > 0" class="ml-1 text-[10px] bg-blue-500/30 text-blue-300 px-1 rounded"
+            x-text="pendingMine"></span>
+        </button>
+        <button @click="todoTab = 'sent'"
+          class="flex-1 py-2 text-[11px] font-medium transition"
+          :class="todoTab === 'sent' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-500 hover:text-gray-300'">
+          Enviados
+        </button>
+      </div>
+
+      <template x-if="todoLoading">
+        <div class="flex justify-center py-8">
+          <div class="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </template>
+
+      <template x-if="!todoLoading">
+        <div>
+          <template x-for="todo in filteredTodos" :key="todo.id">
+            <div class="flex items-start gap-3 px-4 py-3 border-b border-white/5 hover:bg-white/[0.03] transition group"
+              :class="todo.done ? 'opacity-50' : ''">
+
+              <!-- Checkbox (only on "mine" tab and not done) -->
+              <template x-if="todoTab === 'mine'">
+                <button @click="checkTodo(todo)" :disabled="todo.done"
+                  class="shrink-0 mt-0.5 w-4 h-4 rounded border transition flex items-center justify-center"
+                  :class="todo.done
+                    ? 'border-emerald-500 bg-emerald-500/20'
+                    : 'border-white/30 hover:border-blue-400 bg-transparent'">
+                  <svg x-show="todo.done" class="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </button>
+              </template>
+              <template x-if="todoTab === 'sent'">
+                <div class="shrink-0 mt-0.5 w-4 h-4 rounded border flex items-center justify-center"
+                  :class="todo.done ? 'border-emerald-500 bg-emerald-500/20' : 'border-white/20'">
+                  <svg x-show="todo.done" class="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </div>
+              </template>
+
+              <!-- Body -->
+              <div class="flex-1 min-w-0">
+                <p class="text-xs leading-relaxed" :class="todo.done ? 'line-through text-gray-500' : 'text-gray-200'"
+                  x-text="todo.body"></p>
+                <div class="flex items-center gap-2 mt-1">
+                  <span class="text-[10px] text-gray-600"
+                    x-text="todoTab === 'mine' ? 'De: ' + todo.creator.name : 'Para: ' + todo.assignee.name"></span>
+                  <span class="text-[10px] text-gray-700">·</span>
+                  <span class="text-[10px] text-gray-600" x-text="todoTime(todo.created_at)"></span>
+                  <template x-if="todo.done && todo.done_at">
+                    <span class="text-[10px] text-emerald-600">· concluído</span>
+                  </template>
+                </div>
+              </div>
+
+            </div>
+          </template>
+
+          <div x-show="filteredTodos.length === 0"
+            class="flex flex-col items-center justify-center py-10 text-gray-600">
+            <svg class="w-7 h-7 mb-2 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+            </svg>
+            <span class="text-xs">Nenhum TODO</span>
+          </div>
+        </div>
+      </template>
+
     </div>
   </div>
 
