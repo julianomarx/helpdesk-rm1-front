@@ -9,8 +9,8 @@ function manageCategoriesPage() {
     pending: {},
     saving: {},
     deleting: {},
-    confirmDeleteCat: null,
-    confirmDeleteSub: null,
+    catToDelete: null,
+    subToDelete: null,
 
     showCreateModal: false,
     createTab: 'subcategory',
@@ -40,9 +40,11 @@ function manageCategoriesPage() {
       this.teams = Alpine.store('app').teams || [];
       this.openCats = this.categories.map(c => c.id);
 
+      const newPending = {};
       for (const sub of this.subcategories) {
-        this.pending[sub.id] = sub.sla_policy_id ? String(sub.sla_policy_id) : '';
+        newPending[sub.id] = sub.sla_policy_id ? String(sub.sla_policy_id) : '';
       }
+      this.pending = newPending;
 
       this.loading = false;
     },
@@ -65,18 +67,31 @@ function manageCategoriesPage() {
     },
 
     async saveSubcategory(sub) {
+
+       console.log('SAVE CLICK', sub);
+
       if (!this.isDirty(sub.id) || this.saving[sub.id]) return;
       this.saving = { ...this.saving, [sub.id]: true };
 
       const token = localStorage.getItem('access_token');
       const newPolicyId = this.pending[sub.id] ? Number(this.pending[sub.id]) : null;
 
+      const url = `${window.location.origin}/api/subcategories/${sub.id}`;
+
+      console.log(url);
+
+
       try {
-        const res = await fetch(`/api/subcategories/${sub.id}`, {
+
+        console.log(url);
+
+        const res = await fetch(url, {
           method: 'PUT',
           headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
           body: JSON.stringify({ sla_policy_id: newPolicyId }),
         });
+
+        
 
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
@@ -100,6 +115,7 @@ function manageCategoriesPage() {
     },
 
     async deleteCategory(cat) {
+      if (!cat) return;
       this.deleting = { ...this.deleting, ['cat_' + cat.id]: true };
       const token = localStorage.getItem('access_token');
       try {
@@ -119,7 +135,7 @@ function manageCategoriesPage() {
         this.pending = newPending;
         this.categories = this.categories.filter(c => c.id !== cat.id);
         this.openCats = this.openCats.filter(id => id !== cat.id);
-        this.confirmDeleteCat = null;
+        this.catToDelete = null;
         showToast(`Categoria "${cat.name}" excluída`, 'success');
       } catch {
         showToast('Erro ao excluir categoria', 'error');
@@ -129,6 +145,7 @@ function manageCategoriesPage() {
     },
 
     async deleteSubcategory(sub) {
+      if (!sub) return;
       this.deleting = { ...this.deleting, ['sub_' + sub.id]: true };
       const token = localStorage.getItem('access_token');
       try {
@@ -145,7 +162,7 @@ function manageCategoriesPage() {
         const newPending = { ...this.pending };
         delete newPending[sub.id];
         this.pending = newPending;
-        this.confirmDeleteSub = null;
+        this.subToDelete = null;
         showToast(`Subcategoria "${sub.name}" excluída`, 'success');
       } catch {
         showToast('Erro ao excluir subcategoria', 'error');

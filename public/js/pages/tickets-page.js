@@ -107,21 +107,48 @@ function ticketsPage() {
     },
 
     async copyTicket(ticket) {
-      const text = `
-        *CHAMADO #${ticket.id}*
-        *Hotel* ${ticket.hotel?.code || ''} - ${ticket.hotel?.name || ''}
-        *Título* ${ticket.title}
+      const priorityLabel = { high: 'Alta', medium: 'Média', low: 'Baixa' }[ticket.priority] || ticket.priority;
+      const progressLabel = {
+        waiting: 'Aguardando',
+        in_progress: 'Em atendimento',
+        feedback: 'Retorno',
+        awaiting_confirmation: 'Ag. confirmação',
+        scheduled_visit: 'Visita agendada',
+        done: 'Concluído'
+      }[ticket.progress] || ticket.progress;
 
-        *Categoria* ${ticket.category?.name || ''}
-        *Subcategoria* ${ticket.subcategory?.name || ''}
-        *Prioridade* ${ticket.priority}
-        *Status* ${ticket.progress}
+      const text = [
+        `*CHAMADO #${ticket.id}*`,
+        `*Hotel* ${ticket.hotel?.code || ''} - ${ticket.hotel?.name || ''}`,
+        `*Título* ${ticket.title}`,
+        ``,
+        `*Categoria* ${ticket.category?.name || '-'}`,
+        `*Subcategoria* ${ticket.subcategory?.name || '-'}`,
+        `*Prioridade* ${priorityLabel}`,
+        `*Status* ${progressLabel}`,
+        ``,
+        `*Descrição*`,
+        `${ticket.description || ''}`,
+      ].join('\n');
 
-        *Descrição*
-        ${ticket.description}
-      `;
+      const writeText = async (t) => {
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+          await navigator.clipboard.writeText(t);
+          return;
+        }
+        const el = document.createElement('textarea');
+        el.value = t;
+        el.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none;';
+        document.body.appendChild(el);
+        el.focus();
+        el.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(el);
+        if (!ok) throw new Error('execCommand failed');
+      };
+
       try {
-        await navigator.clipboard.writeText(text);
+        await writeText(text);
         showToast(`Ticket #${ticket.id} copiado`, 'success');
       } catch {
         showToast('Erro ao copiar ticket', 'error');
