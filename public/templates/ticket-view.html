@@ -153,13 +153,13 @@
 
           <!-- Texto curto -->
           <template x-if="selectedTicket.description && selectedTicket.description.length <= maxDescLength">
-            <p class="text-sm text-gray-300 whitespace-pre-line leading-relaxed"
+            <p class="text-sm text-gray-900 whitespace-pre-line leading-relaxed"
                x-text="selectedTicket.description"></p>
           </template>
 
           <!-- Texto truncado -->
           <template x-if="selectedTicket.description && selectedTicket.description.length > maxDescLength">
-            <p class="text-sm text-gray-300 leading-relaxed line-clamp-4"
+            <p class="text-sm text-gray-900 leading-relaxed line-clamp-4"
                x-text="selectedTicket.description.substring(0, maxDescLength) + '...'"></p>
           </template>
 

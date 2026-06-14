@@ -207,7 +207,7 @@ input {
   --color-gray-900: #f1f5f9;
   --color-gray-800: #e8edf4;
   --color-gray-700: #cbd5e1;
-  --color-gray-600: #64748b;
+  --color-gray-600: #374151;
   --color-gray-500: #94a3b8;
   --color-gray-400: #475569;
   --color-gray-300: #334155;
@@ -418,10 +418,12 @@ input {
   border-color: rgba(15, 23, 42, 0.16) !important;
 }
 
-/* ── 17. gray-500 mais legível em light mode ────────────── */
-/* O valor padrão #94a3b8 tem baixo contraste em fundos claros. */
+/* ── 17. gray-500 e gray-600 mais escuros em light mode ─── */
+/* Valores originais (#94a3b8 / #64748b) têm baixo contraste em fundos claros.
+   Mapeamos para cinzas mais escuros para atender ao pedido do usuário. */
 [data-theme="light"] {
-  --color-gray-500: #64748b;
+  --color-gray-500: #475569;
+  --color-gray-600: #334155;
 }
 
 /* ── 18. Botões primários azuis → sempre texto branco ───── */
@@ -433,7 +435,14 @@ input {
   color: #ffffff;
 }
 
-/* ── 19. Painel de notificações — texto visível em ambos os temas ── */
+/* ── 19. Gradientes com to-black em light mode ──────────────────── */
+/* `to-black` usa #000 estático, não remapeável via CSS variable.
+   Em light mode isso cria um fundo preto no ticket-view e outras telas. */
+[data-theme="light"] .to-black {
+  --tw-gradient-to: #dde3ed !important;
+}
+
+/* ── 21. Painel de notificações — texto visível em ambos os temas ── */
 /* O painel tem bg-gray-900/95 que em light vira quase branco,
    então textos text-white ficariam invisíveis. */
 [data-theme="light"] .notif-panel-title {
@@ -442,3 +451,22 @@ input {
 [data-theme="light"] .notif-item-title {
   color: #1e293b !important;
 }
+
+/* ── 22. Override direto de text-gray-* em light mode ─────────────
+   Tailwind v4 CDN pode gerar cores como valores OKLCH estáticos,
+   ignorando o sistema de var(--color-*). Forçamos aqui via seletor
+   composto ([data-theme] + .classe) que vence qualquer utility layer.
+   Todos os tons de cinza viram escuro/preto em fundos claros.        */
+[data-theme="light"] .text-gray-100 { color: #0f172a !important; }
+[data-theme="light"] .text-gray-200 { color: #1e293b !important; }
+[data-theme="light"] .text-gray-300 { color: #1e293b !important; }
+[data-theme="light"] .text-gray-400 { color: #374151 !important; }
+[data-theme="light"] .text-gray-500 { color: #1f2937 !important; }
+[data-theme="light"] .text-gray-600 { color: #111827 !important; }
+[data-theme="light"] .text-gray-700 { color: #030712 !important; }
+[data-theme="light"] .text-gray-900 { color: #030712 !important; }
+
+/* Placeholders — classe separada no Tailwind, precisa de regra própria */
+[data-theme="light"] .placeholder-gray-400::placeholder { color: #9ca3af !important; }
+[data-theme="light"] .placeholder-gray-500::placeholder { color: #6b7280 !important; }
+[data-theme="light"] .placeholder-gray-600::placeholder { color: #4b5563 !important; }
