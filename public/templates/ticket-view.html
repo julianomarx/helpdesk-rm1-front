@@ -106,25 +106,33 @@
                 </button>
 
             </template>
+            
+            <!-- ATUALIZAR -->
 
-            <!-- TIMELOG -->
+            <button
+                @click="manualRefresh()"
+                :disabled="refreshing"
+                class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm transition-all duration-200
+                       text-gray-400 hover:text-white hover:bg-white/5 disabled:opacity-40">
 
-            <template x-if="['admin','agent'].includes($store.app.role)">
+                <svg
+                    :class="refreshing ? 'animate-spin' : ''"
+                    class="w-3.5 h-3.5 shrink-0"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
 
-                <button
-                    @click="ticketViewTab='timelog'"
-                    class="px-4 py-2 rounded-xl text-sm transition-all duration-200"
-                    :class="
-                        ticketViewTab === 'timelog'
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30'
-                        : 'text-gray-400 hover:text-white hover:bg-white/5'
-                    ">
+                <span x-show="!refreshing">Atualizar</span>
+                <span x-show="refreshing">Atualizando...</span>
 
-                    Timelog
+            </button>
 
-                </button>
-
-            </template>
+            <span
+                x-show="lastRefreshedAt"
+                x-text="'· ' + lastRefreshedLabel"
+                class="self-center text-xs text-gray-600 select-none">
+            </span>
 
         </div>
 

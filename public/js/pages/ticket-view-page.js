@@ -27,6 +27,9 @@ function ticketViewPage() {
     showMentionDropdown: false,
     _mentionStart: -1,
     _mentionEnd: -1,
+    _pollInterval: null,
+    refreshing: false,
+    lastRefreshedAt: null,
 
     init() {
       const stored = Alpine.store("app").selectedTicket;
@@ -38,6 +41,54 @@ function ticketViewPage() {
         }
       }
       this.loadMentionUsers();
+      this.lastRefreshedAt = new Date();
+      this._startPolling();
+    },
+
+    _startPolling() {
+      this._pollInterval = setInterval(() => {
+        // Auto-limpa se o componente saiu do DOM (navegação)
+        if (!this.$el || !document.body.contains(this.$el)) {
+          clearInterval(this._pollInterval);
+          return;
+        }
+        // Não busca se a aba estiver em background
+        if (document.hidden) return;
+        if (!this.selectedTicket?.id) return;
+        this._silentRefresh();
+      }, 25000);
+    },
+
+    async _silentRefresh() {
+      const ticketId = this.selectedTicket?.id;
+      const token = localStorage.getItem('access_token');
+      if (!ticketId || !token) return;
+      try {
+        const res = await fetch(`/api/tickets/${ticketId}`, {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (res.ok) {
+          this.selectedTicket = await res.json();
+          Alpine.store('app').selectedTicket = this.selectedTicket;
+          this.lastRefreshedAt = new Date();
+        }
+      } catch {}
+    },
+
+    async manualRefresh() {
+      if (this.refreshing) return;
+      this.refreshing = true;
+      try {
+        await this.refreshSelectedTicket();
+        this.lastRefreshedAt = new Date();
+      } finally {
+        this.refreshing = false;
+      }
+    },
+
+    get lastRefreshedLabel() {
+      if (!this.lastRefreshedAt) return '';
+      return this.lastRefreshedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     },
 
     async loadMentionUsers() {

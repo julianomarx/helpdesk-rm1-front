@@ -35,7 +35,7 @@
       </div>
 
       <!-- HOTEL -->
-      <template x-if="['admin','agent'].includes($store.app.role)">
+      <template x-if="['admin','agent', 'client_manager'].includes($store.app.role)">
 
         <div class="flex-1 min-w-[220px]">
 
@@ -977,7 +977,7 @@
         <div class="flex gap-4 mb-5 shrink-0">
 
           <!-- ROLE -->
-          <div x-show="['admin', 'agent'].includes($store.app.role)" class="flex flex-col flex-1 min-w-0">
+          <div x-show="['admin', 'agent', 'client_manager'].includes($store.app.role)" class="flex flex-col flex-1 min-w-0">
 
             <label class="block text-xs mb-1">
               Função
@@ -985,22 +985,30 @@
 
             <select
               x-model="creator.role"
+              :disabled="$store.app.role === 'client_manager'"
               class="w-full p-3 h-[48px] rounded-2xl
-                    bg-gray-800/50 border border-white/10">
+                    bg-gray-800/50 border border-white/10
+                    disabled:opacity-70">
 
-              <option selected disabled value="">
+              <option disabled value="">
                 Selecione uma função
               </option>
 
-              <option x-show="$store.app.role === 'admin'" value="admin">
+              <option
+                x-show="$store.app.role === 'admin'"
+                value="admin">
                 Admin
               </option>
 
-              <option x-show="$store.app.role === 'admin'" value="agent">
+              <option
+                x-show="$store.app.role === 'admin'"
+                value="agent">
                 Suporte
               </option>
 
-              <option value="client_manager">
+              <option
+                x-show="['admin','agent'].includes($store.app.role)"
+                value="client_manager">
                 Gerente
               </option>
 
@@ -1009,6 +1017,16 @@
               </option>
 
             </select>
+
+            <p
+              x-show="$store.app.role === 'client_manager'"
+              class="mt-1.5 flex items-center gap-1 text-[11px] text-emerald-400/80">
+              <svg class="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+              </svg>
+              Recepcionista — função definida automaticamente
+            </p>
+
           </div>
 
           <!-- PASSWORD -->
@@ -1050,10 +1068,7 @@
         <!-- HOTELS -->
         <div
           class="flex flex-col flex-1 min-h-0"
-          x-show="
-          ['admin', 'agent'].includes($store.app.role) &&
-          ['client_manager', 'client_receptionist'].includes(creator.role)       
-          ">
+          x-show="['client_manager', 'client_receptionist'].includes(creator.role)">
 
           <!-- TITLE -->
           <div class="mb-3 shrink-0">

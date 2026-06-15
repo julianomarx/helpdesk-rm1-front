@@ -189,6 +189,9 @@ function usersPage() {
 
     openCreateUserModal() {
       this.resetCreateUser();
+      if (Alpine.store('app').role === 'client_manager') {
+        this.creator.role = 'client_receptionist';
+      }
       this.showCreateUserModal = true;
     },
 
