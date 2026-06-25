@@ -1,0 +1,538 @@
+<div
+  x-data="qualitorPage()"
+  x-init="init()"
+  class="flex flex-col flex-1 min-h-0 overflow-hidden text-gray-200 relative">
+
+  <!-- HEADER -->
+  <div class="shrink-0 px-5 pt-5 pb-4 border-b border-white/5">
+    <div class="flex items-center justify-between flex-wrap gap-3">
+
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
+          <svg class="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-gray-100 leading-tight">Qualitor</h1>
+          <p class="text-[11px] text-gray-500">Chamados externos</p>
+        </div>
+      </div>
+
+      <template x-if="status">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs
+                       bg-white/[0.04] border border-white/10 text-gray-300">
+            <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+            <span x-text="status.total_tickets + ' tickets'"></span>
+          </span>
+          <template x-for="(count, sit) in status.por_situacao" :key="sit">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs border"
+                  :class="situacaoBadge(sit)">
+              <span x-text="sit + ': ' + count"></span>
+            </span>
+          </template>
+          <span class="text-[10px] text-gray-600">
+            Sync: <span x-text="lastSyncRelative()"></span>
+          </span>
+        </div>
+      </template>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="mt-4 flex flex-wrap gap-2">
+      <div class="relative flex-1 min-w-[220px] max-w-xs">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" x-model="filters.search" placeholder="Buscar por ID, título, contato..."
+          class="w-full pl-9 pr-3 py-2 rounded-xl bg-white/[0.04] border border-white/10
+                 text-sm text-gray-200 placeholder-gray-600
+                 focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50">
+      </div>
+      <select x-model="filters.situacao" @change="fetchTickets()"
+        class="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10
+               text-sm text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500/50">
+        <template x-for="opt in situacaoOptions" :key="opt.value">
+          <option :value="opt.value" x-text="opt.label"></option>
+        </template>
+      </select>
+      <select x-model="filters.equipe" @change="fetchTickets()"
+        class="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10
+               text-sm text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500/50">
+        <template x-for="opt in equipeOptions" :key="opt.value">
+          <option :value="opt.value" x-text="opt.label"></option>
+        </template>
+      </select>
+      <button @click="fetchTickets(); fetchStatus()"
+        class="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10
+               text-sm text-gray-400 hover:text-white hover:bg-white/[0.08] transition flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" :class="loading ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Atualizar
+      </button>
+    </div>
+  </div>
+
+  <!-- LISTA DE TICKETS -->
+  <div class="flex-1 overflow-y-auto custom-scroll">
+
+    <template x-if="loading">
+      <div class="flex items-center justify-center py-20">
+        <div class="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    </template>
+
+    <template x-if="!loading && filteredTickets.length === 0">
+      <div class="flex flex-col items-center justify-center py-20 text-gray-600">
+        <svg class="w-10 h-10 mb-3 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <span class="text-sm">Nenhum ticket encontrado</span>
+      </div>
+    </template>
+
+    <template x-if="!loading && filteredTickets.length > 0">
+      <div>
+        <div class="sticky top-0 grid grid-cols-[56px_1fr_160px_110px_140px_120px] gap-3 px-4 py-2
+                    bg-gray-900/95 backdrop-blur-sm border-b border-white/5
+                    text-[10px] uppercase tracking-widest text-gray-600 font-semibold">
+          <span>#</span>
+          <span>Título / Contato</span>
+          <span>Situação</span>
+          <span>Severidade</span>
+          <span>Equipe</span>
+          <span>Responsável</span>
+        </div>
+
+        <template x-for="ticket in filteredTickets" :key="ticket.id">
+          <div @click="openTicket(ticket)"
+            class="grid grid-cols-[56px_1fr_160px_110px_140px_120px] gap-3 px-4 py-3
+                   border-b border-white/[0.04] hover:bg-white/[0.03] cursor-pointer transition group">
+            <span class="text-xs font-mono text-gray-500 group-hover:text-gray-400 transition self-center"
+                  x-text="'#' + ticket.id"></span>
+            <div class="min-w-0 self-center">
+              <p class="text-sm font-medium text-gray-200 truncate group-hover:text-white transition"
+                 x-text="ticket.titulo || '—'"></p>
+              <p class="text-[11px] text-gray-500 truncate mt-0.5" x-text="ticket.contato || ''"></p>
+            </div>
+            <div class="self-center">
+              <span class="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-medium border"
+                    :class="situacaoBadge(ticket.situacao)" x-text="ticket.situacao || '—'"></span>
+            </div>
+            <div class="self-center">
+              <span class="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-medium border"
+                    :class="severidadeBadge(ticket.severidade)"
+                    x-text="(ticket.severidade || '—').split('-')[0].trim()"></span>
+            </div>
+            <span class="text-[11px] text-gray-500 truncate self-center" x-text="ticket.equipe || '—'"></span>
+            <span class="text-[11px] text-gray-500 truncate self-center" x-text="ticket.responsavel || 'Sem responsável'"></span>
+          </div>
+        </template>
+
+        <p class="text-[10px] text-gray-700 text-center py-3"
+           x-text="filteredTickets.length + ' ticket(s) exibido(s)'"></p>
+      </div>
+    </template>
+  </div>
+
+  <!-- MODAL DE DETALHE -->
+  <template x-if="showDetail && selectedTicket">
+    <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto"
+         style="overscroll-behavior: contain"
+         @click.self="closeDetail()"
+         @keydown.escape.window="closeDetail()">
+
+      <div class="bg-gray-800/40 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl backdrop-saturate-150
+                  w-full max-w-4xl my-4 flex flex-col"
+           style="max-height: calc(100vh - 3rem)">
+
+        <!-- Header -->
+        <div class="px-6 py-4 border-b border-white/5 shrink-0">
+          <div class="flex items-start justify-between gap-4">
+            <div class="min-w-0">
+              <h2 class="font-bold text-lg leading-tight break-words whitespace-normal text-gray-100"
+                  x-text="'#' + selectedTicket.id + ' | ' + (selectedTicket.titulo || '...')"></h2>
+              <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-medium border"
+                      :class="situacaoBadge(selectedTicket.situacao)"
+                      x-text="selectedTicket.situacao || '—'"></span>
+                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-medium border"
+                      :class="severidadeBadge(selectedTicket.severidade)"
+                      x-text="selectedTicket.severidade || 'Sem severidade'"></span>
+                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-medium
+                             bg-white/5 border border-white/10 text-gray-400"
+                      x-text="selectedTicket.equipe || '—'"></span>
+              </div>
+            </div>
+            <button @click="closeDetail()"
+              class="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center
+                     text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-200">
+              ✕
+            </button>
+          </div>
+
+          <!-- Tabs — pill container igual ao ticket-view -->
+          <div class="mt-4 flex flex-wrap gap-2 p-2 rounded-2xl bg-gray-900/40 backdrop-blur-xl border border-white/10 w-fit">
+            <button @click="detailTab = 'detalhes'"
+              class="px-4 py-2 rounded-xl text-sm transition-all duration-200"
+              :class="detailTab === 'detalhes'
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30'
+                : 'text-gray-400 hover:text-white hover:bg-white/5'">
+              Detalhes
+            </button>
+            <button @click="detailTab = 'historico'"
+              class="px-4 py-2 rounded-xl text-sm transition-all duration-200 flex items-center gap-2"
+              :class="detailTab === 'historico'
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30'
+                : 'text-gray-400 hover:text-white hover:bg-white/5'">
+              Histórico
+              <span x-show="ticketHistory.length > 0"
+                    class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px]"
+                    :class="detailTab === 'historico' ? 'bg-blue-500/40 text-blue-100' : 'bg-white/10 text-gray-400'"
+                    x-text="ticketHistory.length"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Conteúdo -->
+        <div class="flex-1 min-h-0 overflow-hidden flex flex-col relative">
+
+          <!-- Loading -->
+          <div x-show="loadingDetail" class="absolute inset-0 flex items-center justify-center bg-gray-900/60 z-10">
+            <div class="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+
+          <!-- TAB: DETALHES -->
+          <div x-show="!loadingDetail && detailTab === 'detalhes'"
+               class="flex-1 overflow-y-auto custom-scroll">
+            <div class="flex flex-1 flex-col gap-3 p-5">
+
+              <!-- AÇÕES — só aparece quando aguardando atendimento -->
+              <template x-if="selectedTicket.situacao === 'Aguardando atendimento'">
+                <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+                  <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-3 font-semibold">Ações</p>
+
+                  <template x-if="actionMode !== 'iniciar'">
+                    <button @click="actionMode = 'iniciar'"
+                      class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold
+                             bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-900/30 transition-all">
+                      ▶ Iniciar Atendimento
+                    </button>
+                  </template>
+
+                  <template x-if="actionMode === 'iniciar'">
+                    <div class="space-y-3">
+                      <p class="text-sm text-gray-300">Confirma iniciar o atendimento deste chamado?</p>
+                      <textarea x-model="actionNota" placeholder="Nota inicial (opcional)..." rows="2"
+                        class="w-full px-3 py-2.5 rounded-xl text-sm text-gray-200
+                               bg-gray-800/60 border border-white/10 resize-none placeholder-gray-600
+                               focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50
+                               transition-colors"></textarea>
+                      <div class="flex gap-2">
+                        <button @click="iniciarAtendimento()" :disabled="actionLoading"
+                          class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold
+                                 bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-900/30
+                                 transition-all disabled:opacity-50">
+                          <div x-show="actionLoading" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span x-text="actionLoading ? 'Iniciando...' : 'Confirmar'"></span>
+                        </button>
+                        <button @click="actionMode = null; actionNota = ''" :disabled="actionLoading"
+                          class="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white
+                                 bg-white/5 border border-white/10 hover:bg-white/10 transition-all disabled:opacity-50">
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </template>
+
+              <!-- AÇÕES — encerrar chamado quando em atendimento -->
+              <template x-if="selectedTicket.situacao === 'Em atendimento'">
+                <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+                  <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-3 font-semibold">Ações</p>
+
+                  <template x-if="actionMode !== 'encerrar'">
+                    <button @click="actionMode = 'encerrar'; actionNota = ''"
+                      class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold
+                             bg-red-700 hover:bg-red-800 text-white transition-all">
+                      ✕ Encerrar Chamado
+                    </button>
+                  </template>
+
+                  <template x-if="actionMode === 'encerrar'">
+                    <div class="space-y-3">
+                      <p class="text-sm text-gray-300">Descreva a conclusão do atendimento:</p>
+                      <textarea x-model="actionNota"
+                        placeholder="Motivo ou resolução do encerramento (obrigatório)..." rows="3"
+                        class="w-full px-3 py-2.5 rounded-xl text-sm text-gray-200
+                               bg-gray-800/60 border border-white/10 resize-none placeholder-gray-600
+                               focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50
+                               transition-colors"></textarea>
+                      <div class="flex gap-2">
+                        <button @click="encerrarChamado()" :disabled="actionLoading || !actionNota.trim()"
+                          class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold
+                                 bg-red-700 hover:bg-red-800 text-white transition-all disabled:opacity-50">
+                          <div x-show="actionLoading" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span x-text="actionLoading ? 'Encerrando...' : 'Confirmar encerramento'"></span>
+                        </button>
+                        <button @click="actionMode = null; actionNota = ''" :disabled="actionLoading"
+                          class="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white
+                                 bg-white/5 border border-white/10 hover:bg-white/10 transition-all disabled:opacity-50">
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </template>
+
+              <!-- Descrição -->
+              <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <span class="text-sm">📝</span>
+                  <h2 class="text-sm font-semibold text-gray-200">Descrição</h2>
+                </div>
+                <template x-if="selectedTicket.descricao">
+                  <p class="text-sm text-gray-300 whitespace-pre-line leading-relaxed"
+                     x-text="selectedTicket.descricao"></p>
+                </template>
+                <template x-if="!selectedTicket.descricao">
+                  <p class="text-sm text-gray-600 italic">Sem descrição.</p>
+                </template>
+              </div>
+
+              <!-- Último acompanhamento -->
+              <template x-if="selectedTicket.ultimo_acompanhamento">
+                <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+                  <div class="flex items-center gap-2 mb-3">
+                    <span class="text-sm">💬</span>
+                    <h2 class="text-sm font-semibold text-gray-200">Último acompanhamento</h2>
+                  </div>
+                  <p class="text-sm text-gray-300 whitespace-pre-line leading-relaxed"
+                     x-text="selectedTicket.ultimo_acompanhamento"></p>
+                </div>
+              </template>
+
+              <!-- Classificação / metadados -->
+              <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+                <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-3 font-semibold">Classificação</p>
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-[10px] text-gray-500 shrink-0">Tipo</span>
+                    <span class="text-[11px] text-gray-200 text-right truncate" x-text="selectedTicket.tipo || '—'"></span>
+                  </div>
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-[10px] text-gray-500 shrink-0">Categoria</span>
+                    <span class="text-[11px] text-gray-200 text-right truncate" x-text="selectedTicket.categoria || '—'"></span>
+                  </div>
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-[10px] text-gray-500 shrink-0">Ticket #</span>
+                    <span class="text-[11px] text-gray-400 font-mono" x-text="selectedTicket.id"></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Atribuição -->
+              <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+                <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-3 font-semibold">Atribuição</p>
+
+                <div class="flex items-center gap-2.5 mb-3">
+                  <div class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-gray-400">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-[10px] text-gray-500">Equipe</p>
+                    <p class="text-xs font-medium text-gray-200 truncate" x-text="selectedTicket.equipe || '—'"></p>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2.5 mb-3">
+                  <div class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-base shrink-0">🧑‍💻</div>
+                  <div class="min-w-0">
+                    <p class="text-[10px] text-gray-500">Responsável</p>
+                    <p class="text-xs font-medium text-gray-200 truncate" x-text="selectedTicket.responsavel || '—'"></p>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-base shrink-0">👤</div>
+                  <div class="min-w-0">
+                    <p class="text-[10px] text-gray-500">Operador</p>
+                    <p class="text-xs font-medium text-gray-200 truncate" x-text="selectedTicket.operador || '—'"></p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contato / Cliente -->
+              <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+                <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-3 font-semibold">Solicitante</p>
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-[10px] text-gray-500 shrink-0">Contato</span>
+                    <span class="text-[11px] text-gray-200 text-right truncate" x-text="selectedTicket.contato || '—'"></span>
+                  </div>
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-[10px] text-gray-500 shrink-0">Cliente</span>
+                    <span class="text-[11px] text-gray-200 text-right truncate" x-text="selectedTicket.cliente || '—'"></span>
+                  </div>
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-[10px] text-gray-500 shrink-0">Localidade</span>
+                    <span class="text-[11px] text-gray-200 text-right truncate" x-text="selectedTicket.localidade || '—'"></span>
+                  </div>
+                </div>
+              </div>
+
+              <template x-if="selectedTicket.synced_at">
+                <p class="text-[11px] text-gray-700 text-right">
+                  Sincronizado em: <span x-text="formatDate(selectedTicket.synced_at)"></span>
+                </p>
+              </template>
+
+            </div>
+          </div>
+
+          <!-- TAB: HISTÓRICO -->
+          <div x-show="!loadingDetail && detailTab === 'historico'"
+               class="flex-1 flex flex-col min-h-0">
+
+            <!-- Formulário de novo acompanhamento -->
+            <div class="shrink-0 p-5 border-b border-white/5">
+              <form @submit.prevent="enviarAcompanhamento()"
+                    class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                  </svg>
+                  <h2 class="text-sm font-semibold text-gray-200">Novo acompanhamento</h2>
+                </div>
+                <textarea x-model="novoAcomp.descricao"
+                  placeholder="Descreva o acompanhamento..." rows="3"
+                  class="w-full px-3 py-2.5 rounded-xl text-sm text-gray-200
+                         bg-gray-800/60 border border-white/10 resize-none placeholder-gray-600
+                         focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50
+                         transition-colors"></textarea>
+                <div class="flex items-center justify-between mt-3 flex-wrap gap-3">
+                  <div class="flex items-center gap-4">
+                    <!-- Toggle notificar solicitante -->
+                    <label class="flex items-center gap-1.5 cursor-pointer select-none text-xs text-gray-400
+                                  hover:text-gray-200 transition-colors">
+                      <div class="relative">
+                        <input type="checkbox" class="sr-only"
+                               :checked="novoAcomp.solicitante === 'S'"
+                               @change="novoAcomp.solicitante = $event.target.checked ? 'S' : 'N'">
+                        <div class="w-7 h-4 rounded-full transition"
+                             :class="novoAcomp.solicitante === 'S' ? 'bg-blue-600' : 'bg-white/10'"></div>
+                        <div class="absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-all"
+                             :class="novoAcomp.solicitante === 'S' ? 'left-3.5' : 'left-0.5'"></div>
+                      </div>
+                      Notificar solicitante
+                    </label>
+                    <!-- Toggle interno/privado -->
+                    <label class="flex items-center gap-1.5 cursor-pointer select-none text-xs text-gray-400
+                                  hover:text-gray-200 transition-colors">
+                      <div class="relative">
+                        <input type="checkbox" class="sr-only"
+                               :checked="novoAcomp.privado === 'S'"
+                               @change="novoAcomp.privado = $event.target.checked ? 'S' : 'N'">
+                        <div class="w-7 h-4 rounded-full transition"
+                             :class="novoAcomp.privado === 'S' ? 'bg-amber-500' : 'bg-white/10'"></div>
+                        <div class="absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-all"
+                             :class="novoAcomp.privado === 'S' ? 'left-3.5' : 'left-0.5'"></div>
+                      </div>
+                      Interno (privado)
+                    </label>
+                  </div>
+                  <button type="submit" :disabled="novoAcomp.loading || !novoAcomp.descricao.trim()"
+                    class="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium
+                           transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed
+                           bg-blue-600 hover:bg-blue-700 text-white">
+                    <svg x-show="novoAcomp.loading" class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                    </svg>
+                    <span x-text="novoAcomp.loading ? 'Enviando...' : 'Enviar'"></span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Lista de histórico -->
+            <div class="flex-1 overflow-y-auto custom-scroll p-5">
+
+              <div class="flex items-center gap-2 mb-3">
+                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+                <h2 class="text-sm font-semibold text-gray-200">Acompanhamentos</h2>
+                <span class="ml-auto text-[11px] text-gray-600"
+                      x-text="ticketHistory.length + ' registro(s)'"></span>
+              </div>
+
+              <template x-if="loadingHistory">
+                <div class="flex items-center justify-center py-10 text-gray-500">
+                  <span class="text-sm animate-pulse">Carregando histórico...</span>
+                </div>
+              </template>
+
+              <template x-if="!loadingHistory && ticketHistory.length === 0">
+                <div class="flex flex-col items-center justify-center py-10 text-gray-600">
+                  <svg class="w-10 h-10 opacity-30 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                  </svg>
+                  <p class="text-sm">Sem histórico disponível</p>
+                </div>
+              </template>
+
+              <template x-if="!loadingHistory && ticketHistory.length > 0">
+                <div class="space-y-3">
+                  <template x-for="(entry, idx) in ticketHistory.slice().reverse()" :key="entry.id || idx">
+                    <div class="flex gap-3">
+                      <!-- Avatar com iniciais -->
+                      <div class="w-8 h-8 rounded-full shrink-0 flex items-center justify-center
+                                  text-xs font-bold text-white"
+                           :class="entry.is_privado
+                             ? 'bg-gradient-to-br from-amber-500 to-orange-600'
+                             : 'bg-gradient-to-br from-blue-500 to-cyan-600'"
+                           x-text="(entry.usuario || 'Q').split(' ').filter(p=>p).map(p=>p[0]).slice(0,2).join('').toUpperCase()">
+                      </div>
+                      <!-- Conteúdo -->
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-baseline gap-2 mb-1 flex-wrap">
+                          <span class="text-xs font-semibold text-gray-200" x-text="entry.usuario || '—'"></span>
+                          <template x-if="entry.tipo">
+                            <span class="text-[10px] bg-white/5 border border-white/10 text-gray-400 px-2 py-0.5 rounded-md"
+                                  x-text="entry.tipo"></span>
+                          </template>
+                          <template x-if="entry.is_privado">
+                            <span class="text-[10px] bg-amber-900/30 border border-amber-600/30 text-amber-300 px-2 py-0.5 rounded-md">Interno</span>
+                          </template>
+                          <template x-if="entry.is_solicitante">
+                            <span class="text-[10px] bg-blue-900/30 border border-blue-600/30 text-blue-300 px-2 py-0.5 rounded-md">Notificado</span>
+                          </template>
+                          <span class="text-[10px] text-gray-600 ml-auto"
+                                x-text="formatDate(entry.data)"></span>
+                        </div>
+                        <div class="px-3 py-2.5 rounded-xl rounded-tl-none
+                                    bg-gray-800/30 border border-white/5
+                                    text-sm text-gray-300 whitespace-pre-line leading-relaxed"
+                             x-text="entry.descricao"></div>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </template>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </template>
+
+</div>

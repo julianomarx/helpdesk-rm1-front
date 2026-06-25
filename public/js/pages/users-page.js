@@ -32,6 +32,7 @@ function usersPage() {
       password: '',
       confirmPassword: '',
       role: '',
+      phone: '',
       hotels: [],
       teams: []
     },
@@ -41,7 +42,8 @@ function usersPage() {
       email: false,
       password: false,
       confirmPassword: false,
-      role: false
+      role: false,
+      phone: false
     },
 
     async fetchUsers(resetPage = false) {
@@ -104,6 +106,7 @@ function usersPage() {
           name:   user.name,
           email:  user.email,
           role:   user.role,
+          phone:  data.phone || '',
           hotels: [...(data.hotels || [])],
           teams:  [...(data.teams  || [])]
         };
@@ -115,6 +118,10 @@ function usersPage() {
 
     async saveUser() {
       if (!validateToken()) return;
+      if (this.editor.user.role === 'client_manager' && !this.editor.user.phone?.trim()) {
+        showToast("Telefone é obrigatório para Gerente.", "error");
+        return;
+      }
       const token = localStorage.getItem("access_token");
       try {
         const res = await fetch(`/api/users/${this.editor.user.id}`, {
@@ -124,7 +131,8 @@ function usersPage() {
             name:     this.editor.user.name,
             email:    this.editor.user.email,
             password: this.editor.user.password,
-            role:     this.editor.user.role
+            role:     this.editor.user.role,
+            phone:    this.editor.user.phone || null
           })
         });
         if (!res.ok) { showToast('Erro ao salvar usuário', 'error'); return; }
@@ -196,8 +204,8 @@ function usersPage() {
     },
 
     resetCreateUser() {
-      this.creator = { name: '', email: '', password: '', confirmPassword: '', role: '', hotels: [], teams: [] };
-      this.creatorErrors = { name: false, email: false, password: false, confirmPassword: false, role: false };
+      this.creator = { name: '', email: '', password: '', confirmPassword: '', role: '', phone: '', hotels: [], teams: [] };
+      this.creatorErrors = { name: false, email: false, password: false, confirmPassword: false, role: false, phone: false };
       this.hotelSearch = '';
     },
 
@@ -231,7 +239,7 @@ function usersPage() {
     async createUser() {
       if (!validateToken()) return false;
 
-      this.creatorErrors = { name: false, email: false, password: false, confirmPassword: false, role: false };
+      this.creatorErrors = { name: false, email: false, password: false, confirmPassword: false, role: false, phone: false };
 
       if (!this.creator.name || !this.creator.email || !this.creator.password || !this.creator.role) {
         showToast("Preencha todos os campos obrigatórios!", "error");
@@ -239,6 +247,12 @@ function usersPage() {
       }
       if (this.creator.password !== this.creator.confirmPassword) {
         showToast("As senhas não coincidem", "error");
+        return false;
+      }
+      const phoneRoles = ['client_manager', 'client_receptionist'];
+      if (this.creator.role === 'client_manager' && !this.creator.phone?.trim()) {
+        this.creatorErrors.phone = true;
+        showToast("Telefone é obrigatório para Gerente.", "error");
         return false;
       }
 
@@ -252,6 +266,7 @@ function usersPage() {
             email:     this.creator.email,
             password:  this.creator.password,
             role:      this.creator.role,
+            phone:     phoneRoles.includes(this.creator.role) ? (this.creator.phone?.trim() || null) : null,
             hotel_ids: this.creator.hotels.map(h => h.id),
             team_ids:  this.creator.teams.map(t => t.id)
           })

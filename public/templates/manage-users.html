@@ -496,7 +496,7 @@
             </div>
 
             <!-- ROW 2 -->
-            <div class="flex gap-4 mb-5 shrink-0">
+            <div class="flex gap-4 mb-4 shrink-0">
 
               <!-- ROLE -->
               <div class="flex flex-col flex-1 min-w-0">
@@ -508,7 +508,7 @@
                 <select
                   x-model="editor.user.role"
                   :disabled="!editor.enabled"
-                  class="w-full p-3 rounded-2xl 
+                  class="w-full p-3 rounded-2xl
                          bg-gray-800/50 border border-white/10
                          disabled:opacity-50">
 
@@ -543,6 +543,33 @@
                   x-model="editor.user.password"
                   :disabled="!editor.enabled"
                   placeholder="Deixe vazio para manter"
+                  class="w-full p-3 rounded-2xl
+                         bg-gray-800/50 border border-white/10
+                         disabled:opacity-50
+                         focus:outline-none
+                         focus:ring-1 focus:ring-blue-500">
+              </div>
+
+            </div>
+
+            <!-- ROW 3 — Telefone (apenas para gerente e recepcionista) -->
+            <div
+              class="flex gap-4 mb-5 shrink-0"
+              x-show="['client_manager','client_receptionist'].includes(editor.user.role)">
+
+              <div class="flex flex-col flex-1 min-w-0">
+
+                <label class="block text-xs mb-1">
+                  Telefone
+                  <span x-show="editor.user.role === 'client_manager'" class="text-red-400">*</span>
+                  <span x-show="editor.user.role === 'client_receptionist'" class="text-gray-500">(opcional)</span>
+                </label>
+
+                <input
+                  type="tel"
+                  x-model="editor.user.phone"
+                  :disabled="!editor.enabled"
+                  placeholder="Ex: (11) 99999-9999"
                   class="w-full p-3 rounded-2xl
                          bg-gray-800/50 border border-white/10
                          disabled:opacity-50
@@ -974,7 +1001,7 @@
         </div>
 
         <!-- ROW 2 -->
-        <div class="flex gap-4 mb-5 shrink-0">
+        <div class="flex gap-4 mb-4 shrink-0">
 
           <!-- ROLE -->
           <div x-show="['admin', 'agent', 'client_manager'].includes($store.app.role)" class="flex flex-col flex-1 min-w-0">
@@ -1046,7 +1073,7 @@
                     focus:ring-1 focus:ring-blue-500">
           </div>
 
-          <!-- CONRIRM PASSWORD -->
+          <!-- CONFIRMAR PASSWORD -->
           <div class="flex flex-col flex-1 min-w-0">
 
             <label class="block text-xs mb-1">
@@ -1057,10 +1084,41 @@
               type="password"
               x-model="creator.confirmPassword"
               placeholder="Digite a senha"
-              class="w-full p-3 rounded-2xl  
+              class="w-full p-3 rounded-2xl
                     bg-gray-800/50 border border-white/10
                     focus:outline-none
                     focus:ring-1 focus:ring-blue-500">
+          </div>
+
+        </div>
+
+        <!-- ROW 3 — Telefone (gerente e recepcionista) -->
+        <div
+          class="flex gap-4 mb-5 shrink-0"
+          x-show="['client_manager','client_receptionist'].includes(creator.role)">
+
+          <div class="flex flex-col flex-1 min-w-0">
+
+            <label class="block text-xs mb-1">
+              Telefone
+              <span x-show="creator.role === 'client_manager'" class="text-red-400">*</span>
+              <span x-show="creator.role === 'client_receptionist'" class="text-gray-500">(opcional)</span>
+            </label>
+
+            <input
+              type="tel"
+              x-model="creator.phone"
+              placeholder="Ex: (11) 99999-9999"
+              :class="creatorErrors.phone ? 'border-red-500' : 'border-white/10'"
+              class="w-full p-3 rounded-2xl
+                    bg-gray-800/50 border
+                    focus:outline-none
+                    focus:ring-1 focus:ring-blue-500">
+
+            <p x-show="creatorErrors.phone" class="mt-1 text-xs text-red-400">
+              Telefone é obrigatório para Gerente.
+            </p>
+
           </div>
 
         </div>
