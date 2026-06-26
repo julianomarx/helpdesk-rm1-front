@@ -21,6 +21,7 @@ function qualitorPage() {
     actionMode: null,   // null | 'iniciar' | 'encerrar'
     actionNota: '',
     actionLoading: false,
+    refreshLoading: false,
     novoAcomp: {
       descricao: '',
       solicitante: 'N',
@@ -139,6 +140,33 @@ function qualitorPage() {
       }
     },
 
+    async refreshTicket() {
+      if (this.refreshLoading || !this.selectedTicket) return;
+      this.refreshLoading = true;
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch(`/api/qualitor/tickets/${this.selectedTicket.id}/refresh`, {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token },
+        });
+        const data = await res.json();
+        if (!res.ok) { showToast(data.detail || 'Erro ao atualizar chamado', 'error'); return; }
+        if (data.ticket) {
+          this.selectedTicket = data.ticket;
+          const idx = this.tickets.findIndex(t => t.id === data.ticket.id);
+          if (idx !== -1) this.tickets[idx] = { ...this.tickets[idx], situacao: data.ticket.situacao };
+        }
+        if (data.history && data.history.length) {
+          this.ticketHistory = data.history;
+        }
+        showToast('Chamado atualizado', 'success');
+      } catch {
+        showToast('Erro ao atualizar chamado', 'error');
+      } finally {
+        this.refreshLoading = false;
+      }
+    },
+
     async iniciarAtendimento() {
       this.actionLoading = true;
       const token = localStorage.getItem('access_token');
@@ -183,14 +211,19 @@ function qualitorPage() {
         });
         const data = await res.json();
         if (!res.ok) { showToast(data.detail || 'Erro ao encerrar chamado', 'error'); return; }
-        this.selectedTicket.situacao = 'Encerrado';
+        const novaSit = data.nova_situacao || 'Aguardando confirmação de encerramento';
+        this.selectedTicket.situacao = novaSit;
         const idx = this.tickets.findIndex(t => t.id === this.selectedTicket.id);
-        if (idx !== -1) this.tickets[idx].situacao = 'Encerrado';
+        if (idx !== -1) this.tickets[idx].situacao = novaSit;
         this.actionMode = null;
         this.actionNota = '';
         showToast('Chamado encerrado com sucesso', 'success');
         this.detailTab = 'historico';
-        await this.reloadHistory();
+        if (data.history && data.history.length) {
+          this.ticketHistory = data.history;
+        } else {
+          await this.reloadHistory();
+        }
       } catch {
         showToast('Erro ao encerrar chamado', 'error');
       } finally {
