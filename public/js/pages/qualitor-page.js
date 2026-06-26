@@ -221,7 +221,11 @@ function qualitorPage() {
         this.novoAcomp.solicitante = 'N';
         this.novoAcomp.privado = 'N';
         showToast('Acompanhamento enviado', 'success');
-        await this.reloadHistory();
+        if (data.history && data.history.length) {
+          this.ticketHistory = data.history;
+        } else {
+          await this.reloadHistory();
+        }
       } catch {
         showToast('Erro ao enviar acompanhamento', 'error');
       } finally {
