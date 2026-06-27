@@ -5,6 +5,9 @@ function qualitorPage() {
     loadingHistory: false,
     tickets: [],
     status: null,
+    ticketAttachments: [],
+    loadingAttachments: false,
+    uploadLoading: false,
 
     filters: {
       situacao: '',
@@ -99,6 +102,9 @@ function qualitorPage() {
       this.actionNota = '';
       this.detailTab = 'detalhes';
       this.novoAcomp = { descricao: '', solicitante: 'N', privado: 'N', loading: false };
+      this.ticketAttachments = [];
+      this.loadingAttachments = false;
+      this.uploadLoading = false;
       const token = localStorage.getItem('access_token');
       try {
         const [detailRes, historyRes] = await Promise.all([
@@ -121,6 +127,9 @@ function qualitorPage() {
       this.showDetail = false;
       this.selectedTicket = null;
       this.ticketHistory = [];
+      this.ticketAttachments = [];
+      this.loadingAttachments = false;
+      this.uploadLoading = false;
       this.actionMode = null;
       this.actionNota = '';
       this.transferMode = false;
@@ -427,6 +436,62 @@ function qualitorPage() {
         'Cancelado':              'bg-red-500/15   text-red-300   border-red-500/30',
       };
       return map[s] || 'bg-gray-500/15 text-gray-300 border-gray-500/30';
+    },
+
+    async fetchAttachments() {
+      if (!this.selectedTicket) return;
+      this.loadingAttachments = true;
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch(`/api/qualitor/tickets/${this.selectedTicket.id}/attachments`, {
+          headers: { Authorization: 'Bearer ' + token },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          this.ticketAttachments = data.attachments || [];
+        } else {
+          showToast('Erro ao buscar anexos', 'error');
+        }
+      } catch { showToast('Erro ao buscar anexos', 'error'); }
+      finally { this.loadingAttachments = false; }
+    },
+
+    async downloadAttachment(nrsequencia, nmanexo, cdclassificacao, filename) {
+      const token = localStorage.getItem('access_token');
+      try {
+        const params = new URLSearchParams({ nmanexo, cdclassificacao: cdclassificacao || '' });
+        const res = await fetch(
+          `/api/qualitor/tickets/${this.selectedTicket.id}/attachments/${nrsequencia}/download?${params}`,
+          { headers: { Authorization: 'Bearer ' + token } }
+        );
+        if (!res.ok) { showToast('Erro ao baixar arquivo', 'error'); return; }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename; a.click();
+        URL.revokeObjectURL(url);
+      } catch { showToast('Erro ao baixar arquivo', 'error'); }
+    },
+
+    async uploadAttachment(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('file', file, file.name);
+      const token = localStorage.getItem('access_token');
+      this.uploadLoading = true;
+      try {
+        const res = await fetch(`/api/qualitor/tickets/${this.selectedTicket.id}/attachments`, {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token },
+          body: formData,
+        });
+        const data = await res.json();
+        if (!res.ok) { showToast(data.detail || 'Erro ao fazer upload', 'error'); return; }
+        showToast('Arquivo enviado com sucesso', 'success');
+        await this.fetchAttachments();
+      } catch { showToast('Erro ao fazer upload', 'error'); }
+      finally { this.uploadLoading = false; event.target.value = ''; }
     },
 
     severidadeBadge(s) {

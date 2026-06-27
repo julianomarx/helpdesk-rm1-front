@@ -37,7 +37,7 @@ document.addEventListener("alpine:init", () => {
       const container = document.getElementById("page-container");
       if (!container) return;
       try {
-        const res = await fetch(`/templates/${page}.html`);
+        const res = await fetch(`/templates/${page}.html`, { cache: 'no-store' });
         if (!res.ok) throw new Error("Template não encontrado");
         container.innerHTML = await res.text();
         Alpine.initTree(container);
