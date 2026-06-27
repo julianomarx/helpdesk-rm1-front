@@ -319,7 +319,7 @@ function qualitorPage() {
     },
 
     parseHistoryEntry(entry) {
-      const raw = (entry.descricao || '').trim();
+      const raw = this.cleanText(entry.descricao || '');
       if (!raw.startsWith('>>')) {
         return { ...entry, kind: 'comment', eventType: null, systemLabel: null, humanText: raw };
       }
@@ -374,7 +374,8 @@ function qualitorPage() {
       const map = {
         'status-active':  { dot: 'bg-blue-500/20 border border-blue-500/40 text-blue-400',   label: 'text-blue-300' },
         'status-waiting': { dot: 'bg-amber-500/20 border border-amber-500/40 text-amber-400', label: 'text-amber-300' },
-        'status-closing': { dot: 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400', label: 'text-emerald-300' },
+        'status-closing': { dot: 'bg-violet-500/20 border border-violet-500/40 text-violet-400',   label: 'text-violet-300' },
+        'status-closed':  { dot: 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400', label: 'text-emerald-300' },
         'transfer':       { dot: 'bg-violet-500/20 border border-violet-500/40 text-violet-400', label: 'text-violet-300' },
         'assign':         { dot: 'bg-indigo-500/20 border border-indigo-500/40 text-indigo-400', label: 'text-indigo-300' },
         'attachment':     { dot: 'bg-white/5 border border-white/10 text-gray-500',           label: 'text-gray-400' },
@@ -387,7 +388,23 @@ function qualitorPage() {
     },
 
     get parsedHistory() {
-      return this.ticketHistory.slice().reverse().map(e => this.parseHistoryEntry(e));
+      const parsed = this.ticketHistory.slice().reverse().map(e => this.parseHistoryEntry(e));
+      if (['Encerrado', 'Cancelado'].includes(this.selectedTicket?.situacao)) {
+        const idx = parsed.findIndex(e => e.eventType === 'status-closing');
+        if (idx !== -1) parsed[idx] = { ...parsed[idx], eventType: 'status-closed', systemLabel: 'Encerrado' };
+      }
+      return parsed;
+    },
+
+    cleanText(str) {
+      if (!str) return '';
+      // Decodifica entidades HTML (ex: &gt;&gt; → >>)
+      const txt = document.createElement('textarea');
+      txt.innerHTML = str;
+      let out = txt.value;
+      // Remove ponto inicial isolado (artefato do Qualitor em alguns campos)
+      out = out.replace(/^\.\s*/, '');
+      return out.trim();
     },
 
     get filteredTickets() {
