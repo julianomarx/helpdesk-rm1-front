@@ -159,7 +159,7 @@ function qualitorPage() {
         if (data.ticket) {
           this.selectedTicket = data.ticket;
           const idx = this.tickets.findIndex(t => t.id === data.ticket.id);
-          if (idx !== -1) this.tickets[idx] = { ...this.tickets[idx], situacao: data.ticket.situacao };
+          if (idx !== -1) this.tickets[idx] = { ...this.tickets[idx], situacao: data.ticket.situacao, equipe: data.ticket.equipe };
         }
         if (data.history && data.history.length) {
           this.ticketHistory = data.history;
