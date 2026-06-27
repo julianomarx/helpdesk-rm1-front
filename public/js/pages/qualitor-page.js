@@ -318,6 +318,78 @@ function qualitorPage() {
       }
     },
 
+    parseHistoryEntry(entry) {
+      const raw = (entry.descricao || '').trim();
+      if (!raw.startsWith('>>')) {
+        return { ...entry, kind: 'comment', eventType: null, systemLabel: null, humanText: raw };
+      }
+      // Separa texto do sistema do comentário humano embutido (>> sistema <<comentário)
+      const inner = raw.replace(/^>>/, '').replace(/<<$/, '').trim();
+      const split = inner.indexOf('<<');
+      let sysText = split > -1 ? inner.substring(0, split).trim() : inner;
+      const humanText = split > -1 ? inner.substring(split + 2).trim() || null : null;
+
+      let eventType = 'info', systemLabel = sysText;
+
+      if (/^Chamado em atendimento/i.test(sysText)) {
+        eventType = 'status-active';   systemLabel = 'Em atendimento';
+      } else if (/^Chamado aguardando atendimento/i.test(sysText)) {
+        eventType = 'status-waiting';  systemLabel = 'Aguardando atendimento';
+      } else if (/^Chamado aguardando confirmação/i.test(sysText)) {
+        eventType = 'status-closing';  systemLabel = 'Aguardando confirmação de encerramento';
+      } else if (/^Chamado repassado para outra equipe/i.test(sysText)) {
+        eventType = 'transfer';
+        const m = sysText.match(/De "(.+?)" para "(.+?)"/);
+        systemLabel = m ? `${m[1]} → ${m[2]}` : 'Transferência de equipe';
+      } else if (/^Chamado repassado para outro responsável/i.test(sysText)) {
+        eventType = 'assign';
+        const m = sysText.match(/responsável:\s*(.+)/i);
+        systemLabel = m ? `Responsável: ${m[1].trim()}` : 'Responsável alterado';
+      } else if (/^O arquivo/i.test(sysText)) {
+        eventType = 'attachment';
+        const m = sysText.match(/O arquivo "(.+?)" foi anexado/i);
+        if (m) { const p = m[1].split(/[/\\]/); systemLabel = `Anexo: ${p[p.length - 1]}`; }
+        else systemLabel = 'Arquivo anexado';
+      } else if (/^Acompanhamento iniciado em/i.test(sysText)) {
+        eventType = 'time';
+        const m = sysText.match(/iniciado em:\s*[\d/]+\s*(\d{2}:\d{2})?,?\s*finalizado em:\s*[\d/]+\s*(\d{2}:\d{2})?/i);
+        const st = m?.[1], en = m?.[2];
+        systemLabel = st && en ? `Tempo registrado: ${st} → ${en}` : 'Tempo registrado';
+      } else if (/^Chamado reaberto/i.test(sysText)) {
+        eventType = 'reopen';
+        const m = sysText.match(/reaberto por:\s*(.+?)(?:\s*Motivo:\s*(.+))?$/i);
+        const who = m ? m[1].split(/[/\\]/).pop().trim() : null;
+        const why = m?.[2]?.trim();
+        systemLabel = who ? `Reaberto por ${who}${why ? ` — ${why}` : ''}` : 'Chamado reaberto';
+      } else if (/^Registro efetuado por/i.test(sysText)) {
+        eventType = 'register';
+        const m = sysText.match(/por:\s*(.+)/i);
+        systemLabel = m ? `Registro: ${m[1].split(/[/\\]/).pop().trim()}` : 'Registro efetuado';
+      }
+
+      return { ...entry, kind: 'event', eventType, systemLabel, humanText };
+    },
+
+    eventStyle(eventType) {
+      const map = {
+        'status-active':  { dot: 'bg-blue-500/20 border border-blue-500/40 text-blue-400',   label: 'text-blue-300' },
+        'status-waiting': { dot: 'bg-amber-500/20 border border-amber-500/40 text-amber-400', label: 'text-amber-300' },
+        'status-closing': { dot: 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400', label: 'text-emerald-300' },
+        'transfer':       { dot: 'bg-violet-500/20 border border-violet-500/40 text-violet-400', label: 'text-violet-300' },
+        'assign':         { dot: 'bg-indigo-500/20 border border-indigo-500/40 text-indigo-400', label: 'text-indigo-300' },
+        'attachment':     { dot: 'bg-white/5 border border-white/10 text-gray-500',           label: 'text-gray-400' },
+        'time':           { dot: 'bg-white/5 border border-white/10 text-gray-500',           label: 'text-gray-500' },
+        'reopen':         { dot: 'bg-orange-500/20 border border-orange-500/40 text-orange-400', label: 'text-orange-300' },
+        'register':       { dot: 'bg-white/5 border border-white/10 text-gray-500',           label: 'text-gray-400' },
+        'info':           { dot: 'bg-white/5 border border-white/10 text-gray-500',           label: 'text-gray-400' },
+      };
+      return map[eventType] || map['info'];
+    },
+
+    get parsedHistory() {
+      return this.ticketHistory.slice().reverse().map(e => this.parseHistoryEntry(e));
+    },
+
     get filteredTickets() {
       const q = this.filters.search.toLowerCase();
       if (!q) return this.tickets;
