@@ -239,19 +239,19 @@ function qualitorPage() {
     get equipeDestinoOptions() {
       // Matriz espelhando a configuração categoria×equipe do Qualitor (extraída dos dialogs)
       const matrix = {
-        'RM1': [
+        'rm1': [
           'ATRIO - INFRA', 'Concept Prime Back', 'Capere', 'Concept Prime PDV',
           'Netlogic', 'Unic System', 'TCPOS', 'ATRIO - SISTEMAS',
         ],
-        'RM1 SAP': [
+        'rm1 sap': [
           'ATRIO - INFRA', 'Unic System', 'ATRIO - SISTEMAS',
           'Cobrança', 'MDM', 'COE', 'Fiscal',
         ],
-        'ATRIO - SISTEMAS': [
+        'atrio - sistemas': [
           'ATRIO - INFRA', 'Capere', 'Unic System', 'RM1',
         ],
       };
-      const atual = (this.selectedTicket?.equipe || '').trim();
+      const atual = (this.selectedTicket?.equipe || '').trim().toLowerCase();
       return (matrix[atual] || []).map(nm => ({ value: nm, label: nm }));
     },
 
