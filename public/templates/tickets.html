@@ -316,227 +316,140 @@
 
   </div>
 
-  <div class="flex flex-col flex-1 min-h-0 overflow-y-auto gap-3">
+  <!-- TABLE LIST -->
+  <div class="flex flex-col flex-1 min-h-0 overflow-hidden rounded-2xl border border-white/10">
 
     <!-- SKELETON -->
     <template x-if="loadingTickets">
-
-        <div class="space-y-3">
-
-            <template x-for="i in 6">
-
-                <div
-                    class="
-                        h-28
-                        rounded-2xl
-                        border border-white/10
-                        bg-gray-800/30
-                        backdrop-blur-xl
-                        animate-pulse
-                        p-4
-                    "
-                >
-
-                    <div class="flex justify-between">
-
-                        <div class="space-y-2 flex-1">
-
-                            <div class="h-4 w-40 bg-gray-700 rounded"></div>
-
-                            <div class="h-3 w-64 bg-gray-700 rounded"></div>
-
-                            <div class="h-3 w-52 bg-gray-700 rounded"></div>
-
-                        </div>
-
-                        <div class="h-6 w-20 bg-gray-700 rounded-full"></div>
-
-                    </div>
-
-                </div>
-
-            </template>
-
+      <div class="flex flex-col flex-1 min-h-0">
+        <div class="shrink-0 grid grid-cols-[48px_1fr_100px_170px_130px_150px_36px] gap-3 px-4 py-2
+                    bg-gray-900/95 backdrop-blur-sm border-b border-white/5
+                    text-[10px] uppercase tracking-widest text-gray-600 font-semibold">
+          <span>#</span>
+          <span>Título / Hotel</span>
+          <span>Prioridade</span>
+          <span>Progresso</span>
+          <span>Time</span>
+          <span>Responsável</span>
+          <span></span>
         </div>
-
+        <div class="flex-1 overflow-y-auto">
+          <template x-for="i in 8" :key="i">
+            <div class="grid grid-cols-[48px_1fr_100px_170px_130px_150px_36px] gap-3 px-4 py-3
+                        border-b border-white/[0.04] animate-pulse">
+              <div class="h-3.5 w-8 bg-gray-700/60 rounded self-center"></div>
+              <div class="self-center space-y-1.5">
+                <div class="h-3.5 w-48 bg-gray-700/60 rounded"></div>
+                <div class="h-2.5 w-28 bg-gray-700/40 rounded"></div>
+              </div>
+              <div class="h-5 w-14 bg-gray-700/50 rounded-lg self-center"></div>
+              <div class="h-5 w-24 bg-gray-700/50 rounded-lg self-center"></div>
+              <div class="h-3 w-20 bg-gray-700/40 rounded self-center"></div>
+              <div class="self-center space-y-1.5">
+                <div class="h-3 w-20 bg-gray-700/40 rounded"></div>
+                <div class="h-2.5 w-16 bg-gray-700/30 rounded"></div>
+              </div>
+              <div></div>
+            </div>
+          </template>
+        </div>
+      </div>
     </template>
 
-  <!-- LIST -->
-  <template x-if="!loadingTickets">
-  <div
-    class="flex flex-col flex-1 min-h-0
-           overflow-y-auto gap-3">
+    <!-- LIST -->
+    <template x-if="!loadingTickets">
+      <div class="flex flex-col flex-1 min-h-0">
 
-    <template
-      x-for="ticket in ticketList"
-      :key="ticket.id">
-
-      <div
-        @click="viewTicket(ticket)"
-        class="
-          group
-          bg-gray-900/40
-          backdrop-blur-xl
-          border border-white/10
-          rounded-2xl
-          p-4
-          cursor-pointer
-          hover:bg-white/[0.04]
-          hover:border-white/20
-          transition-all">
-
-        <div class="flex items-start gap-4">
-
-          <div
-            class="shrink-0
-                   text-blue-400
-                   font-bold">
-
-            #<span x-text="ticket.id"></span>
-
-          </div>
-
-          <div class="flex-1 min-w-0">
-
-            <div
-              class="font-semibold text-gray-100 line-clamp-2"
-              x-text="ticket.title">
-            </div>
-
-            <div
-              class="mt-1 text-xs text-gray-500 flex flex-wrap gap-2">
-
-              <span x-text="ticket.hotel?.code"></span>
-
-              <span>•</span>
-
-              <span x-text="ticket.hotel?.name"></span>
-
-    
-            </div>
-
-          </div>
-
-          <button
-            @click.stop="copyTicket(ticket)"
-            title="Copiar resumo do ticket"
-            class="group
-                  w-8 h-8
-                  flex items-center justify-center
-                  rounded-lg
-                  border border-transparent
-                  hover:border-green-500/20
-                  hover:bg-green-500/10
-                  transition-all">
-
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-6 h-6 text-gray-400 group-hover:text-green-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor">
-
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-            </svg>
-
-          </button>
-
+        <div class="shrink-0 grid grid-cols-[48px_1fr_100px_170px_130px_150px_36px] gap-3 px-4 py-2
+                    bg-gray-900/95 backdrop-blur-sm border-b border-white/5
+                    text-[10px] uppercase tracking-widest text-gray-600 font-semibold">
+          <span>#</span>
+          <span>Título / Hotel</span>
+          <span>Prioridade</span>
+          <span>Progresso</span>
+          <span>Time</span>
+          <span>Responsável</span>
+          <span></span>
         </div>
 
-        <div
-          class="mt-3
-                 flex flex-wrap items-center gap-2">
+        <div class="flex-1 overflow-y-auto custom-scroll">
 
-          <span
-            class="px-3 py-1 rounded-full text-xs font-semibold"
+          <template x-for="ticket in ticketList" :key="ticket.id">
+            <div @click="viewTicket(ticket)"
+              class="grid grid-cols-[48px_1fr_100px_170px_130px_150px_36px] gap-3 px-4 py-2.5
+                     border-b border-white/[0.04] hover:bg-white/[0.06] cursor-pointer transition group">
 
-            :class="{
-              'bg-orange-500/15 text-orange-300': ticket.priority === 'high',
-              'bg-yellow-500/15 text-yellow-300': ticket.priority === 'medium',
-              'bg-slate-500/15 text-slate-300': ticket.priority === 'low'
-            }">
+              <span class="text-xs font-mono text-blue-400 group-hover:text-blue-300 transition self-center"
+                    x-text="'#' + ticket.id"></span>
 
-            <span x-text="ticket.priority"></span>
+              <div class="min-w-0 self-center">
+                <p class="text-sm font-medium text-gray-200 truncate group-hover:text-white transition"
+                   x-text="ticket.title"></p>
+                <p class="text-[11px] text-gray-500 truncate mt-0.5"
+                   x-text="(ticket.hotel?.code || '') + (ticket.hotel?.name ? ' · ' + ticket.hotel.name : '')"></p>
+              </div>
 
-          </span>
+              <div class="self-center">
+                <span class="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-medium border"
+                      :class="{
+                        'bg-orange-500/15 text-orange-300 border-orange-500/30': ticket.priority === 'high',
+                        'bg-yellow-500/15 text-yellow-300 border-yellow-500/30': ticket.priority === 'medium',
+                        'bg-slate-500/15 text-slate-300 border-slate-500/30':   ticket.priority === 'low'
+                      }"
+                      x-text="({'high':'Alta','medium':'Média','low':'Baixa'})[ticket.priority] || ticket.priority"></span>
+              </div>
 
-          <span
-            class="px-3 py-1 rounded-full text-xs font-semibold"
+              <div class="self-center">
+                <span class="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-medium border"
+                      :class="{
+                        'bg-red-500/15 text-red-300 border-red-500/30':            ticket.progress === 'waiting',
+                        'bg-blue-500/15 text-blue-300 border-blue-500/30':         ticket.progress === 'in_progress',
+                        'bg-yellow-500/15 text-yellow-300 border-yellow-500/30':   ticket.progress === 'feedback',
+                        'bg-gray-500/15 text-gray-300 border-gray-500/30':         ticket.progress === 'awaiting_confirmation',
+                        'bg-indigo-500/15 text-indigo-300 border-indigo-500/30':   ticket.progress === 'scheduled_visit',
+                        'bg-emerald-500/15 text-emerald-300 border-emerald-500/30': ticket.progress === 'done'
+                      }"
+                      x-text="({'waiting':'Aguardando','in_progress':'Em atendimento','feedback':'Feedback','awaiting_confirmation':'Ag. confirmação','scheduled_visit':'Visita agendada','done':'Concluído'})[ticket.progress] || ticket.progress"></span>
+              </div>
 
-            :class="{
-              'bg-red-500/15 text-red-300':    ticket.progress === 'waiting',
-              'bg-blue-500/15 text-blue-300':  ticket.progress === 'in_progress',
-              'bg-yellow-500/15 text-yellow-300': ticket.progress === 'feedback',
-              'bg-gray-500/15 text-gray-300':  ticket.progress === 'awaiting_confirmation',
-              'bg-indigo-500/15 text-indigo-300': ticket.progress === 'scheduled_visit',
-              'bg-emerald-500/15 text-emerald-300': ticket.progress === 'done'
-            }">
+              <span class="text-[11px] text-gray-500 truncate self-center"
+                    x-text="ticket.assigned_team?.name || '—'"></span>
 
-            <span x-text="({'waiting':'Aguardando','in_progress':'Em atendimento','feedback':'Retorno','awaiting_confirmation':'Ag. confirmação','scheduled_visit':'Visita agendada','done':'Concluído'})[ticket.progress] || ticket.progress"></span>
+              <div class="min-w-0 self-center">
+                <p class="text-[11px] text-gray-500 truncate" x-text="ticket.creator?.name || '—'"></p>
+                <p class="text-[10px] text-gray-600 mt-0.5" x-text="formatDate(ticket.created_at)"></p>
+              </div>
 
-          </span>
+              <div class="self-center flex justify-center">
+                <button @click.stop="copyTicket(ticket)" title="Copiar resumo"
+                  class="w-7 h-7 flex items-center justify-center rounded-lg
+                         border border-transparent hover:border-green-500/20 hover:bg-green-500/10 transition-all">
+                  <svg class="w-3.5 h-3.5 text-gray-500 group-hover:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                </button>
+              </div>
 
-          <template x-if="ticket.assigned_team">
-
-            <span
-              class="
-                px-3 py-1 rounded-full
-                text-xs font-semibold
-                bg-cyan-500/15
-                text-cyan-300"
-
-              x-text="ticket.assigned_team.name">
-            </span>
-
+            </div>
           </template>
 
+          <template x-if="ticketList.length === 0">
+            <div class="flex flex-col items-center justify-center py-20 text-gray-600">
+              <svg class="w-10 h-10 mb-3 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              <span class="text-sm">Nenhum chamado encontrado</span>
+            </div>
+          </template>
 
-        
-
-          <div
-            class="ml-auto text-xs text-gray-500"
-          >
-
-          <span>Aberto por: </span>
-
-          <span x-text="ticket.creator?.name"></span>
-
-          <span>•</span>
-
-          <span
-            x-text="formatDate(ticket.created_at)">
-          </span>
-
-          </div>
-          
-  
+          <p class="text-[10px] text-gray-700 text-center py-3"
+             x-text="ticketList.length + ' chamado(s) nesta página'"></p>
 
         </div>
-
       </div>
-
     </template>
-
-    <!-- EMPTY -->
-    <template x-if="ticketList.length === 0">
-
-       <div
-        class="flex items-center justify-center
-               h-full text-gray-500 text-sm">
-
-        Nenhum ticket encontrado
-
-      </div>
-
-    </template>
-  
 
   </div>
-  </template>
 
   <!-- PAGINATION -->
 

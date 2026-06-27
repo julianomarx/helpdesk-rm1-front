@@ -109,7 +109,7 @@
         <template x-for="ticket in filteredTickets" :key="ticket.id">
           <div @click="openTicket(ticket)"
             class="grid grid-cols-[56px_1fr_160px_110px_140px_120px] gap-3 px-4 py-3
-                   border-b border-white/[0.04] hover:bg-white/[0.03] cursor-pointer transition group">
+                   border-b border-white/[0.04] hover:bg-white/[0.06] cursor-pointer transition group">
             <span class="text-xs font-mono text-gray-500 group-hover:text-gray-400 transition self-center"
                   x-text="'#' + ticket.id"></span>
             <div class="min-w-0 self-center">
