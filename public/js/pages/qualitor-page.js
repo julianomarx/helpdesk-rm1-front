@@ -237,16 +237,22 @@ function qualitorPage() {
     },
 
     get equipeDestinoOptions() {
-      // Matriz de transferência baseada na configuração real do Qualitor (categoria×equipe)
-      // RM1 ↔ RM1 SAP direto não é suportado pelo Qualitor — requer configuração administrativa
+      // Matriz espelhando a configuração categoria×equipe do Qualitor (extraída dos dialogs)
       const matrix = {
-        'RM1':              ['ATRIO - SISTEMAS'],
-        'RM1 SAP':          ['ATRIO - SISTEMAS'],
-        'ATRIO - SISTEMAS': ['RM1'],
+        'RM1': [
+          'ATRIO - INFRA', 'Concept Prime Back', 'Capere', 'Concept Prime PDV',
+          'Netlogic', 'Unic System', 'TCPOS', 'ATRIO - SISTEMAS',
+        ],
+        'RM1 SAP': [
+          'ATRIO - INFRA', 'Unic System', 'ATRIO - SISTEMAS',
+          'Cobrança', 'MDM', 'COE', 'Fiscal',
+        ],
+        'ATRIO - SISTEMAS': [
+          'ATRIO - INFRA', 'Capere', 'Unic System', 'RM1',
+        ],
       };
       const atual = (this.selectedTicket?.equipe || '').trim();
-      const allowed = matrix[atual] || [];
-      return this.equipeOptions.filter(o => allowed.includes(o.value));
+      return (matrix[atual] || []).map(nm => ({ value: nm, label: nm }));
     },
 
     async transferirChamado() {
