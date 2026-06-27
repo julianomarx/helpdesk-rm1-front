@@ -22,6 +22,9 @@ function qualitorPage() {
     actionNota: '',
     actionLoading: false,
     refreshLoading: false,
+    transferMode: false,
+    transferEquipe: '',
+    transferLoading: false,
     novoAcomp: {
       descricao: '',
       solicitante: 'N',
@@ -120,6 +123,8 @@ function qualitorPage() {
       this.ticketHistory = [];
       this.actionMode = null;
       this.actionNota = '';
+      this.transferMode = false;
+      this.transferEquipe = '';
       this.detailTab = 'detalhes';
       this.novoAcomp = { descricao: '', solicitante: 'N', privado: 'N', loading: false };
     },
@@ -228,6 +233,47 @@ function qualitorPage() {
         showToast('Erro ao encerrar chamado', 'error');
       } finally {
         this.actionLoading = false;
+      }
+    },
+
+    get equipeDestinoOptions() {
+      // Matriz de transferência baseada na configuração real do Qualitor (categoria×equipe)
+      // RM1 ↔ RM1 SAP direto não é suportado pelo Qualitor — requer configuração administrativa
+      const matrix = {
+        'RM1':              ['ATRIO - SISTEMAS'],
+        'RM1 SAP':          ['ATRIO - SISTEMAS'],
+        'ATRIO - SISTEMAS': ['RM1'],
+      };
+      const atual = (this.selectedTicket?.equipe || '').trim();
+      const allowed = matrix[atual] || [];
+      return this.equipeOptions.filter(o => allowed.includes(o.value));
+    },
+
+    async transferirChamado() {
+      if (!this.transferEquipe) { showToast('Selecione a equipe de destino', 'error'); return; }
+      this.transferLoading = true;
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch(`/api/qualitor/tickets/${this.selectedTicket.id}/transfer`, {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nmequipe: this.transferEquipe }),
+        });
+        const data = await res.json();
+        if (!res.ok) { showToast(data.detail || 'Erro ao transferir chamado', 'error'); return; }
+        if (data.ticket) {
+          this.selectedTicket = data.ticket;
+          const idx = this.tickets.findIndex(t => t.id === data.ticket.id);
+          if (idx !== -1) this.tickets[idx] = { ...this.tickets[idx], equipe: data.ticket.equipe, situacao: data.ticket.situacao };
+        }
+        if (data.history && data.history.length) this.ticketHistory = data.history;
+        this.transferMode = false;
+        this.transferEquipe = '';
+        showToast(`Chamado transferido para ${data.nova_equipe || this.transferEquipe}`, 'success');
+      } catch {
+        showToast('Erro ao transferir chamado', 'error');
+      } finally {
+        this.transferLoading = false;
       }
     },
 

@@ -302,6 +302,58 @@
                 </div>
               </template>
 
+              <!-- TRANSFERÊNCIA — disponível para chamados ativos -->
+              <template x-if="!['Encerrado','Cancelado','Aguardando confirmação de encerramento'].includes(selectedTicket.situacao)">
+                <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+                  <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-3 font-semibold">Transferir</p>
+
+                  <template x-if="equipeDestinoOptions.length === 0">
+                    <p class="text-xs text-gray-500 italic">Transferência não disponível para chamados desta categoria.</p>
+                  </template>
+
+                  <template x-if="equipeDestinoOptions.length > 0 && !transferMode">
+                    <button @click="transferMode = true; transferEquipe = ''"
+                      class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold
+                             bg-white/5 border border-white/10 hover:bg-white/[0.08] text-gray-300 hover:text-white transition-all">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                      </svg>
+                      Transferir para outra equipe
+                    </button>
+                  </template>
+
+                  <template x-if="equipeDestinoOptions.length > 0 && transferMode">
+                    <div class="space-y-3">
+                      <p class="text-sm text-gray-300">
+                        Equipe atual: <span class="font-semibold text-gray-100" x-text="selectedTicket.equipe || '—'"></span>
+                      </p>
+                      <select x-model="transferEquipe"
+                        class="w-full px-3 py-2.5 rounded-xl text-sm text-gray-200
+                               bg-gray-800/60 border border-white/10
+                               focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50">
+                        <option value="">Selecione a equipe de destino...</option>
+                        <template x-for="opt in equipeDestinoOptions" :key="opt.value">
+                          <option :value="opt.value" x-text="opt.label"></option>
+                        </template>
+                      </select>
+                      <div class="flex gap-2">
+                        <button @click="transferirChamado()" :disabled="transferLoading || !transferEquipe"
+                          class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold
+                                 bg-blue-600 hover:bg-blue-700 text-white transition-all disabled:opacity-50">
+                          <div x-show="transferLoading" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span x-text="transferLoading ? 'Transferindo...' : 'Confirmar transferência'"></span>
+                        </button>
+                        <button @click="transferMode = false; transferEquipe = ''" :disabled="transferLoading"
+                          class="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white
+                                 bg-white/5 border border-white/10 hover:bg-white/10 transition-all disabled:opacity-50">
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </template>
+
               <!-- Descrição -->
               <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
                 <div class="flex items-center gap-2 mb-3">
