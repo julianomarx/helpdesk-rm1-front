@@ -13,6 +13,7 @@ function qualitorPage() {
       situacao: '',
       equipe: '',
       search: '',
+      mine: false,
     },
 
     selectedTicket: null,
@@ -35,18 +36,19 @@ function qualitorPage() {
       loading: false,
     },
 
+    mentionUsers: [],
+    mentionMatches: [],
+    showMentionDropdown: false,
+    _mentionStart: -1,
+    _mentionEnd: -1,
+
     situacaoOptions: [
       { value: '', label: 'Todas as situações' },
       { value: 'Aguardando atendimento', label: 'Aguardando atendimento' },
       { value: 'Em atendimento', label: 'Em atendimento' },
     ],
 
-    equipeOptions: [
-      { value: '', label: 'Todas as equipes' },
-      { value: 'RM1', label: 'RM1' },
-      { value: 'RM1 SAP', label: 'RM1 SAP' },
-      { value: 'ATRIO - SISTEMAS', label: 'ATRIO - SISTEMAS' },
-    ],
+    equipeOptions: [],
 
     async init() {
       this.$watch('showDetail', val => {
@@ -54,7 +56,77 @@ function qualitorPage() {
         document.body.style.overflow = val ? 'hidden' : '';
         document.body.style.paddingRight = val ? bar + 'px' : '';
       });
-      await Promise.all([this.fetchStatus(), this.fetchTickets()]);
+
+      const qt = Alpine.store('app').qualitorTeams || [];
+      if (qt.length > 1) {
+        this.equipeOptions = [
+          { value: '', label: 'Todas as equipes' },
+          ...qt.map(t => ({ value: t, label: t })),
+        ];
+      } else if (qt.length === 1) {
+        // Single team — backend enforces it; pre-select and hide dropdown
+        this.equipeOptions = [{ value: qt[0], label: qt[0] }];
+        this.filters.equipe = qt[0];
+      }
+
+      await Promise.all([this.fetchStatus(), this.fetchTickets(), this.loadMentionUsers()]);
+    },
+
+    async loadMentionUsers() {
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch('/api/users/mentionable', {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (res.ok) this.mentionUsers = await res.json();
+      } catch {}
+    },
+
+    onAcompInput(event) {
+      const ta = event.target;
+      const val = ta.value;
+      const cursor = ta.selectionStart;
+      const textBefore = val.slice(0, cursor);
+      const match = textBefore.match(/@(\w*)$/);
+      if (match) {
+        this._mentionStart = cursor - match[0].length;
+        this._mentionEnd = cursor;
+        const query = match[1].toLowerCase();
+        this.mentionMatches = query.length === 0
+          ? this.mentionUsers.slice(0, 6)
+          : this.mentionUsers.filter(u =>
+              u.name.toLowerCase().startsWith(query) ||
+              u.name.toLowerCase().includes(' ' + query)
+            ).slice(0, 6);
+        this.showMentionDropdown = this.mentionMatches.length > 0;
+      } else {
+        this.showMentionDropdown = false;
+        this._mentionStart = -1;
+        this._mentionEnd = -1;
+      }
+    },
+
+    selectMentionAcomp(user) {
+      const firstName = user.name.split(' ')[0];
+      const before = this.novoAcomp.descricao.slice(0, this._mentionStart);
+      const after  = this.novoAcomp.descricao.slice(this._mentionEnd > -1 ? this._mentionEnd : this.novoAcomp.descricao.length);
+      this.novoAcomp.descricao = before + '@' + firstName + ' ' + after;
+      this.showMentionDropdown = false;
+      this._mentionStart = -1;
+      this._mentionEnd = -1;
+      this.$nextTick(() => {
+        const ta = document.getElementById('qualitor-acomp-textarea');
+        if (ta) {
+          const pos = before.length + firstName.length + 2;
+          ta.focus();
+          ta.selectionStart = ta.selectionEnd = pos;
+        }
+      });
+    },
+
+    toggleMine() {
+      this.filters.mine = !this.filters.mine;
+      this.fetchTickets();
     },
 
     async fetchStatus() {
@@ -77,6 +149,7 @@ function qualitorPage() {
         const params = new URLSearchParams();
         if (this.filters.situacao) params.set('situacao', this.filters.situacao);
         if (this.filters.equipe)   params.set('equipe',   this.filters.equipe);
+        if (this.filters.mine)     params.set('responsavel_interno_id', Alpine.store('app').userId);
         const qs = params.toString();
         const res = await fetch(`/api/qualitor/tickets${qs ? '?' + qs : ''}`, {
           headers: { Authorization: 'Bearer ' + token },
@@ -114,12 +187,29 @@ function qualitorPage() {
         if (detailRes.ok) this.selectedTicket = await detailRes.json();
         if (historyRes.ok) {
           const h = await historyRes.json();
-          // shape: { ticket_id, total, history: [...] }
           this.ticketHistory = Array.isArray(h) ? h : (h.history || []);
         }
       } catch {} finally {
         this.loadingDetail = false;
         this.loadingHistory = false;
+      }
+
+      // Se o histórico veio vazio do cache, sincronizar com o Qualitor silenciosamente
+      if (!this.ticketHistory.length && this.selectedTicket) {
+        this.loadingHistory = true;
+        try {
+          const res = await fetch(`/api/qualitor/tickets/${ticket.id}/refresh`, {
+            method: 'POST',
+            headers: { Authorization: 'Bearer ' + token },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.ticket) this.selectedTicket = data.ticket;
+            if (data.history?.length) this.ticketHistory = data.history;
+          }
+        } catch {} finally {
+          this.loadingHistory = false;
+        }
       }
     },
 
@@ -188,7 +278,11 @@ function qualitorPage() {
         const res = await fetch(`/api/qualitor/tickets/${this.selectedTicket.id}/start`, {
           method: 'POST',
           headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nota: this.actionNota }),
+          body: JSON.stringify({
+            nota: this.actionNota,
+            responsavel_interno_id: Alpine.store('app').userId,
+            responsavel_interno_nome: Alpine.store('app').userName,
+          }),
         });
         const data = await res.json();
         if (!res.ok) { showToast(data.detail || 'Erro ao iniciar atendimento', 'error'); return; }
@@ -221,7 +315,11 @@ function qualitorPage() {
         const res = await fetch(`/api/qualitor/tickets/${this.selectedTicket.id}/close`, {
           method: 'POST',
           headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nota: this.actionNota }),
+          body: JSON.stringify({
+            nota: this.actionNota,
+            interno_user_id: Alpine.store('app').userId,
+            interno_user_nome: Alpine.store('app').userName,
+          }),
         });
         const data = await res.json();
         if (!res.ok) { showToast(data.detail || 'Erro ao encerrar chamado', 'error'); return; }
@@ -237,6 +335,29 @@ function qualitorPage() {
           this.ticketHistory = data.history;
         } else {
           await this.reloadHistory();
+        }
+        // O Qualitor demora alguns segundos para registrar o evento de sistema
+        // ">> Chamado aguardando confirmação de encerramento". Se ainda não veio
+        // no retorno, injeta um evento sintético para exibição imediata.
+        const hasClosingEvent = this.ticketHistory.some(h =>
+          /aguardando confirm/i.test(h.descricao || '')
+        );
+        if (!hasClosingEvent) {
+          const now = new Date();
+          const dateStr = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          this.ticketHistory.push({
+            id: `synthetic_closing_${Date.now()}`,
+            tipo: null,
+            descricao: '>> Chamado aguardando confirmação de encerramento',
+            usuario: Alpine.store('app').userName || 'Sistema',
+            interno_user_nome: null,
+            data: dateStr,
+            is_solucao: false,
+            is_privado: false,
+            is_solicitante: false,
+            subsituacao: null,
+            duracao: null,
+          });
         }
       } catch {
         showToast('Erro ao encerrar chamado', 'error');
@@ -307,6 +428,8 @@ function qualitorPage() {
             descricao: this.novoAcomp.descricao,
             idsolicitante: this.novoAcomp.solicitante,
             idprivado: this.novoAcomp.privado,
+            interno_user_id: Alpine.store('app').userId,
+            interno_user_nome: Alpine.store('app').userName,
           }),
         });
         const data = await res.json();
@@ -401,6 +524,16 @@ function qualitorPage() {
       if (['Encerrado', 'Cancelado'].includes(this.selectedTicket?.situacao)) {
         const idx = parsed.findIndex(e => e.eventType === 'status-closing');
         if (idx !== -1) parsed[idx] = { ...parsed[idx], eventType: 'status-closed', systemLabel: 'Encerrado' };
+      }
+      // Eventos de encerramento (aguardando/encerrado) devem sempre aparecer no topo.
+      // O Qualitor pode gerar o cdacompanhamento do evento de sistema com ID menor que
+      // o comentário do atendente adicionado na mesma ação, causando inversão na ordenação.
+      const closingIdx = parsed.findIndex(e =>
+        e.eventType === 'status-closing' || e.eventType === 'status-closed'
+      );
+      if (closingIdx > 0) {
+        const [ev] = parsed.splice(closingIdx, 1);
+        parsed.unshift(ev);
       }
       return parsed;
     },
