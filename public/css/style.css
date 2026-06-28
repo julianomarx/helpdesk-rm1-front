@@ -473,3 +473,43 @@ input {
 [data-theme="light"] .placeholder-gray-400::placeholder { color: #9ca3af !important; }
 [data-theme="light"] .placeholder-gray-500::placeholder { color: #6b7280 !important; }
 [data-theme="light"] .placeholder-gray-600::placeholder { color: #4b5563 !important; }
+
+/* ── 23. violet e indigo: remapeamento para light mode ─────────────
+   O violet-300/400 original (#c4b5fd / #a78bfa) tem contraste ~1.8:1
+   em fundo branco — ilegível. Mapeamos para tons escuros de violeta.
+   O indigo-300/400 também precisam de ajuste.                       */
+[data-theme="light"] {
+  --color-violet-300: #5b21b6;
+  --color-violet-400: #6d28d9;
+  --color-indigo-300: #3730a3;
+  --color-indigo-400: #4338ca;
+}
+
+/* Overrides explícitos para quando o Tailwind v4 CDN gera OKLCH estáticos
+   que ignoram as CSS variables acima (mesmo padrão da seção 22 para grays) */
+[data-theme="light"] .text-violet-300 { color: #5b21b6 !important; }
+[data-theme="light"] .text-violet-400 { color: #6d28d9 !important; }
+[data-theme="light"] .text-indigo-300 { color: #3730a3 !important; }
+[data-theme="light"] .text-indigo-400 { color: #4338ca !important; }
+[data-theme="light"] .text-indigo-500 { color: #4338ca !important; }
+
+/* ── 24. bg-gray-700 com texto: garante legibilidade em light mode ──
+   bg-gray-700 em light vira #cbd5e1 (azulado claro). text-white
+   sobre esse fundo é ilegível — forçamos texto escuro.              */
+[data-theme="light"] .bg-gray-700 {
+  color: #0f172a !important;
+}
+
+/* ── 25. Select options: force dark styling no tema escuro ──────────
+   Navegadores renderizam <option> com cores nativas do OS.
+   color-scheme: dark faz o dropdown nativo usar o tema escuro.       */
+[data-theme="dark"] select {
+  color-scheme: dark;
+}
+[data-theme="light"] select {
+  color-scheme: light;
+}
+[data-theme="dark"] select option {
+  background-color: #1e293b;
+  color: #e2e8f0;
+}
