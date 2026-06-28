@@ -34,6 +34,20 @@
     <div class="rounded-2xl border border-white/10 bg-gray-900/40 backdrop-blur-xl shadow-lg p-5">
       <h2 class="text-sm font-semibold text-gray-300 mb-4">Filtros</h2>
 
+      <!-- SOURCE TOGGLE -->
+      <div class="flex gap-2 mb-4">
+        <button @click="switchSource('helpdesk')"
+          :class="source === 'helpdesk' ? 'bg-blue-600 text-white' : 'bg-white/5 text-gray-400 hover:text-white border border-white/10'"
+          class="px-4 py-2 rounded-xl text-sm font-semibold transition">
+          Helpdesk
+        </button>
+        <button @click="switchSource('qualitor')"
+          :class="source === 'qualitor' ? 'bg-violet-600 text-white' : 'bg-white/5 text-gray-400 hover:text-white border border-white/10'"
+          class="px-4 py-2 rounded-xl text-sm font-semibold transition">
+          Qualitor
+        </button>
+      </div>
+
       <div class="flex flex-wrap gap-4 items-end">
 
         <!-- AGENT SELECT -->
@@ -118,12 +132,15 @@
     <div class="flex flex-col gap-4 overflow-y-auto flex-1 min-h-0 pb-4">
 
       <!-- REPORT HEADER (visible on screen and print) -->
-      <div class="report-header-box rounded-2xl bg-blue-900/40 border border-blue-500/20 p-5">
+      <div class="report-header-box rounded-2xl p-5"
+           :class="report.source === 'qualitor' ? 'bg-violet-900/40 border border-violet-500/20' : 'bg-blue-900/40 border border-blue-500/20'">
         <div class="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <p class="text-xs text-blue-300 uppercase tracking-wider font-semibold mb-1">Relatório de Atividades</p>
-            <h2 class="text-xl font-bold text-white" x-text="report.agent.name"></h2>
-            <p class="text-sm text-blue-200" x-text="report.agent.email"></p>
+            <p class="text-xs uppercase tracking-wider font-semibold mb-1"
+               :class="report.source === 'qualitor' ? 'text-violet-300' : 'text-blue-300'"
+               x-text="report.source === 'qualitor' ? 'Relatório Qualitor' : 'Relatório de Atividades'"></p>
+            <h2 class="text-xl font-bold text-white" x-text="agentDisplayName()"></h2>
+            <p class="text-sm text-blue-200" x-text="report.agent?.email || report.agent?.nome || ''"></p>
           </div>
           <div class="text-right">
             <p class="text-xs text-blue-300 uppercase tracking-wider font-semibold mb-1">Período</p>
@@ -158,128 +175,262 @@
         </div>
       </div>
 
-      <!-- SUMMARY CARDS -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <!-- SUMMARY CARDS — Helpdesk -->
+      <template x-if="report.source !== 'qualitor'">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
 
-        <div class="stat-box report-card rounded-xl border border-white/10 bg-gray-900/40 p-4 text-center">
-          <p class="text-xs text-gray-400 mb-1">Chamados atendidos</p>
-          <p class="stat-value text-3xl font-bold text-blue-400" x-text="report.summary.tickets_interacted"></p>
+          <div class="stat-box report-card rounded-xl border border-white/10 bg-gray-900/40 p-4 text-center">
+            <p class="text-xs text-gray-400 mb-1">Chamados atendidos</p>
+            <p class="stat-value text-3xl font-bold text-blue-400" x-text="report.summary.tickets_interacted"></p>
+          </div>
+
+          <div class="stat-box report-card rounded-xl border border-white/10 bg-gray-900/40 p-4 text-center">
+            <p class="text-xs text-gray-400 mb-1">Fechados no período</p>
+            <p class="stat-value text-3xl font-bold text-emerald-400" x-text="report.summary.tickets_closed"></p>
+          </div>
+
+          <div class="stat-box report-card rounded-xl border border-white/10 bg-gray-900/40 p-4 text-center">
+            <p class="text-xs text-gray-400 mb-1">Abertos no período</p>
+            <p class="stat-value text-3xl font-bold text-yellow-400" x-text="report.summary.tickets_opened"></p>
+          </div>
+
+          <div class="stat-box report-card rounded-xl border border-white/10 bg-gray-900/40 p-4 text-center">
+            <p class="text-xs text-gray-400 mb-1">Comentários</p>
+            <p class="stat-value text-3xl font-bold text-purple-400" x-text="report.summary.comments_made"></p>
+          </div>
+
+          <div class="stat-box report-card rounded-xl border border-white/10 bg-gray-900/40 p-4 text-center">
+            <p class="text-xs text-gray-400 mb-1">Ações registradas</p>
+            <p class="stat-value text-3xl font-bold text-orange-400" x-text="report.summary.total_actions"></p>
+          </div>
+
         </div>
+      </template>
 
-        <div class="stat-box report-card rounded-xl border border-white/10 bg-gray-900/40 p-4 text-center">
-          <p class="text-xs text-gray-400 mb-1">Fechados no período</p>
-          <p class="stat-value text-3xl font-bold text-emerald-400" x-text="report.summary.tickets_closed"></p>
+      <!-- SUMMARY CARDS — Qualitor -->
+      <template x-if="report.source === 'qualitor'">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+
+          <div class="stat-box report-card rounded-xl border border-white/10 bg-gray-900/40 p-4 text-center">
+            <p class="text-xs text-gray-400 mb-1">Chamados gerenciados</p>
+            <p class="stat-value text-3xl font-bold text-violet-400" x-text="report.summary.tickets_managed"></p>
+          </div>
+
+          <div class="stat-box report-card rounded-xl border border-white/10 bg-gray-900/40 p-4 text-center">
+            <p class="text-xs text-gray-400 mb-1">Fechados no período</p>
+            <p class="stat-value text-3xl font-bold text-emerald-400" x-text="report.summary.tickets_closed"></p>
+          </div>
+
+          <div class="stat-box report-card rounded-xl border border-white/10 bg-gray-900/40 p-4 text-center">
+            <p class="text-xs text-gray-400 mb-1">Comentários enviados</p>
+            <p class="stat-value text-3xl font-bold text-blue-400" x-text="report.summary.comments_made"></p>
+          </div>
+
         </div>
+      </template>
 
-        <div class="stat-box report-card rounded-xl border border-white/10 bg-gray-900/40 p-4 text-center">
-          <p class="text-xs text-gray-400 mb-1">Abertos no período</p>
-          <p class="stat-value text-3xl font-bold text-yellow-400" x-text="report.summary.tickets_opened"></p>
-        </div>
+      <!-- BREAKDOWN ROW — Helpdesk -->
+      <template x-if="report.source !== 'qualitor'">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-        <div class="stat-box report-card rounded-xl border border-white/10 bg-gray-900/40 p-4 text-center">
-          <p class="text-xs text-gray-400 mb-1">Comentários</p>
-          <p class="stat-value text-3xl font-bold text-purple-400" x-text="report.summary.comments_made"></p>
-        </div>
-
-        <div class="stat-box report-card rounded-xl border border-white/10 bg-gray-900/40 p-4 text-center">
-          <p class="text-xs text-gray-400 mb-1">Ações registradas</p>
-          <p class="stat-value text-3xl font-bold text-orange-400" x-text="report.summary.total_actions"></p>
-        </div>
-
-      </div>
-
-      <!-- BREAKDOWN ROW -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-
-        <!-- BY PRIORITY -->
-        <div class="report-card rounded-xl border border-white/10 bg-gray-900/40 p-4">
-          <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Por prioridade</h3>
-          <div class="flex items-center gap-4">
-            <div class="flex-1 text-center">
-              <p class="badge-high text-2xl font-bold text-red-400" x-text="report.by_priority.high"></p>
-              <p class="text-xs text-gray-500 mt-0.5">Alta</p>
-            </div>
-            <div class="w-px h-10 bg-white/10"></div>
-            <div class="flex-1 text-center">
-              <p class="badge-medium text-2xl font-bold text-yellow-400" x-text="report.by_priority.medium"></p>
-              <p class="text-xs text-gray-500 mt-0.5">Média</p>
-            </div>
-            <div class="w-px h-10 bg-white/10"></div>
-            <div class="flex-1 text-center">
-              <p class="badge-low text-2xl font-bold text-blue-400" x-text="report.by_priority.low"></p>
-              <p class="text-xs text-gray-500 mt-0.5">Baixa</p>
+          <!-- BY PRIORITY -->
+          <div class="report-card rounded-xl border border-white/10 bg-gray-900/40 p-4">
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Por prioridade</h3>
+            <div class="flex items-center gap-4">
+              <div class="flex-1 text-center">
+                <p class="badge-high text-2xl font-bold text-red-400" x-text="report.by_priority.high"></p>
+                <p class="text-xs text-gray-500 mt-0.5">Alta</p>
+              </div>
+              <div class="w-px h-10 bg-white/10"></div>
+              <div class="flex-1 text-center">
+                <p class="badge-medium text-2xl font-bold text-yellow-400" x-text="report.by_priority.medium"></p>
+                <p class="text-xs text-gray-500 mt-0.5">Média</p>
+              </div>
+              <div class="w-px h-10 bg-white/10"></div>
+              <div class="flex-1 text-center">
+                <p class="badge-low text-2xl font-bold text-blue-400" x-text="report.by_priority.low"></p>
+                <p class="text-xs text-gray-500 mt-0.5">Baixa</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- BY STATUS -->
-        <div class="report-card rounded-xl border border-white/10 bg-gray-900/40 p-4">
-          <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Por status atual</h3>
-          <div class="flex items-center gap-4">
-            <div class="flex-1 text-center">
-              <p class="badge-open text-2xl font-bold text-blue-400" x-text="report.by_status.open"></p>
-              <p class="text-xs text-gray-500 mt-0.5">Abertos</p>
-            </div>
-            <div class="w-px h-10 bg-white/10"></div>
-            <div class="flex-1 text-center">
-              <p class="badge-closed text-2xl font-bold text-emerald-400" x-text="report.by_status.closed"></p>
-              <p class="text-xs text-gray-500 mt-0.5">Fechados</p>
-            </div>
-            <div class="w-px h-10 bg-white/10"></div>
-            <div class="flex-1 text-center">
-              <p class="badge-cancelled text-2xl font-bold text-gray-400" x-text="report.by_status.cancelled"></p>
-              <p class="text-xs text-gray-500 mt-0.5">Cancelados</p>
+          <!-- BY STATUS -->
+          <div class="report-card rounded-xl border border-white/10 bg-gray-900/40 p-4">
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Por status atual</h3>
+            <div class="flex items-center gap-4">
+              <div class="flex-1 text-center">
+                <p class="badge-open text-2xl font-bold text-blue-400" x-text="report.by_status.open"></p>
+                <p class="text-xs text-gray-500 mt-0.5">Abertos</p>
+              </div>
+              <div class="w-px h-10 bg-white/10"></div>
+              <div class="flex-1 text-center">
+                <p class="badge-closed text-2xl font-bold text-emerald-400" x-text="report.by_status.closed"></p>
+                <p class="text-xs text-gray-500 mt-0.5">Fechados</p>
+              </div>
+              <div class="w-px h-10 bg-white/10"></div>
+              <div class="flex-1 text-center">
+                <p class="badge-cancelled text-2xl font-bold text-gray-400" x-text="report.by_status.cancelled"></p>
+                <p class="text-xs text-gray-500 mt-0.5">Cancelados</p>
+              </div>
             </div>
           </div>
+
         </div>
+      </template>
 
-      </div>
+      <!-- BREAKDOWN ROW — Qualitor -->
+      <template x-if="report.source === 'qualitor'">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-      <!-- TICKET TABLE -->
-      <div class="report-card rounded-xl border border-white/10 bg-gray-900/40">
-        <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between">
-          <h3 class="text-sm font-semibold text-gray-300">Lista de chamados atendidos</h3>
-          <span class="text-xs text-gray-500" x-text="report.ticket_list.length + ' chamado(s)'"></span>
-        </div>
-
-        <template x-if="report.ticket_list.length === 0">
-          <div class="px-5 py-8 text-center text-sm text-gray-500">
-            Nenhum chamado registrado no período para este agente.
+          <!-- BY SEVERITY -->
+          <div class="report-card rounded-xl border border-white/10 bg-gray-900/40 p-4">
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Por severidade</h3>
+            <div class="flex items-center gap-3 flex-wrap">
+              <template x-for="[sev, cnt] in Object.entries(report.by_severity || {})" :key="sev">
+                <div class="flex-1 text-center min-w-[60px]">
+                  <p class="text-2xl font-bold" :class="severidadeClass(sev)" x-text="cnt"></p>
+                  <p class="text-xs text-gray-500 mt-0.5" x-text="sev"></p>
+                </div>
+              </template>
+              <template x-if="!Object.keys(report.by_severity || {}).length">
+                <p class="text-sm text-gray-500">Sem dados de severidade</p>
+              </template>
+            </div>
           </div>
-        </template>
 
-        <template x-if="report.ticket_list.length > 0">
-          <div class="overflow-x-auto">
-            <table class="report-table w-full text-sm">
-              <thead>
-                <tr class="border-b border-white/10 bg-white/[0.02]">
-                  <th class="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">#</th>
-                  <th class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Título</th>
-                  <th class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Hotel</th>
-                  <th class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Categoria</th>
-                  <th class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Prioridade</th>
-                  <th class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                  <th class="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Progresso</th>
-                </tr>
-              </thead>
-              <tbody>
-                <template x-for="t in report.ticket_list" :key="t.id">
-                  <tr class="border-b border-white/5 hover:bg-white/[0.02] transition">
-                    <td class="px-5 py-3 text-gray-400 text-xs font-mono" x-text="'#' + t.id"></td>
-                    <td class="px-3 py-3 text-gray-200 max-w-xs">
-                      <span class="truncate block" x-text="t.title"></span>
-                    </td>
-                    <td class="px-3 py-3 text-gray-400 text-xs whitespace-nowrap" x-text="t.hotel"></td>
-                    <td class="px-3 py-3 text-gray-400 text-xs whitespace-nowrap" x-text="t.category"></td>
-                    <td class="px-3 py-3 text-xs font-semibold whitespace-nowrap" :class="priorityClass(t.priority)" x-text="priorityLabel(t.priority)"></td>
-                    <td class="px-3 py-3 text-xs font-semibold whitespace-nowrap" :class="statusClass(t.status)" x-text="statusLabel(t.status)"></td>
-                    <td class="px-5 py-3 text-xs text-gray-400 whitespace-nowrap" x-text="progressLabel(t.progress)"></td>
+          <!-- BY STATUS -->
+          <div class="report-card rounded-xl border border-white/10 bg-gray-900/40 p-4">
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Por status atual</h3>
+            <div class="flex items-center gap-4">
+              <div class="flex-1 text-center">
+                <p class="text-2xl font-bold text-blue-400" x-text="report.by_status.open"></p>
+                <p class="text-xs text-gray-500 mt-0.5">Abertos</p>
+              </div>
+              <div class="w-px h-10 bg-white/10"></div>
+              <div class="flex-1 text-center">
+                <p class="text-2xl font-bold text-emerald-400" x-text="report.by_status.closed"></p>
+                <p class="text-xs text-gray-500 mt-0.5">Fechados</p>
+              </div>
+              <div class="w-px h-10 bg-white/10"></div>
+              <div class="flex-1 text-center">
+                <p class="text-2xl font-bold text-gray-400" x-text="report.by_status.cancelled"></p>
+                <p class="text-xs text-gray-500 mt-0.5">Cancelados</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </template>
+
+      <!-- TICKET TABLE — Helpdesk -->
+      <template x-if="report.source !== 'qualitor'">
+        <div class="report-card rounded-xl border border-white/10 bg-gray-900/40">
+          <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-gray-300">Lista de chamados atendidos</h3>
+            <span class="text-xs text-gray-500" x-text="report.ticket_list.length + ' chamado(s)'"></span>
+          </div>
+
+          <template x-if="report.ticket_list.length === 0">
+            <div class="px-5 py-8 text-center text-sm text-gray-500">
+              Nenhum chamado registrado no período para este agente.
+            </div>
+          </template>
+
+          <template x-if="report.ticket_list.length > 0">
+            <div class="overflow-x-auto">
+              <table class="report-table w-full text-sm">
+                <thead>
+                  <tr class="border-b border-white/10 bg-white/[0.02]">
+                    <th class="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">#</th>
+                    <th class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Título</th>
+                    <th class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Hotel</th>
+                    <th class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Categoria</th>
+                    <th class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Prioridade</th>
+                    <th class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                    <th class="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Progresso</th>
                   </tr>
-                </template>
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  <template x-for="t in report.ticket_list" :key="t.id">
+                    <tr class="border-b border-white/5 hover:bg-white/[0.02] transition">
+                      <td class="px-5 py-3 text-gray-400 text-xs font-mono" x-text="'#' + t.id"></td>
+                      <td class="px-3 py-3 text-gray-200 max-w-xs">
+                        <span class="truncate block" x-text="t.title"></span>
+                      </td>
+                      <td class="px-3 py-3 text-gray-400 text-xs whitespace-nowrap" x-text="t.hotel"></td>
+                      <td class="px-3 py-3 text-gray-400 text-xs whitespace-nowrap" x-text="t.category"></td>
+                      <td class="px-3 py-3 text-xs font-semibold whitespace-nowrap" :class="priorityClass(t.priority)" x-text="priorityLabel(t.priority)"></td>
+                      <td class="px-3 py-3 text-xs font-semibold whitespace-nowrap" :class="statusClass(t.status)" x-text="statusLabel(t.status)"></td>
+                      <td class="px-5 py-3 text-xs text-gray-400 whitespace-nowrap" x-text="progressLabel(t.progress)"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </template>
+        </div>
+      </template>
+
+      <!-- TICKET TABLE — Qualitor -->
+      <template x-if="report.source === 'qualitor'">
+        <div class="report-card rounded-xl border border-white/10 bg-gray-900/40">
+          <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-gray-300">Lista de chamados Qualitor</h3>
+            <span class="text-xs text-gray-500" x-text="report.ticket_list.length + ' chamado(s)'"></span>
           </div>
-        </template>
+
+          <template x-if="report.ticket_list.length === 0">
+            <div class="px-5 py-8 text-center text-sm text-gray-500">
+              Nenhum chamado encontrado para este agente.
+            </div>
+          </template>
+
+          <template x-if="report.ticket_list.length > 0">
+            <div class="overflow-x-auto">
+              <table class="report-table w-full text-sm">
+                <thead>
+                  <tr class="border-b border-white/10 bg-white/[0.02]">
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">#</th>
+                    <th class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Título</th>
+                    <th class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Contato</th>
+                    <th class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Equipe</th>
+                    <th class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Severidade</th>
+                    <th class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Situação</th>
+                    <th class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Abertura</th>
+                    <th class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Visita</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="t in report.ticket_list" :key="t.id">
+                    <tr class="border-b border-white/5 hover:bg-white/[0.02] transition">
+                      <td class="px-4 py-3 text-gray-400 text-xs font-mono">
+                        <span x-text="'#' + t.id"></span>
+                        <template x-if="!t.is_responsible">
+                          <span class="ml-1 text-[9px] text-violet-400 opacity-70">participou</span>
+                        </template>
+                      </td>
+                      <td class="px-3 py-3 text-gray-200 max-w-xs">
+                        <span class="truncate block" x-text="t.titulo || '—'"></span>
+                      </td>
+                      <td class="px-3 py-3 text-gray-400 text-xs whitespace-nowrap" x-text="t.contato || t.cliente || '—'"></td>
+                      <td class="px-3 py-3 text-gray-400 text-xs whitespace-nowrap" x-text="t.equipe || '—'"></td>
+                      <td class="px-3 py-3 text-xs font-semibold whitespace-nowrap"
+                          :class="severidadeClass(t.severidade)" x-text="t.severidade || '—'"></td>
+                      <td class="px-3 py-3 text-xs font-semibold whitespace-nowrap"
+                          :class="situacaoClassQ(t.situacao)" x-text="t.situacao || '—'"></td>
+                      <td class="px-3 py-3 text-xs text-gray-400 whitespace-nowrap"
+                          x-text="formatQualitorDate(t.dtabertura)"></td>
+                      <td class="px-3 py-3 text-xs whitespace-nowrap"
+                          :class="t.scheduled_visit_at ? 'text-blue-400' : 'text-gray-600'"
+                          x-text="t.scheduled_visit_at ? formatQualitorDate(t.scheduled_visit_at) : '—'"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </template>
+        </div>
+      </template>
       </div>
 
     </div>

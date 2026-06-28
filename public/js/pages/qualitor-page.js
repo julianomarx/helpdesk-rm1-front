@@ -29,6 +29,14 @@ function qualitorPage() {
     transferMode: false,
     transferEquipe: '',
     transferLoading: false,
+    assignInternMode: false,
+    assignInternAgentId: '',
+    assignInternLoading: false,
+    agentList: [],
+    visitMode: false,
+    visitDate: '',
+    visitTime: '09:00',
+    visitLoading: false,
     novoAcomp: {
       descricao: '',
       solicitante: 'N',
@@ -178,6 +186,11 @@ function qualitorPage() {
       this.ticketAttachments = [];
       this.loadingAttachments = false;
       this.uploadLoading = false;
+      this.assignInternMode = false;
+      this.assignInternAgentId = '';
+      this.visitMode = false;
+      this.visitDate = '';
+      this.visitTime = '09:00';
       const token = localStorage.getItem('access_token');
       try {
         const [detailRes, historyRes] = await Promise.all([
@@ -224,6 +237,11 @@ function qualitorPage() {
       this.actionNota = '';
       this.transferMode = false;
       this.transferEquipe = '';
+      this.assignInternMode = false;
+      this.assignInternAgentId = '';
+      this.visitMode = false;
+      this.visitDate = '';
+      this.visitTime = '09:00';
       this.detailTab = 'detalhes';
       this.novoAcomp = { descricao: '', solicitante: 'N', privado: 'N', loading: false };
     },
@@ -447,6 +465,73 @@ function qualitorPage() {
         showToast('Erro ao enviar acompanhamento', 'error');
       } finally {
         this.novoAcomp.loading = false;
+      }
+    },
+
+    async loadAgentList() {
+      if (this.agentList.length) return;
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch('/api/reports/agents', { headers: { Authorization: 'Bearer ' + token } });
+        if (res.ok) this.agentList = await res.json();
+      } catch {}
+    },
+
+    async transferirResponsavelInterno() {
+      if (!this.assignInternAgentId) { showToast('Selecione o agente', 'error'); return; }
+      this.assignInternLoading = true;
+      const token = localStorage.getItem('access_token');
+      const agent = this.agentList.find(a => String(a.id) === String(this.assignInternAgentId));
+      try {
+        const res = await fetch(`/api/qualitor/tickets/${this.selectedTicket.id}/assign-interno`, {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: parseInt(this.assignInternAgentId),
+            user_nome: agent?.name || '',
+            motivo: 'transferencia_interna',
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) { showToast(data.detail || 'Erro ao transferir responsável', 'error'); return; }
+        this.selectedTicket.responsavel_interno_id   = data.responsavel_interno_id;
+        this.selectedTicket.responsavel_interno_nome = data.responsavel_interno_nome;
+        this.assignInternMode = false;
+        this.assignInternAgentId = '';
+        showToast(`Chamado transferido para ${data.responsavel_interno_nome}`, 'success');
+      } catch {
+        showToast('Erro ao transferir responsável', 'error');
+      } finally {
+        this.assignInternLoading = false;
+      }
+    },
+
+    async agendarVisita() {
+      if (!this.visitDate) { showToast('Selecione a data da visita', 'error'); return; }
+      this.visitLoading = true;
+      const token = localStorage.getItem('access_token');
+      const dateTimeStr = `${this.visitDate}T${this.visitTime || '09:00'}:00`;
+      try {
+        const res = await fetch(`/api/qualitor/tickets/${this.selectedTicket.id}/schedule-visit`, {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ date_time: dateTimeStr }),
+        });
+        const data = await res.json();
+        if (!res.ok) { showToast(data.detail || 'Erro ao agendar visita', 'error'); return; }
+        this.selectedTicket.scheduled_visit_at = data.scheduled_visit_at;
+        this.visitMode = false;
+        this.visitDate = '';
+        showToast('Visita agendada com sucesso', 'success');
+        if (data.history && data.history.length) {
+          this.ticketHistory = data.history;
+        } else {
+          await this.reloadHistory();
+        }
+      } catch {
+        showToast('Erro ao agendar visita', 'error');
+      } finally {
+        this.visitLoading = false;
       }
     },
 

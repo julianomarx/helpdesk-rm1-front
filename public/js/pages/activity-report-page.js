@@ -4,6 +4,7 @@ function activityReportPage() {
   return {
     agents: [],
     loadingAgents: true,
+    source: 'helpdesk',   // 'helpdesk' | 'qualitor'
     filters: {
       userId: '',
       startDate: today,
@@ -28,6 +29,12 @@ function activityReportPage() {
       }
     },
 
+    switchSource(src) {
+      this.source = src;
+      this.report = null;
+      this.error = '';
+    },
+
     async generateReport() {
       if (!this.filters.userId) { this.error = 'Selecione um agente'; return; }
       if (!this.filters.startDate || !this.filters.endDate) { this.error = 'Informe o período completo'; return; }
@@ -37,13 +44,20 @@ function activityReportPage() {
       this.generating = true;
       this.report = null;
 
+      if (this.source === 'qualitor') {
+        await this._generateQualitorReport();
+      } else {
+        await this._generateHelpdeskReport();
+      }
+    },
+
+    async _generateHelpdeskReport() {
       const token = localStorage.getItem('access_token');
       const params = new URLSearchParams({
         user_id: this.filters.userId,
         start_date: this.filters.startDate,
         end_date: this.filters.endDate,
       });
-
       try {
         const res = await fetch(`/api/reports/activity?${params}`, {
           headers: { 'Authorization': 'Bearer ' + token },
@@ -51,6 +65,30 @@ function activityReportPage() {
         if (!res.ok) {
           const err = await res.json();
           this.error = err.detail || 'Erro ao gerar relatório';
+          return;
+        }
+        this.report = await res.json();
+      } catch (e) {
+        this.error = 'Erro ao gerar relatório. Tente novamente.';
+      } finally {
+        this.generating = false;
+      }
+    },
+
+    async _generateQualitorReport() {
+      const token = localStorage.getItem('access_token');
+      const params = new URLSearchParams({
+        interno_user_id: this.filters.userId,
+        start_date: this.filters.startDate,
+        end_date: this.filters.endDate,
+      });
+      try {
+        const res = await fetch(`/api/qualitor/reports/activity?${params}`, {
+          headers: { 'Authorization': 'Bearer ' + token },
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          this.error = err.detail || 'Erro ao gerar relatório Qualitor';
           return;
         }
         this.report = await res.json();
@@ -188,6 +226,38 @@ function activityReportPage() {
 
     roleLabel(r) {
       return { admin: 'Administrador', agent: 'Agente', client_manager: 'Gerente', client_receptionist: 'Recepcionista' }[r] || r;
+    },
+
+    // Helpers específicos Qualitor
+    severidadeClass(s) {
+      if (!s) return 'text-gray-400';
+      if (s.startsWith('P1')) return 'text-red-400';
+      if (s.startsWith('P2')) return 'text-orange-400';
+      if (s.startsWith('P3')) return 'text-yellow-400';
+      return 'text-gray-400';
+    },
+
+    situacaoClassQ(s) {
+      const m = {
+        'Encerrado':                              'text-emerald-400',
+        'Cancelado':                              'text-gray-400',
+        'Em atendimento':                         'text-blue-400',
+        'Aguardando atendimento':                 'text-yellow-400',
+        'Aguardando confirmação de encerramento': 'text-violet-400',
+      };
+      return m[s] || 'text-gray-400';
+    },
+
+    formatQualitorDate(str) {
+      if (!str) return '—';
+      const parts = str.split(/[-T ]/);
+      if (parts.length >= 3) return `${String(parts[2]).substring(0,2)}/${parts[1]}/${parts[0]}`;
+      return str;
+    },
+
+    agentDisplayName() {
+      if (!this.report) return '';
+      return this.report.agent?.name || this.report.agent?.nome || '';
     },
   };
 }
