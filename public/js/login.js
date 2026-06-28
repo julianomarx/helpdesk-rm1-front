@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
       store.menus         = payload.menus         || [];
       store.hotels        = payload.hotels        || [];
       store.teams         = payload.teams         || [];
+      store.qualitorTeams = payload.qualitor_teams || [];
       store.categories    = payload.categories    || [];
       store.subcategories = payload.subcategories || [];
       store.tokenExpire   = payload.exp;

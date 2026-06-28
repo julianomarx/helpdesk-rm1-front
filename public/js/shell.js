@@ -170,6 +170,11 @@ function dashboard() {
         this.showNotifPanel = false;
         return;
       }
+      if (notif.qualitor_ticket_id) {
+        store.navigate('qualitor');
+        this.showNotifPanel = false;
+        return;
+      }
       if (!notif.ticket_id) return;
       store.selectedTicket = { id: notif.ticket_id };
       store.navigate('ticket-view');

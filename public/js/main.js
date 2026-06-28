@@ -72,6 +72,7 @@ document.addEventListener("alpine:init", () => {
         this.menus         = payload.menus         || [];
         this.hotels        = payload.hotels        || [];
         this.teams         = payload.teams         || [];
+        this.qualitorTeams = payload.qualitor_teams || [];
         this.categories    = payload.categories    || [];
         this.subcategories = payload.subcategories || [];
         this.tokenExpire   = payload.exp;

@@ -811,7 +811,7 @@
     class="grid grid-cols-2 lg:grid-cols-3 gap-3">
 
     <template
-      x-for="team in $store.app.teams"
+      x-for="team in allTeams"
       :key="team.id">
 
       <button
@@ -1342,7 +1342,7 @@
             class="grid grid-cols-2 lg:grid-cols-3 gap-3">
 
             <template
-              x-for="team in $store.app.teams"
+              x-for="team in allTeams"
               :key="team.id">
 
               <button

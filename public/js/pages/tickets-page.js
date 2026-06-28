@@ -17,7 +17,8 @@ function ticketsPage() {
       progress: '',
       priority: '',
       team_id: '',
-      category_id: ''
+      category_id: '',
+      mine: false
     },
 
     showCreateTicketModal: false,
@@ -38,6 +39,12 @@ function ticketsPage() {
 
     changeStatus(status) {
       this.ticketFilters.status = status;
+      this.pagination.page = 1;
+      this.getTickets();
+    },
+
+    toggleMine() {
+      this.ticketFilters.mine = !this.ticketFilters.mine;
       this.pagination.page = 1;
       this.getTickets();
     },
@@ -72,6 +79,7 @@ function ticketsPage() {
         if (this.ticketFilters.team_id)     params.append('team_id',     this.ticketFilters.team_id);
         if (this.ticketFilters.category_id) params.append('category_id', this.ticketFilters.category_id);
         if (this.ticketFilters.hotel_id)    params.append('hotel_id',    this.ticketFilters.hotel_id);
+        if (this.ticketFilters.mine)        params.append('mine',        'true');
 
         const res = await fetch(`/api/tickets/?${params.toString()}`, {
           headers: { Authorization: 'Bearer ' + token }

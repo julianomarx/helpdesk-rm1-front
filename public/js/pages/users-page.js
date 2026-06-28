@@ -2,6 +2,7 @@ function usersPage() {
   return {
     loadingUsers: false,
     listedUsers: [],
+    allTeams: [],
 
     usersPagination: {
       page: 1,
@@ -44,6 +45,20 @@ function usersPage() {
       confirmPassword: false,
       role: false,
       phone: false
+    },
+
+    async init() {
+      await this.fetchAllTeams();
+    },
+
+    async fetchAllTeams() {
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch('/api/teams/', {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (res.ok) this.allTeams = await res.json();
+      } catch {}
     },
 
     async fetchUsers(resetPage = false) {

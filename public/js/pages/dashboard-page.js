@@ -16,6 +16,8 @@ function dashboardPage() {
 
   return {
     dashboardTab: 'operational',
+    source: 'helpdesk',   // 'helpdesk' | 'qualitor' | 'all'
+    period: '30d',        // '7d' | '30d' | '90d'
 
     // ── Overview counters ──────────────────────────────────────────
     dashboardOverview: {
@@ -80,6 +82,10 @@ function dashboardPage() {
     bottleneckHotelsPage: 1,
     bottleneckHotelsPages: 1,
 
+    // ── Source toggle extras ────────────────────────────────────────
+    volumeTimeseries: { abertos: [], fechados: [] },
+    unifiedTeams: [],
+
     // ── Tab switching ───────────────────────────────────────────────
     async switchTab(tab) {
       this.dashboardTab = tab;
@@ -105,16 +111,68 @@ function dashboardPage() {
 
     _themeHandler: null,
 
+    // ── Source / period controls ─────────────────────────────────────
+    setSource(s) {
+      this.source = s;
+      this._resetAllTabs();
+      this.loadDashboardOverview();
+      if (this.dashboardTab !== 'operational') this.switchTab(this.dashboardTab);
+    },
+
+    setPeriod(p) {
+      this.period = p;
+      this._resetAllTabs();
+      this.loadDashboardOverview();
+      if (this.dashboardTab !== 'operational') this.switchTab(this.dashboardTab);
+    },
+
+    _resetAllTabs() {
+      this.operationalLoaded  = false;
+      this.productivityLoaded = false;
+      this.bottlenecksLoaded  = false;
+      this.volumeLoaded       = false;
+      this.slaLoaded          = false;
+      this.historyLoaded      = false;
+    },
+
+    sourceLabel() {
+      return { all: 'Todos os portais', helpdesk: 'Helpdesk', qualitor: 'Qualitor' }[this.source] || '';
+    },
+
+    periodLabel() {
+      return { '7d': '7 dias', '30d': '30 dias', '90d': '90 dias' }[this.period] || this.period;
+    },
+
     // ── Loaders ─────────────────────────────────────────────────────
     async loadDashboardOverview() {
       if (!validateToken()) return;
       const token = localStorage.getItem("access_token");
       try {
-        const res = await fetch("/api/dashboard/overview", {
-          headers: { "Authorization": "Bearer " + token }
-        });
-        if (!res.ok) throw new Error();
-        this.dashboardOverview = await res.json();
+        if (this.source === 'helpdesk') {
+          const res = await fetch("/api/dashboard/overview", {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          if (!res.ok) throw new Error();
+          this.dashboardOverview = await res.json();
+        } else {
+          const res = await fetch(`/api/dashboard/unified/summary?source=${this.source}&period=${this.period}`, {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          if (!res.ok) throw new Error();
+          const d = await res.json();
+          this.dashboardOverview = {
+            created_today_tickets:          d.abertos_periodo     ?? 0,
+            closed_today_tickets:           d.fechados_periodo    ?? 0,
+            open_tickets:                   d.total_abertos       ?? 0,
+            in_progress_tickets:            0,
+            feedback_tickets:               0,
+            awaiting_confirmation_tickets:  0,
+            scheduled_visit_tickets:        0,
+            unassigned_tickets:             0,
+            stale_48h_tickets:              d.parados             ?? 0,
+            high_priority_tickets:          0,
+          };
+        }
         this.operationalLoaded = false;
         await this.loadOperational();
       } catch {
@@ -127,11 +185,35 @@ function dashboardPage() {
       this.operationalLoading = true;
       const token = localStorage.getItem("access_token");
       try {
-        const res = await fetch("/api/dashboard/operational", {
-          headers: { "Authorization": "Bearer " + token }
-        });
-        if (!res.ok) throw new Error();
-        this.operational = await res.json();
+        if (this.source === 'helpdesk') {
+          const res = await fetch("/api/dashboard/operational", {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          if (!res.ok) throw new Error();
+          this.operational = await res.json();
+        } else {
+          const res = await fetch(`/api/dashboard/unified/stalled?source=${this.source}&days=5`, {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          if (!res.ok) throw new Error();
+          const data = await res.json();
+          // Normalize unified stalled into existing template shape
+          this.operational = {
+            stale_tickets: (data.tickets || []).map(t => ({
+              id:          t.id,
+              title:       t.titulo || t.title || '',
+              hotel_name:  t.equipe || '—',
+              priority:    null,
+              updated_at:  t.ultimo_acomp,
+              assignee_name: t.responsavel || '—',
+              portal:      t.portal,
+            })),
+            unassigned_tickets:           [],
+            critical_tickets:             [],
+            awaiting_confirmation_tickets: [],
+            feedback_tickets:             [],
+          };
+        }
         this.operationalLoaded = true;
       } catch {
         showToast("Erro ao carregar dados operacionais", "error");
@@ -145,11 +227,29 @@ function dashboardPage() {
       this.productivityLoading = true;
       const token = localStorage.getItem("access_token");
       try {
-        const res = await fetch("/api/dashboard/productivity", {
-          headers: { "Authorization": "Bearer " + token }
-        });
-        if (!res.ok) throw new Error();
-        this.productivity = await res.json();
+        if (this.source === 'helpdesk') {
+          const res = await fetch("/api/dashboard/productivity", {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          if (!res.ok) throw new Error();
+          this.productivity = await res.json();
+        } else {
+          const res = await fetch(`/api/dashboard/unified/top-technicians?source=${this.source}&period=${this.period}`, {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          if (!res.ok) throw new Error();
+          const data = await res.json();
+          const norm = (arr) => (arr || []).map((item, i) => ({
+            user_id: i,
+            name:  item.nome  ?? item.name  ?? '',
+            count: item.total ?? item.count ?? 0,
+          }));
+          this.productivity = {
+            top_closers:   norm(data.fechamentos),
+            top_commenters: norm(data.comentarios),
+            most_active:   norm(data.carga_atual),
+          };
+        }
         this.productivityLoaded = true;
       } catch {
         showToast("Erro ao carregar produtividade", "error");
@@ -163,11 +263,22 @@ function dashboardPage() {
       this.bottlenecksLoading = true;
       const token = localStorage.getItem("access_token");
       try {
-        const res = await fetch("/api/dashboard/bottlenecks", {
-          headers: { "Authorization": "Bearer " + token }
-        });
-        if (!res.ok) throw new Error();
-        this.bottlenecks = await res.json();
+        if (this.source === 'helpdesk') {
+          const res = await fetch("/api/dashboard/bottlenecks", {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          if (!res.ok) throw new Error();
+          this.bottlenecks = await res.json();
+          this.unifiedTeams = [];
+        } else {
+          const res = await fetch(`/api/dashboard/unified/by-team?source=${this.source}&period=${this.period}`, {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          if (!res.ok) throw new Error();
+          const data = await res.json();
+          this.unifiedTeams = data.equipes || [];
+          this.bottlenecks = { by_team: [], by_category: [], by_hotel: [] };
+        }
         this.bottlenecksLoaded = true;
       } catch {
         showToast("Erro ao carregar gargalos", "error");
@@ -206,14 +317,27 @@ function dashboardPage() {
       this.volumeLoading = true;
       const token = localStorage.getItem("access_token");
       try {
-        const res = await fetch("/api/dashboard/volume", {
-          headers: { "Authorization": "Bearer " + token }
-        });
-        if (!res.ok) throw new Error();
-        this.volume = await res.json();
-        this.volumeLoaded = true;
-        await this.$nextTick();
-        this.initVolumeCharts();
+        if (this.source === 'helpdesk') {
+          const res = await fetch("/api/dashboard/volume", {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          if (!res.ok) throw new Error();
+          this.volume = await res.json();
+          this.volumeTimeseries = { abertos: [], fechados: [] };
+          this.volumeLoaded = true;
+          await this.$nextTick();
+          this.initVolumeCharts();
+        } else {
+          const res = await fetch(`/api/dashboard/unified/volume?source=${this.source}&period=${this.period}`, {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          if (!res.ok) throw new Error();
+          this.volumeTimeseries = await res.json();
+          this.volume = { by_category: [], by_subcategory: [], by_hotel: [] };
+          this.volumeLoaded = true;
+          await this.$nextTick();
+          this._renderVolumeTimeseries();
+        }
       } catch {
         showToast("Erro ao carregar volume", "error");
       } finally {
@@ -226,14 +350,34 @@ function dashboardPage() {
       this.slaLoading = true;
       const token = localStorage.getItem("access_token");
       try {
-        const res = await fetch("/api/dashboard/sla", {
-          headers: { "Authorization": "Bearer " + token }
-        });
-        if (!res.ok) throw new Error();
-        this.sla = await res.json();
-        this.slaLoaded = true;
-        await this.$nextTick();
-        this.initSLACharts();
+        if (this.source === 'helpdesk') {
+          const res = await fetch("/api/dashboard/sla", {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          if (!res.ok) throw new Error();
+          this.sla = await res.json();
+          this.slaLoaded = true;
+          await this.$nextTick();
+          this.initSLACharts();
+        } else {
+          const res = await fetch(`/api/dashboard/unified/sla?source=${this.source}&period=${this.period}`, {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          if (!res.ok) throw new Error();
+          const data = await res.json();
+          // unified sla — wrap in existing shape; charts won't render (guarded in initSLACharts)
+          this.sla = {
+            summary: {
+              total_with_sla: 0, active_sla: 0,
+              resolution_breached_open: 0, at_risk: 0,
+              overall_compliance_pct: 0, avg_response_hours: null,
+            },
+            by_team: [], by_policy: [],
+            at_risk_tickets: [], breached_open_tickets: [],
+            _unified: data.portais || {},
+          };
+          this.slaLoaded = true;
+        }
       } catch {
         showToast("Erro ao carregar dados de SLA", "error");
       } finally {
@@ -263,6 +407,7 @@ function dashboardPage() {
 
     // ── SLA Charts ───────────────────────────────────────────────────
     initSLACharts() {
+      if (this.source !== 'helpdesk') return;
       destroyChart('slaDonut');
       destroyChart('slaTeam');
       destroyChart('slaPolicy');
@@ -422,7 +567,43 @@ function dashboardPage() {
       });
     },
 
+    _renderVolumeTimeseries() {
+      destroyChart('dashVolumeTs');
+      const canvas = document.getElementById('dashVolumeTimeseriesChart');
+      if (!canvas || !this.volumeTimeseries) return;
+      const th = _chartTheme();
+      const diasSet = new Set();
+      (this.volumeTimeseries.abertos  || []).forEach(d => diasSet.add(d.dia));
+      (this.volumeTimeseries.fechados || []).forEach(d => diasSet.add(d.dia));
+      const dias  = Array.from(diasSet).sort();
+      const abMap = Object.fromEntries((this.volumeTimeseries.abertos  || []).map(d => [d.dia, d.total]));
+      const feMap = Object.fromEntries((this.volumeTimeseries.fechados || []).map(d => [d.dia, d.total]));
+      const labels = dias.map(d => { const p = d.split('-'); return `${p[2]}/${p[1]}`; });
+      _charts['dashVolumeTs'] = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Abertos',    data: dias.map(d => abMap[d] || 0), backgroundColor: 'rgba(99,102,241,0.5)', borderColor: 'rgba(99,102,241,1)', borderWidth: 1, borderRadius: 4 },
+            { label: 'Encerrados', data: dias.map(d => feMap[d] || 0), backgroundColor: 'rgba(16,185,129,0.5)', borderColor: 'rgba(16,185,129,1)', borderWidth: 1, borderRadius: 4 },
+          ],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: th.text, font: { size: 11 } } },
+            tooltip: { mode: 'index', intersect: false },
+          },
+          scales: {
+            x: { ticks: { color: th.muted, font: { size: 10 } }, grid: { color: th.grid } },
+            y: { ticks: { color: th.muted }, grid: { color: th.grid }, beginAtZero: true },
+          },
+        },
+      });
+    },
+
     initVolumeCharts() {
+      if (this.source !== 'helpdesk') { this._renderVolumeTimeseries(); return; }
       destroyChart('volumeCat');
       destroyChart('volumeHotel');
       const th = _chartTheme();
@@ -480,6 +661,15 @@ function dashboardPage() {
 
     // ── Formatters / helpers ─────────────────────────────────────────
     get overviewCards() {
+      if (this.source !== 'helpdesk') {
+        const pl = this.periodLabel();
+        return [
+          { label: `Novos (${pl})`,       value: this.dashboardOverview.created_today_tickets, color: 'blue'   },
+          { label: `Encerrados (${pl})`,  value: this.dashboardOverview.closed_today_tickets,  color: 'emerald'},
+          { label: 'Em Aberto',           value: this.dashboardOverview.open_tickets,           color: 'gray'   },
+          { label: 'Parados +5d',         value: this.dashboardOverview.stale_48h_tickets,     color: 'orange' },
+        ];
+      }
       return [
         { label: "Criados Hoje",           value: this.dashboardOverview.created_today_tickets,           color: 'blue'   },
         { label: "Encerrados Hoje",        value: this.dashboardOverview.closed_today_tickets,            color: 'emerald'},
