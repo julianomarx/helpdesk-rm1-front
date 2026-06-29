@@ -357,7 +357,8 @@
                 </thead>
                 <tbody>
                   <template x-for="t in report.ticket_list" :key="t.id">
-                    <tr class="border-b border-white/5 hover:bg-white/[0.02] transition">
+                    <tr class="border-b border-white/5 hover:bg-white/[0.02] transition cursor-pointer"
+                        @click="window.openHelpdeskTicket(t.id, {readOnly: true})">
                       <td class="px-5 py-3 text-gray-400 text-xs font-mono" x-text="'#' + t.id"></td>
                       <td class="px-3 py-3 text-gray-200 max-w-xs">
                         <span class="truncate block" x-text="t.title"></span>
@@ -407,7 +408,8 @@
                 </thead>
                 <tbody>
                   <template x-for="t in report.ticket_list" :key="t.id">
-                    <tr class="border-b border-white/5 hover:bg-white/[0.02] transition">
+                    <tr class="border-b border-white/5 hover:bg-white/[0.02] transition cursor-pointer"
+                        @click="window.openQualitorTicket(t.id, {readOnly: true})">
                       <td class="px-4 py-3 text-gray-400 text-xs font-mono">
                         <span x-text="'#' + t.id"></span>
                         <template x-if="!t.is_responsible">
@@ -574,7 +576,8 @@
                 </thead>
                 <tbody>
                   <template x-for="t in bothReports.helpdesk.ticket_list" :key="t.id">
-                    <tr class="border-b border-white/5 hover:bg-white/[0.02] transition">
+                    <tr class="border-b border-white/5 hover:bg-white/[0.02] transition cursor-pointer"
+                        @click="window.openHelpdeskTicket(t.id, {readOnly: true})">
                       <td class="px-5 py-3 text-gray-400 text-xs font-mono" x-text="'#' + t.id"></td>
                       <td class="px-3 py-3 text-gray-200 max-w-xs"><span class="truncate block" x-text="t.title"></span></td>
                       <td class="px-3 py-3 text-gray-400 text-xs whitespace-nowrap" x-text="t.hotel"></td>
@@ -614,7 +617,8 @@
                 </thead>
                 <tbody>
                   <template x-for="t in bothReports.qualitor.ticket_list" :key="t.id">
-                    <tr class="border-b border-white/5 hover:bg-white/[0.02] transition">
+                    <tr class="border-b border-white/5 hover:bg-white/[0.02] transition cursor-pointer"
+                        @click="window.openQualitorTicket(t.id, {readOnly: true})">
                       <td class="px-4 py-3 text-gray-400 text-xs font-mono">
                         <span x-text="'#' + t.id"></span>
                         <template x-if="!t.is_responsible">

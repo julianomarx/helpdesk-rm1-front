@@ -300,7 +300,8 @@
           </thead>
           <tbody class="divide-y divide-white/[0.04]">
             <template x-for="t in (stalled?.tickets || [])" :key="(t.portal || '') + t.id">
-              <tr class="hover:bg-white/[0.02]">
+              <tr class="hover:bg-white/[0.02] cursor-pointer"
+                  @click="t.portal === 'qualitor' ? window.openQualitorTicket(t.id) : window.openHelpdeskTicket(t.id)">
                 <td class="py-2 pr-3">
                   <span class="text-[10px] px-1.5 py-0.5 rounded border"
                         :class="t.portal === 'qualitor'

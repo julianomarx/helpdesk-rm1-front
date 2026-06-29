@@ -163,7 +163,8 @@
                 </tr></thead>
                 <tbody>
                   <template x-for="t in operational.stale_tickets" :key="t.id">
-                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
+                        @click="t.portal === 'qualitor' ? window.openQualitorTicket(t.id) : window.openHelpdeskTicket(t.id)">
                       <td class="px-4 py-2.5 text-gray-500" x-text="'#' + t.id"></td>
                       <td class="px-4 py-2.5 text-gray-200 max-w-[180px] truncate" x-text="t.title"></td>
                       <td class="px-4 py-2.5 text-gray-400" x-text="t.hotel_name"></td>
@@ -205,7 +206,8 @@
                 </tr></thead>
                 <tbody>
                   <template x-for="t in operational.unassigned_tickets" :key="t.id">
-                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
+                        @click="window.openHelpdeskTicket(t.id)">
                       <td class="px-4 py-2.5 text-gray-500" x-text="'#' + t.id"></td>
                       <td class="px-4 py-2.5 text-gray-200 max-w-[180px] truncate" x-text="t.title"></td>
                       <td class="px-4 py-2.5 text-gray-400" x-text="t.hotel_name"></td>
@@ -238,7 +240,8 @@
                 </tr></thead>
                 <tbody>
                   <template x-for="t in operational.critical_tickets" :key="t.id">
-                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
+                        @click="window.openHelpdeskTicket(t.id)">
                       <td class="px-4 py-2.5 text-gray-500" x-text="'#' + t.id"></td>
                       <td class="px-4 py-2.5 text-gray-200 max-w-[180px] truncate" x-text="t.title"></td>
                       <td class="px-4 py-2.5 text-gray-400" x-text="t.hotel_name"></td>
@@ -271,7 +274,8 @@
                 </tr></thead>
                 <tbody>
                   <template x-for="t in operational.awaiting_confirmation_tickets" :key="t.id">
-                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
+                        @click="window.openHelpdeskTicket(t.id)">
                       <td class="px-4 py-2.5 text-gray-500" x-text="'#' + t.id"></td>
                       <td class="px-4 py-2.5 text-gray-200 max-w-[180px] truncate" x-text="t.title"></td>
                       <td class="px-4 py-2.5 text-gray-400" x-text="t.hotel_name"></td>
@@ -305,7 +309,8 @@
                 </tr></thead>
                 <tbody>
                   <template x-for="t in operational.feedback_tickets" :key="t.id">
-                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
+                        @click="window.openHelpdeskTicket(t.id)">
                       <td class="px-4 py-2.5 text-gray-500" x-text="'#' + t.id"></td>
                       <td class="px-4 py-2.5 text-gray-200 max-w-[200px] truncate" x-text="t.title"></td>
                       <td class="px-4 py-2.5 text-gray-400" x-text="t.hotel_name"></td>
@@ -1092,7 +1097,8 @@
                   </tr></thead>
                   <tbody>
                     <template x-for="t in sla.at_risk_tickets" :key="t.id">
-                      <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <tr class="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
+                          @click="window.openHelpdeskTicket(t.id)">
                         <td class="px-4 py-2.5 text-gray-500" x-text="'#' + t.id"></td>
                         <td class="px-4 py-2.5 text-gray-200 max-w-[160px] truncate" x-text="t.title"></td>
                         <td class="px-4 py-2.5 text-gray-400 truncate" x-text="t.team_name || '—'"></td>
@@ -1131,7 +1137,8 @@
                   </tr></thead>
                   <tbody>
                     <template x-for="t in sla.breached_open_tickets" :key="t.id">
-                      <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <tr class="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
+                          @click="window.openHelpdeskTicket(t.id)">
                         <td class="px-4 py-2.5 text-gray-500" x-text="'#' + t.id"></td>
                         <td class="px-4 py-2.5 text-gray-200 max-w-[160px] truncate" x-text="t.title"></td>
                         <td class="px-4 py-2.5 text-gray-400 truncate" x-text="t.team_name || '—'"></td>

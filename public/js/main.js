@@ -1,6 +1,20 @@
 document.addEventListener("alpine:init", () => {
   const API_BASE = "/api";
 
+  // ── Bridges globais dos modais ────────────────────────────────────────────
+  // Registradas IMEDIATAMENTE aqui; o componente preenche _instance quando carrega.
+  window._hdModalInstance = null;
+  window._qtModalInstance = null;
+
+  window.openHelpdeskTicket = (id, opts = {}) => {
+    if (window._hdModalInstance) window._hdModalInstance.openTicket(id, opts);
+    else showToast('Modal ainda carregando, tente novamente', 'warning');
+  };
+  window.openQualitorTicket = (id, opts = {}) => {
+    if (window._qtModalInstance) window._qtModalInstance.openTicket(id, opts);
+    else showToast('Modal ainda carregando, tente novamente', 'warning');
+  };
+
   Alpine.store("app", {
     currentView:   "loading",
     currentPage:   "dashboard",
@@ -79,6 +93,9 @@ document.addEventListener("alpine:init", () => {
 
         this.currentView = "dashboard";
         await this.navigate(this.currentPage);
+
+        // Modais globais já estão embutidos em index.html e inicializados pelo Alpine.
+
         sessionWatcher.start();
         this.startHeartbeat();
 
