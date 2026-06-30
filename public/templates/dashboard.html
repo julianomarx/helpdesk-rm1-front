@@ -183,11 +183,18 @@
                   </template>
                 </tbody>
               </table>
-              <div x-show="stalledHidden > 0"
-                   class="flex items-center justify-center px-4 py-2.5 border-t border-white/5">
-                <button @click="stalledVisible = Infinity"
+              <div class="flex items-center justify-center px-4 py-2.5 border-t border-white/5 gap-4">
+                <button x-show="stalledHidden > 0"
+                        @click="stalledVisible = Infinity"
                         class="text-xs text-gray-500 hover:text-gray-300 transition-colors"
                         x-text="'+ ver mais ' + stalledHidden + ' ticket' + (stalledHidden !== 1 ? 's' : '')">
+                </button>
+                <button x-show="stalledHidden === 0 && stalledHasMore"
+                        @click="loadAllStalled()"
+                        :disabled="stalledLoadingAll"
+                        class="text-xs text-amber-500/70 hover:text-amber-400 transition-colors disabled:opacity-40">
+                  <span x-show="!stalledLoadingAll">↓ carregar todos os tickets parados</span>
+                  <span x-show="stalledLoadingAll">carregando...</span>
                 </button>
               </div>
             </div>

@@ -37,6 +37,8 @@ function dashboardPage() {
     operationalLoaded: false,
     operationalLoading: false,
     stalledVisible: 15,
+    stalledHasMore: false,
+    stalledLoadingAll: false,
     operational: {
       stale_tickets: [],
       unassigned_tickets: [],
@@ -50,6 +52,32 @@ function dashboardPage() {
     },
     get stalledHidden() {
       return Math.max(0, (this.operational?.stale_tickets || []).length - this.stalledVisible);
+    },
+
+    async loadAllStalled() {
+      if (this.stalledLoadingAll) return;
+      this.stalledLoadingAll = true;
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch(`/api/dashboard/unified/stalled?source=${this.source}&days=5&limit=200`, {
+          headers: { Authorization: 'Bearer ' + token },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const tickets = (data.tickets || []).map(t => ({
+          id:          t.id,
+          title:       t.titulo || t.title || '',
+          hotel_name:  t.equipe || '—',
+          priority:    null,
+          updated_at:  t.ultimo_acomp,
+          assignee_name: t.responsavel || '—',
+          portal:      t.portal,
+        }));
+        this.operational.stale_tickets = tickets;
+        this.stalledHasMore = data.has_more || false;
+        this.stalledVisible = Infinity;
+      } catch {}
+      finally { this.stalledLoadingAll = false; }
     },
 
     // ── Productivity ───────────────────────────────────────────────
@@ -192,6 +220,7 @@ function dashboardPage() {
       if (!validateToken()) return;
       this.operationalLoading = true;
       this.stalledVisible = 15;
+      this.stalledHasMore = false;
       const token = localStorage.getItem("access_token");
       try {
         if (this.source === 'helpdesk') {
@@ -201,12 +230,12 @@ function dashboardPage() {
           if (!res.ok) throw new Error();
           this.operational = await res.json();
         } else {
-          const res = await fetch(`/api/dashboard/unified/stalled?source=${this.source}&days=5`, {
+          const res = await fetch(`/api/dashboard/unified/stalled?source=${this.source}&days=5&limit=25`, {
             headers: { "Authorization": "Bearer " + token }
           });
           if (!res.ok) throw new Error();
           const data = await res.json();
-          // Normalize unified stalled into existing template shape
+          this.stalledHasMore = data.has_more || false;
           this.operational = {
             stale_tickets: (data.tickets || []).map(t => ({
               id:          t.id,

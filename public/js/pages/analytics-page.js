@@ -11,12 +11,31 @@ function analyticsPage() {
     stalled: null,
     sla: null,
     stalledVisible: 15,
+    stalledHasMore: false,
+    stalledLoadingAll: false,
 
     get stalledShown() {
       return (this.stalled?.tickets || []).slice(0, this.stalledVisible);
     },
     get stalledHidden() {
       return Math.max(0, (this.stalled?.tickets || []).length - this.stalledVisible);
+    },
+
+    async loadAllStalled() {
+      if (this.stalledLoadingAll) return;
+      this.stalledLoadingAll = true;
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch(`/api/dashboard/unified/stalled?source=${this.source}&days=5&limit=200`, {
+          headers: { Authorization: 'Bearer ' + token },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        this.stalled = data;
+        this.stalledHasMore = data.has_more || false;
+        this.stalledVisible = Infinity;
+      } catch {}
+      finally { this.stalledLoadingAll = false; }
     },
 
     async init() {
@@ -29,6 +48,7 @@ function analyticsPage() {
     async fetchAll() {
       this.loading = true;
       this.stalledVisible = 15;
+      this.stalledHasMore = false;
       const token = localStorage.getItem('access_token');
       const headers = { Authorization: 'Bearer ' + token };
       const qs = `source=${this.source}&period=${this.period}`;
@@ -47,7 +67,10 @@ function analyticsPage() {
         if (volRes.ok)  this.volume   = await volRes.json();
         if (techRes.ok) this.topTech  = await techRes.json();
         if (teamRes.ok) this.byTeam   = await teamRes.json();
-        if (stalRes.ok) this.stalled  = await stalRes.json();
+        if (stalRes.ok) {
+          this.stalled = await stalRes.json();
+          this.stalledHasMore = this.stalled?.has_more || false;
+        }
         if (slaRes.ok)  this.sla      = await slaRes.json();
       } catch (e) {
         showToast('Erro ao carregar dados do painel', 'error');
