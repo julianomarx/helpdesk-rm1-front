@@ -4,16 +4,14 @@ function qualitorPage() {
     loadingDetail: false,
     loadingHistory: false,
     tickets: [],
-    ticketsTotal: 0,
-    ticketsPage: 1,
-    ticketsPages: 1,
+    pagination: { page: 1, pages: 1, total: 0, pageSize: 50 },
     status: null,
     ticketAttachments: [],
     loadingAttachments: false,
     uploadLoading: false,
 
     filters: {
-      situacao: '',
+      situacao: 'ativas',
       equipe: '',
       search: '',
       mine: false,
@@ -54,9 +52,12 @@ function qualitorPage() {
     _mentionEnd: -1,
 
     situacaoOptions: [
+      { value: 'ativas', label: 'Ativas (exceto encerradas)' },
       { value: '', label: 'Todas as situações' },
       { value: 'Aguardando atendimento', label: 'Aguardando atendimento' },
       { value: 'Em atendimento', label: 'Em atendimento' },
+      { value: 'Encerrado', label: 'Encerradas' },
+      { value: 'Cancelado', label: 'Canceladas' },
     ],
 
     equipeOptions: [],
@@ -137,42 +138,56 @@ function qualitorPage() {
 
     toggleMine() {
       this.filters.mine = !this.filters.mine;
-      this.fetchTickets();
+      this.fetchTickets(true);
+    },
+
+    _buildFilterParams(extra = {}) {
+      const params = new URLSearchParams();
+      if (this.filters.situacao === 'ativas') {
+        params.set('ativas_only', 'true');
+      } else if (this.filters.situacao) {
+        params.set('situacao', this.filters.situacao);
+      }
+      if (this.filters.equipe)   params.set('equipe', this.filters.equipe);
+      if (this.filters.mine)     params.set('responsavel_interno_id', Alpine.store('app').userId);
+      for (const [k, v] of Object.entries(extra)) params.set(k, v);
+      return params;
     },
 
     async fetchStatus() {
       if (!validateToken()) return;
       const token = localStorage.getItem('access_token');
       try {
-        const res = await fetch('/api/qualitor/status', {
+        // Badges refletem a equipe ativa e se estamos vendo só ativas
+        const params = new URLSearchParams();
+        if (this.filters.equipe) params.set('equipe', this.filters.equipe);
+        if (this.filters.situacao === 'ativas') params.set('ativas_only', 'true');
+        const res = await fetch(`/api/qualitor/status?${params.toString()}`, {
           headers: { Authorization: 'Bearer ' + token },
         });
         if (res.ok) this.status = await res.json();
-        // status shape: { total_tickets, por_situacao, ultimo_sync }
       } catch {}
     },
 
-    async fetchTickets(page = 1) {
+    async fetchTickets(resetPage = true) {
       if (!validateToken()) return;
+      if (resetPage) this.pagination.page = 1;
       this.loading = true;
       const token = localStorage.getItem('access_token');
       try {
-        const params = new URLSearchParams();
-        if (this.filters.situacao) params.set('situacao', this.filters.situacao);
-        if (this.filters.equipe)   params.set('equipe',   this.filters.equipe);
-        if (this.filters.mine)     params.set('responsavel_interno_id', Alpine.store('app').userId);
-        params.set('page', page);
-        params.set('page_size', 100);
+        const params = this._buildFilterParams({
+          page: this.pagination.page,
+          page_size: this.pagination.pageSize,
+        });
         const res = await fetch(`/api/qualitor/tickets?${params.toString()}`, {
           headers: { Authorization: 'Bearer ' + token },
         });
         if (!res.ok) { showToast('Erro ao buscar tickets Qualitor', 'error'); return; }
         const data = await res.json();
-        const incoming = Array.isArray(data) ? data : (data.tickets || []);
-        this.tickets        = page === 1 ? incoming : [...this.tickets, ...incoming];
-        this.ticketsTotal   = data.total  || incoming.length;
-        this.ticketsPage    = data.page   || page;
-        this.ticketsPages   = data.pages  || 1;
+        this.tickets              = data.tickets || [];
+        this.pagination.total     = data.total   || 0;
+        this.pagination.page      = data.page    || this.pagination.page;
+        this.pagination.pages     = data.pages   || 1;
       } catch {
         showToast('Erro ao buscar tickets Qualitor', 'error');
       } finally {
@@ -180,10 +195,16 @@ function qualitorPage() {
       }
     },
 
-    async loadMoreTickets() {
-      if (this.ticketsPage < this.ticketsPages) {
-        await this.fetchTickets(this.ticketsPage + 1);
-      }
+    async nextPage() {
+      if (this.pagination.page >= this.pagination.pages) return;
+      this.pagination.page++;
+      await this.fetchTickets(false);
+    },
+
+    async previousPage() {
+      if (this.pagination.page <= 1) return;
+      this.pagination.page--;
+      await this.fetchTickets(false);
     },
 
     async openTicket(ticket) {
@@ -648,14 +669,14 @@ function qualitorPage() {
     },
 
     get filteredTickets() {
-      const q = this.filters.search.toLowerCase();
+      const q = (this.filters.search || '').toLowerCase().trim();
       if (!q) return this.tickets;
       return this.tickets.filter(t =>
         String(t.id).includes(q) ||
-        (t.titulo       || '').toLowerCase().includes(q) ||
-        (t.contato      || '').toLowerCase().includes(q) ||
-        (t.responsavel  || '').toLowerCase().includes(q) ||
-        (t.categoria    || '').toLowerCase().includes(q)
+        (t.titulo      || '').toLowerCase().includes(q) ||
+        (t.contato     || '').toLowerCase().includes(q) ||
+        (t.responsavel || '').toLowerCase().includes(q) ||
+        (t.categoria   || '').toLowerCase().includes(q)
       );
     },
 

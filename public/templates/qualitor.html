@@ -50,14 +50,14 @@
                  text-sm text-gray-200 placeholder-gray-600
                  focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50">
       </div>
-      <select x-model="filters.situacao" @change="fetchTickets()"
+      <select x-model="filters.situacao" @change="fetchTickets(); fetchStatus()"
         class="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10
                text-sm text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500/50">
         <template x-for="opt in situacaoOptions" :key="opt.value">
           <option :value="opt.value" x-text="opt.label"></option>
         </template>
       </select>
-      <select x-show="equipeOptions.length > 1" x-model="filters.equipe" @change="fetchTickets()"
+      <select x-show="equipeOptions.length > 1" x-model="filters.equipe" @change="fetchTickets(); fetchStatus()"
         class="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10
                text-sm text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500/50">
         <template x-for="opt in equipeOptions" :key="opt.value">
@@ -74,7 +74,7 @@
         </svg>
         Meus tickets
       </button>
-      <button @click="fetchTickets(); fetchStatus()"
+      <button @click="fetchTickets(true); fetchStatus()"
         class="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10
                text-sm text-gray-400 hover:text-white hover:bg-white/[0.08] transition flex items-center gap-1.5">
         <svg class="w-3.5 h-3.5" :class="loading ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -141,14 +141,33 @@
           </div>
         </template>
 
-        <div class="flex items-center justify-between px-2 py-2">
-          <p class="text-[10px] text-gray-700"
-             x-text="filteredTickets.length + (ticketsTotal > tickets.length ? ' de ' + ticketsTotal : '') + ' ticket(s)'"></p>
-          <button x-show="ticketsPage < ticketsPages" @click="loadMoreTickets()" :disabled="loading"
-            class="text-[11px] text-blue-400 hover:text-blue-300 disabled:opacity-50 transition-colors">
-            <span x-show="!loading">Carregar mais</span>
-            <span x-show="loading">Carregando...</span>
-          </button>
+        <!-- Rodapé: total + paginação -->
+        <div class="relative flex items-center justify-center px-4 py-3 border-t border-white/[0.04]">
+          <span class="absolute left-4 text-[11px] text-gray-600"
+                x-text="pagination.total + ' ticket(s)'"></span>
+          <div class="flex items-center gap-2">
+            <button @click="previousPage()" :disabled="pagination.page <= 1 || loading"
+              class="w-8 h-8 rounded-xl bg-white/[0.04] border border-white/10
+                     text-gray-400 hover:text-white hover:bg-white/[0.08] transition
+                     disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            <span class="text-sm text-gray-400 min-w-[60px] text-center">
+              <span x-text="pagination.page"></span>
+              <span class="text-gray-600"> / </span>
+              <span x-text="pagination.pages || 1"></span>
+            </span>
+            <button @click="nextPage()" :disabled="pagination.page >= pagination.pages || loading"
+              class="w-8 h-8 rounded-xl bg-white/[0.04] border border-white/10
+                     text-gray-400 hover:text-white hover:bg-white/[0.08] transition
+                     disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </template>
