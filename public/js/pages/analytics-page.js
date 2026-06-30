@@ -10,6 +10,14 @@ function analyticsPage() {
     byTeam: null,
     stalled: null,
     sla: null,
+    stalledVisible: 15,
+
+    get stalledShown() {
+      return (this.stalled?.tickets || []).slice(0, this.stalledVisible);
+    },
+    get stalledHidden() {
+      return Math.max(0, (this.stalled?.tickets || []).length - this.stalledVisible);
+    },
 
     async init() {
       await this.fetchAll();
@@ -20,6 +28,7 @@ function analyticsPage() {
 
     async fetchAll() {
       this.loading = true;
+      this.stalledVisible = 15;
       const token = localStorage.getItem('access_token');
       const headers = { Authorization: 'Bearer ' + token };
       const qs = `source=${this.source}&period=${this.period}`;

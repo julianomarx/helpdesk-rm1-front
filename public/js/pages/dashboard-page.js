@@ -36,12 +36,20 @@ function dashboardPage() {
     // ── Operational ────────────────────────────────────────────────
     operationalLoaded: false,
     operationalLoading: false,
+    stalledVisible: 15,
     operational: {
       stale_tickets: [],
       unassigned_tickets: [],
       critical_tickets: [],
       awaiting_confirmation_tickets: [],
       feedback_tickets: []
+    },
+
+    get stalledShown() {
+      return (this.operational?.stale_tickets || []).slice(0, this.stalledVisible);
+    },
+    get stalledHidden() {
+      return Math.max(0, (this.operational?.stale_tickets || []).length - this.stalledVisible);
     },
 
     // ── Productivity ───────────────────────────────────────────────
@@ -183,6 +191,7 @@ function dashboardPage() {
     async loadOperational() {
       if (!validateToken()) return;
       this.operationalLoading = true;
+      this.stalledVisible = 15;
       const token = localStorage.getItem("access_token");
       try {
         if (this.source === 'helpdesk') {

@@ -299,7 +299,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-white/[0.04]">
-            <template x-for="t in (stalled?.tickets || [])" :key="(t.portal || '') + t.id">
+            <template x-for="t in stalledShown" :key="(t.portal || '') + t.id">
               <tr class="hover:bg-white/[0.02] cursor-pointer"
                   @click="t.portal === 'qualitor' ? window.openQualitorTicket(t.id) : window.openHelpdeskTicket(t.id)">
                 <td class="py-2 pr-3">
@@ -319,6 +319,13 @@
             </template>
           </tbody>
         </table>
+        <div x-show="stalledHidden > 0"
+             class="flex items-center justify-center py-3 border-t border-white/[0.04]">
+          <button @click="stalledVisible = Infinity"
+                  class="text-xs text-gray-500 hover:text-amber-400 transition-colors"
+                  x-text="'+ ver mais ' + stalledHidden + ' ticket' + (stalledHidden !== 1 ? 's' : '')">
+          </button>
+        </div>
       </div>
     </div>
 
