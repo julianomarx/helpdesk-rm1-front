@@ -494,14 +494,40 @@ function helpdeskTicketModal() {
     },
 
     translateValue(v) {
+      if (!v) return '';
+      // Strip Python enum class prefix (e.g. "ProgressEnum.awaiting_confirmation")
+      const val = v.replace(/^\w+Enum\./, '');
       const m = {
         open: 'Aberto', closed: 'Encerrado', cancelled: 'Cancelado',
         waiting: 'Aguardando', in_progress: 'Em atendimento',
         feedback: 'Retorno do solicitante', awaiting_confirmation: 'Ag. confirmação',
         scheduled_visit: 'Visita agendada', done: 'Concluído',
         low: 'Baixa', medium: 'Média', high: 'Alta',
+        ticket_reopened: 'Chamado reaberto', ticket_closed: 'Chamado encerrado',
+        ticket_started: 'Atendimento iniciado', ticket_cancelled: 'Chamado cancelado',
+        ticket_returned: 'Retornado para fila',
       };
-      return m[v] || v || '';
+      return m[val] || val || '';
+    },
+
+    eventStyle(action) {
+      const map = {
+        created:          { dot: 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400', label: 'text-emerald-300', icon: 'check'  },
+        ticket_started:   { dot: 'bg-blue-500/20 border border-blue-500/40 text-blue-400',          label: 'text-blue-300',    icon: 'play'   },
+        ticket_closed:    { dot: 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400', label: 'text-emerald-300', icon: 'check'  },
+        ticket_reopened:  { dot: 'bg-amber-500/20 border border-amber-500/40 text-amber-400',       label: 'text-amber-300',   icon: 'reopen' },
+        ticket_cancelled: { dot: 'bg-red-500/20 border border-red-500/40 text-red-400',             label: 'text-red-300',     icon: 'x'      },
+        ticket_returned:  { dot: 'bg-amber-500/20 border border-amber-500/40 text-amber-400',       label: 'text-amber-300',   icon: 'reopen' },
+        assigned_changed: { dot: 'bg-purple-500/20 border border-purple-500/40 text-purple-400',    label: 'text-purple-300',  icon: 'person' },
+        team_changed:     { dot: 'bg-violet-500/20 border border-violet-500/40 text-violet-400',    label: 'text-violet-300',  icon: 'team'   },
+        priority_changed: { dot: 'bg-amber-500/20 border border-amber-500/40 text-amber-400',       label: 'text-amber-300',   icon: 'flag'   },
+        sla_started:      { dot: 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400', label: 'text-emerald-300', icon: 'clock'  },
+        sla_breached:     { dot: 'bg-red-500/20 border border-red-500/40 text-red-400',             label: 'text-red-300',     icon: 'alert'  },
+        agent_joined:     { dot: 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400', label: 'text-emerald-300', icon: 'person' },
+        agent_left:       { dot: 'bg-red-500/20 border border-red-500/40 text-red-400',             label: 'text-red-300',     icon: 'x'      },
+        comment_deleted:  { dot: 'bg-red-500/20 border border-red-500/40 text-red-400',             label: 'text-red-300',     icon: 'x'      },
+      };
+      return map[action] || { dot: 'bg-white/5 border border-white/10 text-gray-500', label: 'text-gray-400', icon: 'info' };
     },
 
     get slaLabel() {
