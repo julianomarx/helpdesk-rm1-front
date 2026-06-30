@@ -59,7 +59,6 @@
                 </template>
               </div>
             </div>
-            <!-- Abrir página completa + fechar -->
             <div class="flex items-center gap-1.5 shrink-0">
               <button
                 @click="Alpine.store('app').selectedTicket = ticket; Alpine.store('app').navigate('ticket-view'); close()"
@@ -90,152 +89,337 @@
               class="px-3 py-1.5 rounded-lg text-xs font-medium transition"
               :class="tab === 'history' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'">
               Histórico
-              <span class="ml-1 text-[10px] opacity-60"
-                    x-text="'(' + timeline.length + ')'"></span>
+              <span class="ml-1 text-[10px] opacity-60" x-text="'(' + timeline.length + ')'"></span>
+            </button>
+            <button @click="tab = 'attachments'"
+              class="px-3 py-1.5 rounded-lg text-xs font-medium transition"
+              :class="tab === 'attachments' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'">
+              Anexos
+              <span class="ml-1 text-[10px] opacity-60" x-text="'(' + attachments.length + ')'"></span>
             </button>
           </div>
         </div>
 
         <!-- ── TAB: DETALHES ─────────────────────────────────────── -->
-        <div x-show="tab === 'details'" class="flex-1 overflow-y-auto custom-scroll">
+        <div x-show="tab === 'details'" class="flex-1 overflow-y-auto custom-scroll px-5 py-4 space-y-3">
 
-          <!-- Descrição -->
+          <!-- AÇÕES -->
+          <div x-show="ticket.status !== 'cancelled'"
+               class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+            <div class="flex items-center justify-between">
+              <p class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">Ações</p>
+              <div class="flex items-center gap-2">
+                <!-- Iniciar -->
+                <button
+                  x-show="ticket.status === 'open' && ticket.progress === 'waiting' && actionMode !== 'iniciar'"
+                  @click="actionMode = 'iniciar'"
+                  class="text-[11px] px-3 py-1 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 transition-all">
+                  Iniciar
+                </button>
+                <!-- Finalizar -->
+                <button
+                  x-show="ticket.status === 'open' && !['waiting','awaiting_confirmation','done'].includes(ticket.progress) && actionMode !== 'finalizar'"
+                  @click="actionMode = 'finalizar'; finishReason = ''"
+                  class="text-[11px] px-3 py-1 rounded-lg bg-red-600/20 hover:bg-red-600/30 text-red-300 border border-red-500/30 transition-all">
+                  Finalizar
+                </button>
+                <!-- Aceitar resolução (client) -->
+                <button
+                  x-show="ticket.progress === 'awaiting_confirmation'"
+                  @click="closeTicket()"
+                  :disabled="actionLoading"
+                  class="text-[11px] px-3 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 transition-all disabled:opacity-50">
+                  Aceitar resolução
+                </button>
+                <!-- Reabrir -->
+                <button
+                  x-show="ticket.status === 'closed'"
+                  @click="reopenTicket()"
+                  :disabled="actionLoading"
+                  class="text-[11px] px-3 py-1 rounded-lg bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 transition-all disabled:opacity-50">
+                  Reabrir
+                </button>
+                <!-- Fechar modo -->
+                <button
+                  x-show="actionMode"
+                  @click="actionMode = ''"
+                  class="text-[11px] px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-500 border border-white/10 transition-all">
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <!-- Status info quando sem ação ativa -->
+            <p x-show="!actionMode" class="mt-2 text-xs text-gray-500" x-text="progressLabel(ticket.progress)"></p>
+
+            <!-- Inline: Iniciar atendimento -->
+            <div x-show="actionMode === 'iniciar'" class="mt-3 space-y-3">
+              <p class="text-xs text-gray-400">Confirma o início do atendimento deste chamado?</p>
+              <div class="flex gap-2">
+                <button @click="startTicket()" :disabled="actionLoading"
+                  class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition disabled:opacity-50">
+                  <svg x-show="actionLoading" class="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                  </svg>
+                  <span x-text="actionLoading ? 'Iniciando...' : 'Confirmar'"></span>
+                </button>
+                <button @click="actionMode = ''" class="px-4 py-2 rounded-xl text-xs text-gray-400 hover:text-gray-200 bg-white/5 hover:bg-white/10 border border-white/10 transition">Cancelar</button>
+              </div>
+            </div>
+
+            <!-- Inline: Finalizar atendimento -->
+            <div x-show="actionMode === 'finalizar'" class="mt-3 space-y-3">
+              <textarea
+                x-model="finishReason"
+                rows="3"
+                placeholder="Descreva a conclusão ou resolução do chamado..."
+                class="w-full px-3 py-2.5 rounded-xl text-sm bg-gray-800/60 border border-white/10
+                       text-gray-200 placeholder-gray-600 resize-none
+                       focus:outline-none focus:ring-1 focus:ring-red-500/50 focus:border-red-500/50 transition">
+              </textarea>
+              <div class="flex gap-2">
+                <button @click="confirmFinishTicket()" :disabled="finishing || !finishReason.trim()"
+                  class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-red-600 hover:bg-red-700 text-white transition disabled:opacity-50">
+                  <svg x-show="finishing" class="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                  </svg>
+                  <span x-text="finishing ? 'Enviando...' : 'Enviar para confirmação'"></span>
+                </button>
+                <button @click="actionMode = ''; finishReason = ''" class="px-4 py-2 rounded-xl text-xs text-gray-400 hover:text-gray-200 bg-white/5 hover:bg-white/10 border border-white/10 transition">Cancelar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TRANSFERIR CHAMADO -->
+          <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+            <div class="flex items-center justify-between">
+              <p class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">Transferir chamado</p>
+              <button
+                x-show="!transferMode"
+                @click="transferMode = true; fetchTeamUsers()"
+                class="text-[11px] px-3 py-1 rounded-lg bg-violet-600/20 hover:bg-violet-600/30 text-violet-300 border border-violet-500/30 transition-all">
+                Transferir
+              </button>
+              <button
+                x-show="transferMode"
+                @click="transferMode = false; selectedTeamId = ''; selectedUserId = ''; transferSubcategoryId = ''; teamSubcategories = []"
+                class="text-[11px] px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-500 border border-white/10 transition-all">
+                ✕
+              </button>
+            </div>
+
+            <!-- Info atual (sempre visível) -->
+            <div class="mt-2 flex items-center gap-4 text-xs text-gray-500">
+              <span>Equipe: <span class="text-gray-300" x-text="ticket.assigned_team?.name || '—'"></span></span>
+              <span>Responsável: <span class="text-gray-300" x-text="ticket.assignee?.name || '—'"></span></span>
+            </div>
+
+            <!-- Inline form -->
+            <div x-show="transferMode" class="mt-3 space-y-3">
+
+              <!-- Para equipe -->
+              <div>
+                <label class="text-[10px] text-gray-500 uppercase tracking-wide mb-1 block">Para equipe</label>
+                <select x-model="selectedTeamId" @change="onTeamChange()"
+                  class="w-full px-3 py-2 rounded-xl text-xs bg-gray-800/60 border border-white/10 text-gray-200
+                         focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition">
+                  <option value="">Selecione uma equipe</option>
+                  <template x-for="team in availableTeams" :key="team.id">
+                    <template x-if="team.id !== ticket.assigned_team?.id">
+                      <option :value="team.id" x-text="team.name"></option>
+                    </template>
+                  </template>
+                </select>
+              </div>
+
+              <!-- Subcategoria (aparece após selecionar equipe) -->
+              <div x-show="selectedTeamId && teamSubcategories.length > 0">
+                <label class="text-[10px] text-gray-500 uppercase tracking-wide mb-1 block">Subcategoria destino</label>
+                <select x-model="transferSubcategoryId"
+                  class="w-full px-3 py-2 rounded-xl text-xs bg-gray-800/60 border border-white/10 text-gray-200
+                         focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition">
+                  <option value="">Selecione a subcategoria</option>
+                  <template x-for="sub in teamSubcategories" :key="sub.id">
+                    <option :value="sub.id" x-text="sub.name"></option>
+                  </template>
+                </select>
+              </div>
+
+              <!-- Divisor OU -->
+              <div class="flex items-center gap-2">
+                <div class="flex-1 h-px bg-white/10"></div>
+                <span class="text-[10px] text-gray-600 font-semibold tracking-widest">OU</span>
+                <div class="flex-1 h-px bg-white/10"></div>
+              </div>
+
+              <!-- Para atendente -->
+              <div>
+                <label class="text-[10px] text-gray-500 uppercase tracking-wide mb-1 block">Para atendente</label>
+                <select x-model="selectedUserId" @change="selectedTeamId = ''; transferSubcategoryId = ''; teamSubcategories = []"
+                  class="w-full px-3 py-2 rounded-xl text-xs bg-gray-800/60 border border-white/10 text-gray-200
+                         focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition">
+                  <option value="">Selecione um atendente</option>
+                  <template x-for="user in teamUsers" :key="user.id">
+                    <template x-if="user.id !== ticket.assignee?.id">
+                      <option :value="user.id" x-text="user.name"></option>
+                    </template>
+                  </template>
+                </select>
+              </div>
+
+              <!-- Confirmar -->
+              <div class="flex gap-2">
+                <button @click="confirmTransfer()" :disabled="transferLoading || (!selectedTeamId && !selectedUserId)"
+                  class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-violet-600 hover:bg-violet-700 text-white transition disabled:opacity-50">
+                  <svg x-show="transferLoading" class="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                  </svg>
+                  <span x-text="transferLoading ? 'Transferindo...' : 'Confirmar transferência'"></span>
+                </button>
+                <button @click="transferMode = false; selectedTeamId = ''; selectedUserId = ''; transferSubcategoryId = ''; teamSubcategories = []"
+                  class="px-4 py-2 rounded-xl text-xs text-gray-400 hover:text-gray-200 bg-white/5 hover:bg-white/10 border border-white/10 transition">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- AGENDAR VISITA -->
+          <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+            <div class="flex items-center justify-between">
+              <p class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">Visita agendada</p>
+              <button
+                x-show="!scheduleMode"
+                @click="openScheduleMode()"
+                class="text-[11px] px-3 py-1 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/30 transition-all"
+                x-text="ticket.scheduled_visit_at ? 'Reagendar' : 'Agendar'">
+              </button>
+              <button
+                x-show="scheduleMode"
+                @click="scheduleMode = false"
+                class="text-[11px] px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-500 border border-white/10 transition-all">
+                ✕
+              </button>
+            </div>
+
+            <!-- Visita atual -->
+            <div x-show="ticket.scheduled_visit_at && !scheduleMode" class="mt-2">
+              <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-cyan-900/20 border border-cyan-600/20">
+                <svg class="w-3.5 h-3.5 text-cyan-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span class="text-xs font-medium text-cyan-300" x-text="formatDate(ticket.scheduled_visit_at)"></span>
+              </div>
+            </div>
+            <p x-show="!ticket.scheduled_visit_at && !scheduleMode" class="mt-2 text-xs text-gray-600">Nenhuma visita agendada</p>
+
+            <!-- Inline form -->
+            <div x-show="scheduleMode" class="mt-3 space-y-3">
+              <input type="datetime-local" x-model="scheduleDate"
+                class="w-full px-3 py-2 rounded-xl text-xs bg-gray-800/60 border border-white/10 text-gray-200
+                       focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition" />
+              <div class="flex gap-2">
+                <button @click="confirmScheduleVisit()" :disabled="schedulingVisit || !scheduleDate"
+                  class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-cyan-600 hover:bg-cyan-700 text-white transition disabled:opacity-50">
+                  <svg x-show="schedulingVisit" class="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                  </svg>
+                  <span x-text="schedulingVisit ? 'Salvando...' : 'Confirmar'"></span>
+                </button>
+                <button @click="scheduleMode = false" class="px-4 py-2 rounded-xl text-xs text-gray-400 hover:text-gray-200 bg-white/5 hover:bg-white/10 border border-white/10 transition">Cancelar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- DESCRIÇÃO -->
           <template x-if="ticket.description">
-            <div class="px-5 pt-4 pb-3 border-b border-white/5">
+            <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
               <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Descrição</p>
               <p class="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap"
                  x-text="ticket.description"></p>
             </div>
           </template>
 
-          <!-- Info grid -->
-          <div class="px-5 py-4 border-b border-white/5">
+          <!-- ADICIONAR COMENTÁRIO -->
+          <div x-show="ticket.status !== 'cancelled'" class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+            <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Adicionar comentário</p>
+            <textarea
+              x-model="newComment"
+              rows="3"
+              placeholder="Escreva um comentário..."
+              class="w-full px-3 py-2.5 rounded-xl text-sm bg-gray-800/60 border border-white/10
+                     text-gray-200 placeholder-gray-600 resize-none
+                     focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 transition">
+            </textarea>
+            <div class="flex items-center justify-between mt-2">
+              <!-- Upload de arquivo -->
+              <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-gray-400
+                            hover:text-gray-200 bg-white/5 border border-white/10 hover:bg-white/10
+                            cursor-pointer transition-colors">
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                </svg>
+                <span x-text="uploadLoading ? 'Enviando...' : 'Anexar'"></span>
+                <input type="file" class="hidden"
+                  @change="uploadAttachment($event.target.files[0], $event.target)"
+                  :disabled="uploadLoading" />
+              </label>
+              <button
+                @click="submitComment()"
+                :disabled="submittingComment || !newComment.trim()"
+                class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold
+                       bg-blue-600 hover:bg-blue-700 text-white transition disabled:opacity-50">
+                <svg x-show="submittingComment" class="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                </svg>
+                <span x-text="submittingComment ? 'Enviando...' : 'Comentar'"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- INFO GRID -->
+          <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
             <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-3">Informações</p>
             <div class="grid grid-cols-2 gap-x-6 gap-y-3 text-xs">
-
               <div>
                 <p class="text-gray-500 mb-0.5">Hotel</p>
                 <p class="text-gray-200 font-medium" x-text="ticket.hotel?.name || '—'"></p>
               </div>
-
               <div>
                 <p class="text-gray-500 mb-0.5">Equipe</p>
                 <p class="text-gray-200 font-medium" x-text="ticket.assigned_team?.name || '—'"></p>
               </div>
-
               <div>
                 <p class="text-gray-500 mb-0.5">Categoria</p>
                 <p class="text-gray-200 font-medium" x-text="ticket.category?.name || '—'"></p>
               </div>
-
               <div>
                 <p class="text-gray-500 mb-0.5">Subcategoria</p>
                 <p class="text-gray-200 font-medium" x-text="ticket.subcategory?.name || '—'"></p>
               </div>
-
               <div>
                 <p class="text-gray-500 mb-0.5">Responsável</p>
                 <p class="text-gray-200 font-medium" x-text="ticket.assignee?.name || '—'"></p>
               </div>
-
               <div>
                 <p class="text-gray-500 mb-0.5">Aberto por</p>
                 <p class="text-gray-200 font-medium" x-text="ticket.creator?.name || '—'"></p>
               </div>
-
               <div>
                 <p class="text-gray-500 mb-0.5">Abertura</p>
                 <p class="text-gray-200" x-text="formatDate(ticket.created_at)"></p>
               </div>
-
               <div>
                 <p class="text-gray-500 mb-0.5">Última atualização</p>
                 <p class="text-gray-200" x-text="formatDate(ticket.updated_at)"></p>
               </div>
-
-              <template x-if="ticket.scheduled_visit_at">
-                <div>
-                  <p class="text-gray-500 mb-0.5">Visita agendada</p>
-                  <p class="text-blue-400 font-medium" x-text="formatDate(ticket.scheduled_visit_at)"></p>
-                </div>
-              </template>
-
             </div>
           </div>
-
-          <!-- Actions (admin/agent, not read-only) -->
-          <template x-if="isAdminOrAgent && !readOnly">
-            <div class="px-5 py-3 border-b border-white/5 flex flex-wrap gap-2">
-
-              <!-- Iniciar -->
-              <template x-if="ticket.status === 'open' && ticket.progress === 'waiting'">
-                <button @click="startTicket()"
-                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium
-                         bg-blue-600 hover:bg-blue-700 text-white transition">
-                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 3l14 9-14 9V3z"/>
-                  </svg>
-                  Iniciar atendimento
-                </button>
-              </template>
-
-              <!-- Fechar direto (quando in_progress) -->
-              <template x-if="ticket.status === 'open' && ticket.progress === 'in_progress'">
-                <button @click="markDone()"
-                  :disabled="submittingComment"
-                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium
-                         bg-emerald-600 hover:bg-emerald-700 text-white transition disabled:opacity-50">
-                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                  </svg>
-                  Enviar para confirmação
-                </button>
-              </template>
-
-              <!-- Reabrir -->
-              <template x-if="ticket.status === 'closed'">
-                <button @click="reopenTicket()"
-                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium
-                         bg-amber-600 hover:bg-amber-700 text-white transition">
-                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                  </svg>
-                  Reabrir chamado
-                </button>
-              </template>
-
-            </div>
-          </template>
-
-          <!-- Comentário (não exibido em modo somente leitura) -->
-          <template x-if="ticket.status !== 'cancelled' && !readOnly">
-            <div class="px-5 py-4">
-              <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Adicionar comentário</p>
-              <textarea
-                x-model="newComment"
-                rows="3"
-                placeholder="Escreva um comentário..."
-                class="w-full px-3 py-2.5 rounded-xl text-sm bg-gray-800/60 border border-white/10
-                       text-gray-200 placeholder-gray-600 resize-none
-                       focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 transition">
-              </textarea>
-              <div class="flex justify-end mt-2">
-                <button
-                  @click="submitComment()"
-                  :disabled="submittingComment || !newComment.trim()"
-                  class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold
-                         bg-blue-600 hover:bg-blue-700 text-white transition disabled:opacity-50">
-                  <template x-if="submittingComment">
-                    <svg class="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-                    </svg>
-                  </template>
-                  <span x-text="submittingComment ? 'Enviando...' : 'Comentar'"></span>
-                </button>
-              </div>
-            </div>
-          </template>
 
         </div>
 
@@ -254,8 +438,6 @@
 
           <template x-for="entry in timeline" :key="entry.id">
             <div>
-
-              <!-- Evento do sistema -->
               <template x-if="entry.kind === 'event'">
                 <div class="flex items-start gap-2.5 py-1.5">
                   <div class="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ring-2 ring-gray-900"
@@ -280,8 +462,6 @@
                   </div>
                 </div>
               </template>
-
-              <!-- Comentário -->
               <template x-if="entry.kind === 'comment'">
                 <div class="flex items-start gap-3 py-2">
                   <div class="w-7 h-7 rounded-full shrink-0 bg-gradient-to-br from-blue-500 to-cyan-600
@@ -301,9 +481,98 @@
                   </div>
                 </div>
               </template>
-
             </div>
           </template>
+
+        </div>
+
+        <!-- ── TAB: ANEXOS ───────────────────────────────────────── -->
+        <div x-show="tab === 'attachments'" class="flex-1 overflow-y-auto custom-scroll px-5 py-4 space-y-3">
+
+          <!-- Upload -->
+          <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+            <div class="flex items-center gap-2 mb-3">
+              <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Adicionar anexo</p>
+              <span class="ml-auto text-[10px] text-gray-600">Máx. 10 MB · JPG, PNG, PDF, Word, Excel, ZIP</span>
+            </div>
+            <label class="flex flex-col items-center justify-center gap-2 py-5 rounded-xl
+                          border-2 border-dashed border-white/10 hover:border-blue-500/40 hover:bg-blue-900/5
+                          cursor-pointer transition-all group">
+              <svg class="w-7 h-7 text-gray-600 group-hover:text-blue-400 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+              </svg>
+              <span class="text-xs text-gray-500 group-hover:text-gray-300 transition"
+                    x-text="uploadLoading ? 'Enviando arquivo...' : 'Clique para selecionar um arquivo'"></span>
+              <input type="file" class="hidden"
+                @change="uploadAttachment($event.target.files[0], $event.target)"
+                :disabled="uploadLoading" />
+            </label>
+          </div>
+
+          <!-- Lista de anexos -->
+          <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+            <div class="flex items-center gap-2 mb-3">
+              <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Arquivos</p>
+              <span class="ml-auto text-[10px] text-gray-600" x-text="attachments.length + ' arquivo(s)'"></span>
+            </div>
+
+            <template x-if="attachments.length === 0">
+              <div class="flex flex-col items-center justify-center py-8 text-gray-600 gap-2">
+                <svg class="w-8 h-8 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                </svg>
+                <p class="text-sm">Nenhum anexo neste ticket</p>
+              </div>
+            </template>
+
+            <div class="space-y-2">
+              <template x-for="att in attachments" :key="att.id">
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-gray-800/30 border border-white/5
+                            hover:bg-gray-800/50 hover:border-white/10 transition-all">
+                  <div class="w-8 h-8 rounded-lg bg-white/5 border border-white/10
+                              flex items-center justify-center text-[9px] font-bold uppercase
+                              text-gray-400 tracking-wide shrink-0"
+                       x-text="fileIcon(att.mime_type)"></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-xs font-medium text-gray-200 truncate" x-text="att.file_name"></p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span class="text-[10px] text-gray-500" x-text="formatFileSize(att.file_size)"></span>
+                      <span class="text-gray-700">·</span>
+                      <span class="text-[10px] text-gray-500 truncate" x-text="att.uploader?.name || '—'"></span>
+                      <span class="text-gray-700">·</span>
+                      <span class="text-[10px] text-gray-500 shrink-0" x-text="formatDate(att.created_at)"></span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <button @click="downloadAttachment(att)"
+                      class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px]
+                             text-gray-400 hover:text-white bg-white/5 border border-white/10 hover:bg-white/10 transition">
+                      ⬇ Baixar
+                    </button>
+                    <button
+                      x-show="$store.app.role === 'admin' || att.uploader?.id == $store.app.userId"
+                      @click="deleteAttachment(att.id)"
+                      :disabled="deletingAttachmentId === att.id"
+                      class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px]
+                             text-red-400 hover:text-white bg-red-900/10 border border-red-900/20
+                             hover:bg-red-900/30 transition disabled:opacity-40">
+                      <template x-if="deletingAttachmentId === att.id">
+                        <svg class="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                        </svg>
+                      </template>
+                      <template x-if="deletingAttachmentId !== att.id">
+                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                      </template>
+                    </button>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
 
         </div>
 
