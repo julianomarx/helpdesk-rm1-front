@@ -158,10 +158,7 @@ function qualitorPage() {
       if (!validateToken()) return;
       const token = localStorage.getItem('access_token');
       try {
-        // Badges refletem a equipe ativa e se estamos vendo só ativas
-        const params = new URLSearchParams();
-        if (this.filters.equipe) params.set('equipe', this.filters.equipe);
-        if (this.filters.situacao === 'ativas') params.set('ativas_only', 'true');
+        const params = this._buildFilterParams();
         const res = await fetch(`/api/qualitor/status?${params.toString()}`, {
           headers: { Authorization: 'Bearer ' + token },
         });
