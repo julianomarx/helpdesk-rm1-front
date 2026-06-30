@@ -4,6 +4,9 @@ function qualitorPage() {
     loadingDetail: false,
     loadingHistory: false,
     tickets: [],
+    ticketsTotal: 0,
+    ticketsPage: 1,
+    ticketsPages: 1,
     status: null,
     ticketAttachments: [],
     loadingAttachments: false,
@@ -149,7 +152,7 @@ function qualitorPage() {
       } catch {}
     },
 
-    async fetchTickets() {
+    async fetchTickets(page = 1) {
       if (!validateToken()) return;
       this.loading = true;
       const token = localStorage.getItem('access_token');
@@ -158,18 +161,28 @@ function qualitorPage() {
         if (this.filters.situacao) params.set('situacao', this.filters.situacao);
         if (this.filters.equipe)   params.set('equipe',   this.filters.equipe);
         if (this.filters.mine)     params.set('responsavel_interno_id', Alpine.store('app').userId);
-        const qs = params.toString();
-        const res = await fetch(`/api/qualitor/tickets${qs ? '?' + qs : ''}`, {
+        params.set('page', page);
+        params.set('page_size', 100);
+        const res = await fetch(`/api/qualitor/tickets?${params.toString()}`, {
           headers: { Authorization: 'Bearer ' + token },
         });
         if (!res.ok) { showToast('Erro ao buscar tickets Qualitor', 'error'); return; }
         const data = await res.json();
-        // shape: { total, tickets: [...] }
-        this.tickets = Array.isArray(data) ? data : (data.tickets || []);
+        const incoming = Array.isArray(data) ? data : (data.tickets || []);
+        this.tickets        = page === 1 ? incoming : [...this.tickets, ...incoming];
+        this.ticketsTotal   = data.total  || incoming.length;
+        this.ticketsPage    = data.page   || page;
+        this.ticketsPages   = data.pages  || 1;
       } catch {
         showToast('Erro ao buscar tickets Qualitor', 'error');
       } finally {
         this.loading = false;
+      }
+    },
+
+    async loadMoreTickets() {
+      if (this.ticketsPage < this.ticketsPages) {
+        await this.fetchTickets(this.ticketsPage + 1);
       }
     },
 

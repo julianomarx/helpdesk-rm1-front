@@ -458,6 +458,22 @@ function helpdeskTicketModal() {
       return ['admin', 'agent'].includes(Alpine.store('app').role);
     },
 
+    get canComment() {
+      if (!this.ticket) return false;
+      if (this.ticket.status === 'closed' || this.ticket.status === 'cancelled') return false;
+      const blocked = ['waiting', 'awaiting_confirmation', 'done'];
+      return !blocked.includes(this.ticket.progress);
+    },
+
+    get canCommentReason() {
+      if (!this.ticket) return '';
+      if (this.ticket.status === 'closed') return 'Chamado encerrado';
+      if (this.ticket.progress === 'waiting') return 'Inicie o atendimento para comentar';
+      if (this.ticket.progress === 'awaiting_confirmation') return 'Aguardando confirmação de encerramento';
+      if (this.ticket.progress === 'done') return 'Chamado concluído';
+      return '';
+    },
+
     statusClass(s) {
       return {
         open:      'bg-blue-500/15 text-blue-300 border border-blue-500/30',

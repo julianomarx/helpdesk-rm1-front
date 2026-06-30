@@ -141,8 +141,15 @@
           </div>
         </template>
 
-        <p class="text-[10px] text-gray-700 text-center py-3"
-           x-text="filteredTickets.length + ' ticket(s) exibido(s)'"></p>
+        <div class="flex items-center justify-between px-2 py-2">
+          <p class="text-[10px] text-gray-700"
+             x-text="filteredTickets.length + (ticketsTotal > tickets.length ? ' de ' + ticketsTotal : '') + ' ticket(s)'"></p>
+          <button x-show="ticketsPage < ticketsPages" @click="loadMoreTickets()" :disabled="loading"
+            class="text-[11px] text-blue-400 hover:text-blue-300 disabled:opacity-50 transition-colors">
+            <span x-show="!loading">Carregar mais</span>
+            <span x-show="loading">Carregando...</span>
+          </button>
+        </div>
       </div>
     </template>
   </div>
