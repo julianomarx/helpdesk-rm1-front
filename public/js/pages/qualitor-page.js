@@ -53,7 +53,7 @@ function qualitorPage() {
 
     situacaoOptions: [
       { value: 'ativas', label: 'Ativas (exceto encerradas)' },
-      { value: '', label: 'Todas as situações' },
+      { value: 'todas', label: 'Todas as situações' },
       { value: 'Aguardando atendimento', label: 'Aguardando atendimento' },
       { value: 'Em atendimento', label: 'Em atendimento' },
       { value: 'Encerrado', label: 'Encerradas' },
@@ -145,7 +145,7 @@ function qualitorPage() {
       const params = new URLSearchParams();
       if (this.filters.situacao === 'ativas') {
         params.set('ativas_only', 'true');
-      } else if (this.filters.situacao) {
+      } else if (this.filters.situacao && this.filters.situacao !== 'todas') {
         params.set('situacao', this.filters.situacao);
       }
       if (this.filters.equipe)   params.set('equipe', this.filters.equipe);
