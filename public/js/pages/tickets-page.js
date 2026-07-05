@@ -2,6 +2,7 @@ function ticketsPage() {
   return {
     loadingTickets: false,
     ticketList: [],
+    ticketStats: null,
 
     pagination: {
       page: 1,
@@ -32,6 +33,28 @@ function ticketsPage() {
       subcategoryId: ''
     },
 
+    get progressBadges() {
+      const p = this.ticketStats?.por_progress || {};
+      const defs = [
+        { key: 'waiting',               label: 'Aguardando',      cls: 'bg-amber-500/15 text-amber-300 border-amber-500/30' },
+        { key: 'in_progress',           label: 'Em atendimento',  cls: 'bg-blue-500/15 text-blue-300 border-blue-500/30' },
+        { key: 'feedback',              label: 'Feedback',        cls: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30' },
+        { key: 'awaiting_confirmation', label: 'Ag. confirmação', cls: 'bg-violet-500/15 text-violet-300 border-violet-500/30' },
+        { key: 'scheduled_visit',       label: 'Visita agend.',   cls: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30' },
+        { key: 'done',                  label: 'Concluído',       cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
+      ];
+      return defs.filter(d => (p[d.key] || 0) > 0).map(d => ({ ...d, count: p[d.key] || 0 }));
+    },
+
+    async fetchStats() {
+      if (!validateToken()) return;
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch('/api/tickets/stats', { headers: { Authorization: 'Bearer ' + token } });
+        if (res.ok) this.ticketStats = await res.json();
+      } catch {}
+    },
+
     formatDate(date) {
       if (!date) return '';
       return new Date(date).toLocaleString('pt-BR');
@@ -41,6 +64,7 @@ function ticketsPage() {
       this.ticketFilters.status = status;
       this.pagination.page = 1;
       this.getTickets();
+      if (status === 'open') this.fetchStats();
     },
 
     toggleMine() {
