@@ -47,6 +47,12 @@ function analyticsPage() {
 
     async fetchAll() {
       this.loading = true;
+      this.summary = null;
+      this.volume = null;
+      this.topTech = null;
+      this.byTeam = null;
+      this.stalled = null;
+      this.sla = null;
       this.stalledVisible = 15;
       this.stalledHasMore = false;
       const token = localStorage.getItem('access_token');
