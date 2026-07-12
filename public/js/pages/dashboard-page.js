@@ -33,6 +33,10 @@ function dashboardPage() {
       high_priority_tickets: 0
     },
 
+    // ── Teams breakdown (Qualitor) ─────────────────────────────────
+    teamsBreakdown: [],
+    teamsBreakdownLoading: false,
+
     // ── Operational ────────────────────────────────────────────────
     operationalLoaded: false,
     operationalLoading: false,
@@ -211,8 +215,26 @@ function dashboardPage() {
         }
         this.operationalLoaded = false;
         await this.loadOperational();
+        if (this.source !== 'helpdesk') this.loadTeamsBreakdown();
       } catch {
         showToast("Erro ao carregar dashboard", "error");
+      }
+    },
+
+    async loadTeamsBreakdown() {
+      const token = localStorage.getItem("access_token");
+      this.teamsBreakdownLoading = true;
+      try {
+        const res = await fetch("/api/qualitor/stats/teams-breakdown", {
+          headers: { Authorization: 'Bearer ' + token },
+        });
+        if (!res.ok) throw new Error();
+        const d = await res.json();
+        this.teamsBreakdown = d.equipes || [];
+      } catch {
+        this.teamsBreakdown = [];
+      } finally {
+        this.teamsBreakdownLoading = false;
       }
     },
 
