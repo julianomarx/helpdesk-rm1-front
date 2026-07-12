@@ -82,29 +82,56 @@
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <div x-show="dashboardTab === 'operational'" class="space-y-4">
 
-      <!-- Counters -->
-      <div :class="source === 'helpdesk' ? 'grid-cols-2 md:grid-cols-5 xl:grid-cols-10' : 'grid-cols-2 md:grid-cols-4'" class="grid gap-3">
+      <!-- Counters Qualitor / Ambos — grid simples -->
+      <div x-show="source !== 'helpdesk'" class="grid grid-cols-2 md:grid-cols-4 gap-3">
         <template x-for="card in overviewCards" :key="card.label">
-          <div class="flex flex-col gap-1 p-4 rounded-2xl
-                      bg-gray-900/40 backdrop-blur-xl border border-white/10">
+          <div class="flex flex-col gap-1 p-4 rounded-2xl bg-gray-900/40 backdrop-blur-xl border border-white/10">
             <span class="text-[11px] text-gray-500 leading-tight" x-text="card.label"></span>
             <span class="text-3xl font-bold mt-1" :class="cardColor(card.color)" x-text="card.value"></span>
-            <template x-if="source === 'helpdesk' && card.total !== null">
-              <div class="mt-0.5 space-y-0.5">
-                <div class="flex justify-end">
-                  <span class="text-[10px] text-gray-600"
-                    x-text="cardBarPct(card.value, card.total) + '%'"></span>
-                </div>
-                <div class="h-1 w-full rounded-full bg-white/5">
+          </div>
+        </template>
+      </div>
+
+      <!-- Counters Helpdesk — card lista com progress bars -->
+      <template x-if="source === 'helpdesk'">
+        <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+
+          <!-- Header: total em aberto -->
+          <div class="flex items-end gap-2 px-5 pt-4 pb-3 border-b border-white/5">
+            <span class="text-4xl font-bold text-white" x-text="dashboardOverview.open_tickets ?? '—'"></span>
+            <span class="text-sm text-gray-500 mb-1">em aberto</span>
+            <div class="ml-auto flex gap-4 text-right">
+              <div>
+                <p class="text-[10px] text-gray-600">Criados hoje</p>
+                <p class="text-base font-semibold text-blue-400" x-text="dashboardOverview.created_today_tickets ?? 0"></p>
+              </div>
+              <div>
+                <p class="text-[10px] text-gray-600">Encerrados hoje</p>
+                <p class="text-base font-semibold text-emerald-400" x-text="dashboardOverview.closed_today_tickets ?? 0"></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lista de métricas -->
+          <div class="divide-y divide-white/5">
+
+            <template x-for="card in overviewCards.filter(c => c.total !== null && c.label !== 'Abertos')" :key="card.label">
+              <div class="flex items-center gap-3 px-5 py-2.5">
+                <span class="text-xs text-gray-400 w-36 shrink-0" x-text="card.label"></span>
+                <div class="flex-1 h-1 rounded-full bg-white/5">
                   <div class="h-1 rounded-full transition-all duration-700"
                        :class="cardBarColor(card.color)"
                        :style="`width:${cardBarPct(card.value, card.total)}%`"></div>
                 </div>
+                <span class="text-xs font-medium w-20 text-right shrink-0"
+                      :class="card.value > 0 ? cardColor(card.color) : 'text-gray-600'"
+                      x-text="card.value + ' (' + cardBarPct(card.value, card.total) + '%)'"></span>
               </div>
             </template>
+
           </div>
-        </template>
-      </div>
+        </div>
+      </template>
 
       <!-- Cards por equipe Qualitor -->
       <template x-if="source !== 'helpdesk'">
