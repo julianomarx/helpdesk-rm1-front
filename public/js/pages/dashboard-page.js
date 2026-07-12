@@ -225,7 +225,7 @@ function dashboardPage() {
       const token = localStorage.getItem("access_token");
       this.teamsBreakdownLoading = true;
       try {
-        const res = await fetch("/api/qualitor/stats/teams-breakdown", {
+        const res = await fetch("/api/dashboard/qualitor/stats/teams-breakdown", {
           headers: { Authorization: 'Bearer ' + token },
         });
         if (!res.ok) throw new Error();
