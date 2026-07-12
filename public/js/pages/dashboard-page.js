@@ -110,6 +110,17 @@ function dashboardPage() {
       breached_open_tickets: [],
     },
 
+    // ── SLA Qualitor nativo ───────────────────────────────────────
+    qtSlaLoaded: false,
+    qtSlaLoading: false,
+    qtSla: {
+      summary: { total_abertos: 0, com_sla: 0, no_prazo: 0, em_risco: 0, at_resp: 0, at_serv: 0, pct_cumprimento: 0 },
+      por_equipe: [],
+      violados: [],
+      em_risco_list: [],
+    },
+    qtVioladosShowAll: false,
+
     // ── History ────────────────────────────────────────────────────
     historyLoaded: false,
     historyLoading: false,
@@ -172,6 +183,8 @@ function dashboardPage() {
       this.bottlenecksLoaded  = false;
       this.volumeLoaded       = false;
       this.slaLoaded          = false;
+      this.qtSlaLoaded        = false;
+      this.qtVioladosShowAll  = false;
       this.historyLoaded      = false;
     },
 
@@ -420,22 +433,17 @@ function dashboardPage() {
           await this.$nextTick();
           this.initSLACharts();
         } else {
-          const res = await fetch(`/api/dashboard/unified/sla?source=${this.source}&period=${this.period}`, {
+          // Qualitor SLA nativo
+          this.qtSlaLoading = true;
+          const res = await fetch("/api/dashboard/qualitor/stats/sla-nativo", {
             headers: { "Authorization": "Bearer " + token }
           });
           if (!res.ok) throw new Error();
-          const data = await res.json();
-          // unified sla — wrap in existing shape; charts won't render (guarded in initSLACharts)
-          this.sla = {
-            summary: {
-              total_with_sla: 0, active_sla: 0,
-              resolution_breached_open: 0, at_risk: 0,
-              overall_compliance_pct: 0, avg_response_hours: null,
-            },
-            by_team: [], by_policy: [],
-            at_risk_tickets: [], breached_open_tickets: [],
-            _unified: data.portais || {},
-          };
+          this.qtSla = await res.json();
+          this.qtSlaLoaded = true;
+          this.qtSlaLoading = false;
+          await this.$nextTick();
+          this.initQualitorSlaCharts();
           this.slaLoaded = true;
         }
       } catch {
@@ -560,6 +568,90 @@ function dashboardPage() {
           }
         });
       }
+    },
+
+    initQualitorSlaCharts() {
+      destroyChart('qtSlaDonut');
+      destroyChart('qtSlaEquipe');
+      const th = _chartTheme();
+      const s = this.qtSla.summary;
+
+      // Donut — distribuição dos tickets com SLA
+      const donutEl = document.getElementById('qtSlaDonutChart');
+      if (donutEl && s.com_sla > 0) {
+        _charts['qtSlaDonut'] = new Chart(donutEl, {
+          type: 'doughnut',
+          data: {
+            labels: ['No prazo', 'Em risco', 'At. resposta', 'At. encerramento'],
+            datasets: [{
+              data: [s.no_prazo, s.em_risco, s.at_resp, s.at_serv],
+              backgroundColor: [
+                'rgba(16,185,129,0.85)',
+                'rgba(245,158,11,0.85)',
+                'rgba(249,115,22,0.85)',
+                'rgba(239,68,68,0.85)',
+              ],
+              borderColor: ['#10b981','#f59e0b','#f97316','#ef4444'],
+              borderWidth: 2,
+              hoverOffset: 8,
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false, cutout: '68%',
+            plugins: {
+              legend: { position: 'bottom', labels: { color: th.text, font: { size: 11 }, padding: 12, boxWidth: 12 } },
+              tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} tickets` } },
+            }
+          }
+        });
+      }
+
+      // Barras horizontais empilhadas — por equipe
+      const equipeEl = document.getElementById('qtSlaEquipeChart');
+      if (equipeEl && this.qtSla.por_equipe.length) {
+        const labels = this.qtSla.por_equipe.map(r => r.equipe);
+        _charts['qtSlaEquipe'] = new Chart(equipeEl, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              { label: 'No prazo',         data: this.qtSla.por_equipe.map(r => r.no_prazo), backgroundColor: 'rgba(16,185,129,0.8)',  borderRadius: 3 },
+              { label: 'Em risco',          data: this.qtSla.por_equipe.map(r => r.em_risco), backgroundColor: 'rgba(245,158,11,0.8)',  borderRadius: 3 },
+              { label: 'At. resposta',      data: this.qtSla.por_equipe.map(r => r.at_resp),  backgroundColor: 'rgba(249,115,22,0.8)',  borderRadius: 3 },
+              { label: 'At. encerramento',  data: this.qtSla.por_equipe.map(r => r.at_serv),  backgroundColor: 'rgba(239,68,68,0.8)',   borderRadius: 3 },
+            ]
+          },
+          options: {
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom', labels: { color: th.text, font: { size: 11 }, padding: 12, boxWidth: 12 } },
+              tooltip: { mode: 'index', intersect: false },
+            },
+            scales: {
+              x: { stacked: true, ticks: { color: th.muted }, grid: { color: th.grid } },
+              y: { stacked: true, ticks: { color: th.text, font: { size: 12 } }, grid: { display: false } },
+            }
+          }
+        });
+      }
+    },
+
+    qtSlaHorasLabel(h) {
+      if (h === null || h === undefined) return '—';
+      const hrs = Math.round(h);
+      if (hrs < 1) return '< 1h';
+      if (hrs < 24) return hrs + 'h';
+      const d = Math.floor(hrs / 24);
+      const r = hrs % 24;
+      return r > 0 ? `${d}d ${r}h` : `${d}d`;
+    },
+
+    qtSlaPrazoLabel(str) {
+      if (!str) return '—';
+      const [date, time] = str.split(' ');
+      if (!date) return str;
+      const [y, m, d] = date.split('-');
+      return `${d}/${m} ${time ? time.slice(0,5) : ''}`;
     },
 
     slaStatusClass(row) {

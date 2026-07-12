@@ -968,88 +968,194 @@
         </div>
       </template>
 
-      <!-- Unified SLA view (source ≠ helpdesk) -->
+      <!-- ── SLA Qualitor nativo (source ≠ helpdesk) ──────────────────── -->
       <template x-if="!slaLoading && slaLoaded && source !== 'helpdesk'">
-        <div class="space-y-4">
+        <div class="space-y-4" x-data="{ pct(v, t) { return t ? Math.round(v / t * 100) : 0; } }">
 
-          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <!-- Headline metrics -->
+          <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
 
-            <!-- Helpdesk portal card (if visible) -->
-            <template x-if="sla._unified && sla._unified.helpdesk">
-              <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-5 space-y-4">
-                <div class="flex items-center gap-2">
-                  <span class="text-sm font-semibold">Helpdesk</span>
-                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">Formal</span>
-                </div>
-                <div class="grid grid-cols-3 gap-3">
-                  <div>
-                    <p class="text-[11px] text-gray-500">Total</p>
-                    <p class="text-2xl font-bold text-gray-200" x-text="sla._unified.helpdesk.total ?? '—'"></p>
-                  </div>
-                  <div>
-                    <p class="text-[11px] text-gray-500">No prazo</p>
-                    <p class="text-2xl font-bold text-emerald-400" x-text="sla._unified.helpdesk.ok ?? '—'"></p>
-                  </div>
-                  <div>
-                    <p class="text-[11px] text-gray-500">Violados</p>
-                    <p class="text-2xl font-bold text-red-400" x-text="sla._unified.helpdesk.violado ?? '—'"></p>
-                  </div>
-                </div>
-                <div>
-                  <div class="flex justify-between text-[11px] text-gray-500 mb-1">
-                    <span>Cumprimento</span>
-                    <span x-text="(sla._unified.helpdesk.ok_pct ?? 0).toFixed(1) + '%'"></span>
-                  </div>
-                  <div class="h-2 rounded-full bg-white/5 overflow-hidden">
-                    <div class="h-full rounded-full bg-emerald-500 transition-all"
-                      :style="`width:${sla._unified.helpdesk.ok_pct ?? 0}%`"></div>
-                  </div>
-                </div>
-              </div>
-            </template>
-
-            <!-- Qualitor portal card (if visible) -->
-            <template x-if="sla._unified && sla._unified.qualitor">
-              <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-5 space-y-4">
-                <div class="flex items-center gap-2">
-                  <span class="text-sm font-semibold">Qualitor</span>
-                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">Estimado</span>
-                </div>
-                <div class="grid grid-cols-3 gap-3">
-                  <div>
-                    <p class="text-[11px] text-gray-500">Total</p>
-                    <p class="text-2xl font-bold text-gray-200" x-text="sla._unified.qualitor.total ?? '—'"></p>
-                  </div>
-                  <div>
-                    <p class="text-[11px] text-gray-500">No prazo</p>
-                    <p class="text-2xl font-bold text-emerald-400" x-text="sla._unified.qualitor.ok ?? '—'"></p>
-                  </div>
-                  <div>
-                    <p class="text-[11px] text-gray-500">Violados</p>
-                    <p class="text-2xl font-bold text-red-400" x-text="sla._unified.qualitor.violado ?? '—'"></p>
-                  </div>
-                </div>
-                <div>
-                  <div class="flex justify-between text-[11px] text-gray-500 mb-1">
-                    <span>Cumprimento (estimado)</span>
-                    <span x-text="(sla._unified.qualitor.ok_pct ?? 0).toFixed(1) + '%'"></span>
-                  </div>
-                  <div class="h-2 rounded-full bg-white/5 overflow-hidden">
-                    <div class="h-full rounded-full bg-emerald-500 transition-all"
-                      :style="`width:${sla._unified.qualitor.ok_pct ?? 0}%`"></div>
-                  </div>
-                </div>
-                <p class="text-[11px] text-gray-600">Baseado no mapeamento P1-P4 por severidade</p>
-              </div>
-            </template>
-
-            <!-- Notice: charts unavailable -->
-            <div class="bg-gray-900/40 border border-white/5 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-2">
-              <svg class="w-8 h-8 text-gray-600 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-              <p class="text-xs text-gray-500">Análise por equipe e política</p>
-              <p class="text-[11px] text-gray-600">Disponível apenas para Helpdesk</p>
+            <div class="flex flex-col gap-1 p-4 rounded-2xl bg-gray-900/40 backdrop-blur-xl border border-white/10">
+              <span class="text-[11px] text-gray-500">Total com SLA</span>
+              <span class="text-3xl font-bold text-gray-300" x-text="qtSla.summary.com_sla"></span>
+              <span class="text-[11px] text-gray-600" x-text="qtSla.summary.total_abertos + ' em aberto'"></span>
             </div>
 
+            <div class="flex flex-col gap-1 p-4 rounded-2xl bg-gray-900/40 backdrop-blur-xl border border-emerald-500/25">
+              <span class="text-[11px] text-gray-500">No prazo</span>
+              <span class="text-3xl font-bold text-emerald-400" x-text="qtSla.summary.no_prazo"></span>
+              <span class="text-[11px] text-emerald-600" x-text="qtSla.summary.pct_cumprimento.toFixed(1) + '% cumprimento'"></span>
+            </div>
+
+            <div class="flex flex-col gap-1 p-4 rounded-2xl bg-gray-900/40 backdrop-blur-xl border border-amber-500/25">
+              <span class="text-[11px] text-gray-500">Em risco</span>
+              <span class="text-3xl font-bold text-amber-400" x-text="qtSla.summary.em_risco"></span>
+              <span class="text-[11px] text-amber-700">vence em &lt;24h</span>
+            </div>
+
+            <div class="flex flex-col gap-1 p-4 rounded-2xl bg-gray-900/40 backdrop-blur-xl border border-orange-500/25">
+              <span class="text-[11px] text-gray-500">At. resposta</span>
+              <span class="text-3xl font-bold text-orange-400" x-text="qtSla.summary.at_resp"></span>
+              <span class="text-[11px] text-gray-600">prazo resposta vencido</span>
+            </div>
+
+            <div class="flex flex-col gap-1 p-4 rounded-2xl bg-gray-900/40 backdrop-blur-xl border border-red-500/25">
+              <span class="text-[11px] text-gray-500">At. encerramento</span>
+              <span class="text-3xl font-bold text-red-400" x-text="qtSla.summary.at_serv"></span>
+              <span class="text-[11px] text-gray-600">prazo SLA vencido</span>
+            </div>
+
+          </div>
+
+          <!-- Charts row -->
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+
+            <!-- Donut distribuição -->
+            <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+                <svg class="w-4 h-4 text-purple-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3"/></svg>
+                <h3 class="text-sm font-semibold">Distribuição SLA</h3>
+                <span class="ml-auto text-[11px] text-purple-400 border border-purple-500/30 bg-purple-500/10 px-1.5 py-0.5 rounded">Qualitor</span>
+              </div>
+              <div class="p-4 flex items-center" style="height:280px">
+                <template x-if="qtSla.summary.com_sla === 0">
+                  <div class="flex flex-col items-center justify-center w-full h-full text-gray-600">
+                    <p class="text-sm">Nenhum dado SLA</p>
+                  </div>
+                </template>
+                <template x-if="qtSla.summary.com_sla > 0">
+                  <div class="relative w-full h-full">
+                    <canvas id="qtSlaDonutChart"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style="top:-32px">
+                      <span class="text-2xl font-bold"
+                        :class="qtSla.summary.pct_cumprimento >= 50 ? 'text-emerald-400' : 'text-red-400'"
+                        x-text="qtSla.summary.pct_cumprimento.toFixed(1) + '%'"></span>
+                      <span class="text-[10px] text-gray-500">no prazo</span>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+
+            <!-- Barras por equipe empilhadas -->
+            <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <h3 class="text-sm font-semibold">SLA por Equipe</h3>
+              </div>
+              <div class="p-4" style="height:280px">
+                <template x-if="!qtSla.por_equipe.length">
+                  <div class="flex items-center justify-center h-full text-gray-600 text-sm">Sem dados de equipe</div>
+                </template>
+                <canvas id="qtSlaEquipeChart" x-show="qtSla.por_equipe.length"></canvas>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Tabela: Violados por encerramento -->
+          <div class="bg-gray-900/40 backdrop-blur-xl border border-red-500/15 rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+              <svg class="w-4 h-4 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+              <h3 class="text-sm font-semibold">Prazo de Encerramento Violado</h3>
+              <span class="ml-auto text-xs text-red-400 font-medium" x-text="qtSla.violados.length + ' chamados'"></span>
+            </div>
+
+            <div x-show="!qtSla.violados.length" class="px-4 py-8 text-center text-sm text-gray-600">
+              Nenhum chamado com SLA violado
+            </div>
+
+            <div x-show="qtSla.violados.length" class="overflow-x-auto">
+              <table class="w-full text-xs">
+                <thead>
+                  <tr class="border-b border-white/5 text-gray-500">
+                    <th class="text-left px-4 py-2">#</th>
+                    <th class="text-left px-4 py-2">Chamado</th>
+                    <th class="text-left px-4 py-2">Equipe</th>
+                    <th class="text-left px-4 py-2">Responsável</th>
+                    <th class="text-left px-4 py-2">Prazo era</th>
+                    <th class="text-left px-4 py-2">Situação</th>
+                    <th class="text-right px-4 py-2 text-red-500">Atraso</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="(t, idx) in (qtVioladosShowAll ? qtSla.violados : qtSla.violados.slice(0, 15))" :key="t.id">
+                    <tr class="border-b border-white/5 hover:bg-red-500/5 transition-colors cursor-pointer"
+                        @click="window.openQualitorTicket(t.id)">
+                      <td class="px-4 py-2.5 text-gray-500 font-mono" x-text="'#' + t.id"></td>
+                      <td class="px-4 py-2.5 text-gray-200 max-w-[220px]">
+                        <span class="line-clamp-1 block" x-text="t.titulo || '—'"></span>
+                      </td>
+                      <td class="px-4 py-2.5">
+                        <span class="inline-flex px-1.5 py-0.5 rounded text-[10px] border"
+                          :class="t.equipe === 'RM1 SAP' ? 'bg-violet-500/15 text-violet-300 border-violet-500/20' : 'bg-blue-500/15 text-blue-300 border-blue-500/20'"
+                          x-text="t.equipe || '—'"></span>
+                      </td>
+                      <td class="px-4 py-2.5 text-gray-400" x-text="t.responsavel || '—'"></td>
+                      <td class="px-4 py-2.5 text-gray-500 font-mono text-[11px]" x-text="qtSlaPrazoLabel(t.prazo_termino)"></td>
+                      <td class="px-4 py-2.5">
+                        <span class="inline-flex px-1.5 py-0.5 rounded text-[10px] bg-gray-700/60 text-gray-300"
+                          x-text="t.situacao || '—'"></span>
+                      </td>
+                      <td class="px-4 py-2.5 text-right font-bold text-red-400" x-text="'+' + qtSlaHorasLabel(t.horas)"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+
+            <div x-show="qtSla.violados.length > 15" class="px-4 py-2 border-t border-white/5">
+              <button @click="qtVioladosShowAll = !qtVioladosShowAll"
+                class="text-[11px] text-gray-500 hover:text-gray-300 transition-colors w-full text-center py-1">
+                <span x-show="!qtVioladosShowAll" x-text="'↓ ver todos os ' + qtSla.violados.length + ' chamados'"></span>
+                <span x-show="qtVioladosShowAll">↑ mostrar menos</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tabela: Em risco -->
+          <div x-show="qtSla.em_risco_list.length > 0"
+               class="bg-gray-900/40 backdrop-blur-xl border border-amber-500/15 rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+              <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+              <h3 class="text-sm font-semibold">Em Risco <span class="text-[11px] text-gray-500 font-normal">(vence nas próximas 24h)</span></h3>
+              <span class="ml-auto text-xs text-amber-400 font-medium" x-text="qtSla.em_risco_list.length + ' chamados'"></span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs">
+                <thead>
+                  <tr class="border-b border-white/5 text-gray-500">
+                    <th class="text-left px-4 py-2">#</th>
+                    <th class="text-left px-4 py-2">Chamado</th>
+                    <th class="text-left px-4 py-2">Equipe</th>
+                    <th class="text-left px-4 py-2">Responsável</th>
+                    <th class="text-left px-4 py-2">Prazo</th>
+                    <th class="text-right px-4 py-2 text-amber-500">Restam</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="t in qtSla.em_risco_list" :key="t.id">
+                    <tr class="border-b border-white/5 hover:bg-amber-500/5 transition-colors cursor-pointer"
+                        @click="window.openQualitorTicket(t.id)">
+                      <td class="px-4 py-2.5 text-gray-500 font-mono" x-text="'#' + t.id"></td>
+                      <td class="px-4 py-2.5 text-gray-200 max-w-[220px]">
+                        <span class="line-clamp-1 block" x-text="t.titulo || '—'"></span>
+                      </td>
+                      <td class="px-4 py-2.5">
+                        <span class="inline-flex px-1.5 py-0.5 rounded text-[10px] border"
+                          :class="t.equipe === 'RM1 SAP' ? 'bg-violet-500/15 text-violet-300 border-violet-500/20' : 'bg-blue-500/15 text-blue-300 border-blue-500/20'"
+                          x-text="t.equipe || '—'"></span>
+                      </td>
+                      <td class="px-4 py-2.5 text-gray-400" x-text="t.responsavel || '—'"></td>
+                      <td class="px-4 py-2.5 text-gray-500 font-mono text-[11px]" x-text="qtSlaPrazoLabel(t.prazo_termino)"></td>
+                      <td class="px-4 py-2.5 text-right font-bold"
+                        :class="t.horas < 4 ? 'text-red-400' : t.horas < 12 ? 'text-orange-400' : 'text-amber-400'"
+                        x-text="qtSlaHorasLabel(t.horas)"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
           </div>
 
         </div>
