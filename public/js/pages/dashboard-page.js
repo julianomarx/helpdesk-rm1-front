@@ -822,17 +822,18 @@ function dashboardPage() {
           { label: 'Parados +5d',         value: this.dashboardOverview.stale_48h_tickets,     color: 'orange' },
         ];
       }
+      const open = this.dashboardOverview.open_tickets || 1;
       return [
-        { label: "Criados Hoje",           value: this.dashboardOverview.created_today_tickets,           color: 'blue'   },
-        { label: "Encerrados Hoje",        value: this.dashboardOverview.closed_today_tickets,            color: 'emerald'},
-        { label: "Abertos",                value: this.dashboardOverview.open_tickets,                    color: 'gray'   },
-        { label: "Em Atendimento",         value: this.dashboardOverview.in_progress_tickets,             color: 'cyan'   },
-        { label: "Retorno Solicitante",    value: this.dashboardOverview.feedback_tickets,                color: 'amber'  },
-        { label: "Ag. Confirmação",        value: this.dashboardOverview.awaiting_confirmation_tickets,   color: 'purple' },
-        { label: "Visitas Agendadas",      value: this.dashboardOverview.scheduled_visit_tickets,         color: 'indigo' },
-        { label: "Sem Responsável",        value: this.dashboardOverview.unassigned_tickets,              color: 'red'    },
-        { label: "Parados +48h",           value: this.dashboardOverview.stale_48h_tickets,              color: 'orange' },
-        { label: "Alta Prioridade",        value: this.dashboardOverview.high_priority_tickets,           color: 'red'    },
+        { label: "Criados Hoje",           value: this.dashboardOverview.created_today_tickets,           color: 'blue',   total: open },
+        { label: "Encerrados Hoje",        value: this.dashboardOverview.closed_today_tickets,            color: 'emerald', total: open },
+        { label: "Abertos",                value: this.dashboardOverview.open_tickets,                    color: 'gray',   total: null },
+        { label: "Em Atendimento",         value: this.dashboardOverview.in_progress_tickets,             color: 'cyan',   total: open },
+        { label: "Retorno Solicitante",    value: this.dashboardOverview.feedback_tickets,                color: 'amber',  total: open },
+        { label: "Ag. Confirmação",        value: this.dashboardOverview.awaiting_confirmation_tickets,   color: 'purple', total: open },
+        { label: "Visitas Agendadas",      value: this.dashboardOverview.scheduled_visit_tickets,         color: 'indigo', total: open },
+        { label: "Sem Responsável",        value: this.dashboardOverview.unassigned_tickets,              color: 'red',    total: open },
+        { label: "Parados +48h",           value: this.dashboardOverview.stale_48h_tickets,              color: 'orange', total: open },
+        { label: "Alta Prioridade",        value: this.dashboardOverview.high_priority_tickets,           color: 'red',    total: open },
       ];
     },
 
@@ -848,6 +849,24 @@ function dashboardPage() {
         emerald: 'text-emerald-400',
         indigo:  'text-indigo-400',
       }[color] || 'text-gray-300';
+    },
+
+    cardBarColor(color) {
+      return {
+        blue:    'bg-blue-400/70',
+        cyan:    'bg-cyan-400/70',
+        amber:   'bg-amber-400/70',
+        purple:  'bg-purple-400/70',
+        red:     'bg-red-400/70',
+        orange:  'bg-orange-400/70',
+        emerald: 'bg-emerald-400/70',
+        indigo:  'bg-indigo-400/70',
+      }[color] || 'bg-gray-400/70';
+    },
+
+    cardBarPct(value, total) {
+      if (!total || !value) return 0;
+      return Math.min(100, Math.round(value / total * 100));
     },
 
     priorityBadge(priority) {

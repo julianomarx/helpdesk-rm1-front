@@ -89,6 +89,19 @@
                       bg-gray-900/40 backdrop-blur-xl border border-white/10">
             <span class="text-[11px] text-gray-500 leading-tight" x-text="card.label"></span>
             <span class="text-3xl font-bold mt-1" :class="cardColor(card.color)" x-text="card.value"></span>
+            <template x-if="source === 'helpdesk' && card.total !== null">
+              <div class="mt-0.5 space-y-0.5">
+                <div class="flex justify-end">
+                  <span class="text-[10px] text-gray-600"
+                    x-text="cardBarPct(card.value, card.total) + '%'"></span>
+                </div>
+                <div class="h-1 w-full rounded-full bg-white/5">
+                  <div class="h-1 rounded-full transition-all duration-700"
+                       :class="cardBarColor(card.color)"
+                       :style="`width:${cardBarPct(card.value, card.total)}%`"></div>
+                </div>
+              </div>
+            </template>
           </div>
         </template>
       </div>
