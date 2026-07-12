@@ -56,6 +56,7 @@ function qualitorPage() {
       { value: 'todas', label: 'Todas as situações' },
       { value: 'Aguardando atendimento', label: 'Aguardando atendimento' },
       { value: 'Em atendimento', label: 'Em atendimento' },
+      { value: 'Aguardando confirmação de encerramento', label: 'Ag. confirmação de encerramento' },
       { value: 'Encerrado', label: 'Encerradas' },
       { value: 'Cancelado', label: 'Canceladas' },
     ],
@@ -679,10 +680,11 @@ function qualitorPage() {
 
     situacaoBadge(s) {
       const map = {
-        'Aguardando atendimento': 'bg-amber-500/15 text-amber-300 border-amber-500/30',
-        'Em atendimento':         'bg-blue-500/15  text-blue-300  border-blue-500/30',
-        'Encerrado':              'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-        'Cancelado':              'bg-red-500/15   text-red-300   border-red-500/30',
+        'Aguardando atendimento':              'bg-amber-500/15 text-amber-300 border-amber-500/30',
+        'Em atendimento':                      'bg-blue-500/15  text-blue-300  border-blue-500/30',
+        'Aguardando confirmação de encerramento': 'bg-violet-500/15 text-violet-300 border-violet-500/30',
+        'Encerrado':                           'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+        'Cancelado':                           'bg-red-500/15   text-red-300   border-red-500/30',
       };
       return map[s] || 'bg-gray-500/15 text-gray-300 border-gray-500/30';
     },
