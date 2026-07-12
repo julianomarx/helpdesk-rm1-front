@@ -177,7 +177,11 @@
                   <div class="space-y-1 border-t border-white/5 pt-2">
                     <div class="flex items-center justify-between text-xs">
                       <span class="text-gray-400">Abertos hoje</span>
-                      <span class="font-medium text-emerald-400" x-text="team.abertos_hoje"></span>
+                      <span class="font-medium text-emerald-400" x-text="team.abertos_hoje + ' (' + pct(team.abertos_hoje) + '%)'"></span>
+                    </div>
+                    <div class="h-1 w-full rounded-full bg-white/5">
+                      <div class="h-1 rounded-full bg-emerald-400/70 transition-all duration-500"
+                           :style="`width:${pct(team.abertos_hoje)}%`"></div>
                     </div>
                   </div>
 
