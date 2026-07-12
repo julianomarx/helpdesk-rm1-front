@@ -1097,7 +1097,8 @@
                         <span class="inline-flex px-1.5 py-0.5 rounded text-[10px] bg-gray-700/60 text-gray-300"
                           x-text="t.situacao || '—'"></span>
                       </td>
-                      <td class="px-4 py-2.5 text-right font-bold text-red-400" x-text="'+' + qtSlaHorasLabel(t.horas)"></td>
+                      <td class="px-4 py-2.5 text-right font-bold text-red-400"
+                        x-text="t.horas !== null ? '+' + qtSlaHorasLabel(t.horas) : qtSlaHorasLabel(null)"></td>
                     </tr>
                   </template>
                 </tbody>

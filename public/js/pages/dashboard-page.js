@@ -637,7 +637,7 @@ function dashboardPage() {
     },
 
     qtSlaHorasLabel(h) {
-      if (h === null || h === undefined) return '—';
+      if (h === null || h === undefined) return 'vencido';
       const hrs = Math.round(h);
       if (hrs < 1) return '< 1h';
       if (hrs < 24) return hrs + 'h';
