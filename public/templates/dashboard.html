@@ -181,31 +181,6 @@
                     </div>
                   </div>
 
-                  <div class="space-y-1">
-                    <div class="flex items-center justify-between text-xs">
-                      <span class="text-gray-400">SLA em risco</span>
-                      <span class="font-medium" :class="team.sla_em_risco > 0 ? 'text-amber-400' : 'text-gray-500'"
-                            x-text="team.sla_em_risco + ' (' + pct(team.sla_em_risco) + '%)'"></span>
-                    </div>
-                    <div class="h-1 w-full rounded-full bg-white/5">
-                      <div class="h-1 rounded-full transition-all duration-500"
-                           :class="team.sla_em_risco > 0 ? 'bg-amber-400/70' : 'bg-gray-600/40'"
-                           :style="`width:${pct(team.sla_em_risco)}%`"></div>
-                    </div>
-                  </div>
-
-                  <div class="space-y-1">
-                    <div class="flex items-center justify-between text-xs">
-                      <span class="text-gray-400">SLA violado</span>
-                      <span class="font-medium" :class="team.sla_violado > 0 ? 'text-red-400' : 'text-gray-500'"
-                            x-text="team.sla_violado + ' (' + pct(team.sla_violado) + '%)'"></span>
-                    </div>
-                    <div class="h-1 w-full rounded-full bg-white/5">
-                      <div class="h-1 rounded-full transition-all duration-500"
-                           :class="team.sla_violado > 0 ? 'bg-red-500/70' : 'bg-gray-600/40'"
-                           :style="`width:${pct(team.sla_violado)}%`"></div>
-                    </div>
-                  </div>
 
                 </div>
               </div>
