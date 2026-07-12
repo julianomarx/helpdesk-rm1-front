@@ -113,7 +113,8 @@
           </div>
           <div x-show="!teamsBreakdownLoading" class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <template x-for="team in teamsBreakdown" :key="team.nmequipe">
-              <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
+              <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex flex-col gap-3"
+                   x-data="{ pct(v) { return team.total_abertos > 0 ? Math.round(v / team.total_abertos * 100) : 0 } }">
                 <!-- Header -->
                 <div class="flex items-center justify-between">
                   <span class="text-sm font-semibold text-gray-200" x-text="team.nmequipe"></span>
@@ -124,36 +125,88 @@
                   <span class="text-4xl font-bold text-white" x-text="team.total_abertos"></span>
                   <span class="text-xs text-gray-500 mb-1">tickets</span>
                 </div>
-                <!-- Linhas de detalhe -->
-                <div class="space-y-1.5 border-t border-white/5 pt-3">
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="text-gray-400">Aguardando atendimento</span>
-                    <span class="font-medium text-amber-300" x-text="team.aguardando_atendimento"></span>
+                <!-- Linhas de detalhe com barras -->
+                <div class="space-y-2.5 border-t border-white/5 pt-3">
+
+                  <div class="space-y-1">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="text-gray-400">Aguardando atendimento</span>
+                      <span class="font-medium text-amber-300" x-text="team.aguardando_atendimento + ' (' + pct(team.aguardando_atendimento) + '%)'"></span>
+                    </div>
+                    <div class="h-1 w-full rounded-full bg-white/5">
+                      <div class="h-1 rounded-full bg-amber-400/70 transition-all duration-500"
+                           :style="`width:${pct(team.aguardando_atendimento)}%`"></div>
+                    </div>
                   </div>
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="text-gray-400">Em atendimento</span>
-                    <span class="font-medium text-blue-300" x-text="team.em_atendimento"></span>
+
+                  <div class="space-y-1">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="text-gray-400">Em atendimento</span>
+                      <span class="font-medium text-blue-300" x-text="team.em_atendimento + ' (' + pct(team.em_atendimento) + '%)'"></span>
+                    </div>
+                    <div class="h-1 w-full rounded-full bg-white/5">
+                      <div class="h-1 rounded-full bg-blue-400/70 transition-all duration-500"
+                           :style="`width:${pct(team.em_atendimento)}%`"></div>
+                    </div>
                   </div>
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="text-gray-400">Ag. confirmação encerramento</span>
-                    <span class="font-medium text-violet-300" x-text="team.ag_confirmacao"></span>
+
+                  <div class="space-y-1">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="text-gray-400">Ag. confirmação encerramento</span>
+                      <span class="font-medium text-violet-300" x-text="team.ag_confirmacao + ' (' + pct(team.ag_confirmacao) + '%)'"></span>
+                    </div>
+                    <div class="h-1 w-full rounded-full bg-white/5">
+                      <div class="h-1 rounded-full bg-violet-400/70 transition-all duration-500"
+                           :style="`width:${pct(team.ag_confirmacao)}%`"></div>
+                    </div>
                   </div>
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="text-gray-400">Sem responsável</span>
-                    <span class="font-medium" :class="team.sem_responsavel > 0 ? 'text-orange-400' : 'text-gray-500'" x-text="team.sem_responsavel"></span>
+
+                  <div class="space-y-1">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="text-gray-400">Sem responsável</span>
+                      <span class="font-medium" :class="team.sem_responsavel > 0 ? 'text-orange-400' : 'text-gray-500'"
+                            x-text="team.sem_responsavel + ' (' + pct(team.sem_responsavel) + '%)'"></span>
+                    </div>
+                    <div class="h-1 w-full rounded-full bg-white/5">
+                      <div class="h-1 rounded-full transition-all duration-500"
+                           :class="team.sem_responsavel > 0 ? 'bg-orange-400/70' : 'bg-gray-600/40'"
+                           :style="`width:${pct(team.sem_responsavel)}%`"></div>
+                    </div>
                   </div>
-                  <div class="flex items-center justify-between text-xs border-t border-white/5 pt-1.5 mt-1">
-                    <span class="text-gray-400">Abertos hoje</span>
-                    <span class="font-medium text-emerald-400" x-text="team.abertos_hoje"></span>
+
+                  <div class="space-y-1 border-t border-white/5 pt-2">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="text-gray-400">Abertos hoje</span>
+                      <span class="font-medium text-emerald-400" x-text="team.abertos_hoje"></span>
+                    </div>
                   </div>
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="text-gray-400">SLA em risco</span>
-                    <span class="font-medium" :class="team.sla_em_risco > 0 ? 'text-amber-400' : 'text-gray-500'" x-text="team.sla_em_risco"></span>
+
+                  <div class="space-y-1">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="text-gray-400">SLA em risco</span>
+                      <span class="font-medium" :class="team.sla_em_risco > 0 ? 'text-amber-400' : 'text-gray-500'"
+                            x-text="team.sla_em_risco + ' (' + pct(team.sla_em_risco) + '%)'"></span>
+                    </div>
+                    <div class="h-1 w-full rounded-full bg-white/5">
+                      <div class="h-1 rounded-full transition-all duration-500"
+                           :class="team.sla_em_risco > 0 ? 'bg-amber-400/70' : 'bg-gray-600/40'"
+                           :style="`width:${pct(team.sla_em_risco)}%`"></div>
+                    </div>
                   </div>
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="text-gray-400">SLA violado</span>
-                    <span class="font-medium" :class="team.sla_violado > 0 ? 'text-red-400' : 'text-gray-500'" x-text="team.sla_violado"></span>
+
+                  <div class="space-y-1">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="text-gray-400">SLA violado</span>
+                      <span class="font-medium" :class="team.sla_violado > 0 ? 'text-red-400' : 'text-gray-500'"
+                            x-text="team.sla_violado + ' (' + pct(team.sla_violado) + '%)'"></span>
+                    </div>
+                    <div class="h-1 w-full rounded-full bg-white/5">
+                      <div class="h-1 rounded-full transition-all duration-500"
+                           :class="team.sla_violado > 0 ? 'bg-red-500/70' : 'bg-gray-600/40'"
+                           :style="`width:${pct(team.sla_violado)}%`"></div>
+                    </div>
                   </div>
+
                 </div>
               </div>
             </template>
