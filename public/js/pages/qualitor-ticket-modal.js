@@ -13,7 +13,8 @@ function qualitorTicketModal() {
     actionLoading: false,
 
     // Acompanhamento
-    novoAcomp: { descricao: '', solicitante: 'N', privado: 'N', loading: false },
+    novoAcomp: '',
+    acompLoading: false,
 
     // Transferência de equipe
     transferMode: false,
@@ -50,7 +51,7 @@ function qualitorTicketModal() {
       this.tab = 'detalhes';
       this.actionMode = null;
       this.actionNota = '';
-      this.novoAcomp = { descricao: '', solicitante: 'N', privado: 'N', loading: false };
+      this.novoAcomp = ''; this.acompLoading = false;
       this.transferMode = false;
       this.transferEquipe = '';
       this.assignInternMode = false;
@@ -83,7 +84,7 @@ function qualitorTicketModal() {
       this.ticket = null;
       this.history = [];
       this.actionMode = null;
-      this.novoAcomp = { descricao: '', solicitante: 'N', privado: 'N', loading: false };
+      this.novoAcomp = ''; this.acompLoading = false;
       this.transferMode = false;
       this.assignInternMode = false;
       this.visitMode = false;
@@ -110,16 +111,15 @@ function qualitorTicketModal() {
       this.historyLoading = true;
       const token = localStorage.getItem('access_token');
       const h = { Authorization: 'Bearer ' + token };
+      // Tenta sync do Qualitor (best-effort, pode falhar se sessão expirou)
       try {
-        const res = await fetch(`/api/qualitor/tickets/${this.ticket.id}/refresh`, {
-          method: 'POST', headers: h,
-        });
-        if (res.ok) {
-          const d = await res.json();
-          if (d.history?.length) this.history = d.history;
-          if (d.ticket) this.ticket = d.ticket;
-        }
-      } catch { /* mantém dados locais em caso de falha */ }
+        await fetch(`/api/qualitor/tickets/${this.ticket.id}/refresh`, { method: 'POST', headers: h });
+      } catch { /* ignora falha do refresh */ }
+      // Sempre busca do banco local (fonte confiável)
+      try {
+        const hRes = await fetch(`/api/qualitor/tickets/${this.ticket.id}/history`, { headers: h });
+        if (hRes.ok) { const d = await hRes.json(); this.history = d.history || []; }
+      } catch { /* mantém histórico atual */ }
       this.historyLoading = false;
     },
 
@@ -174,63 +174,60 @@ function qualitorTicketModal() {
 
     // ── Acompanhamento ───────────────────────────────────────────────────────
     async enviarAcompanhamento() {
-      if (!this.novoAcomp.descricao.trim()) { showToast('Texto obrigatório', 'error'); return; }
-      this.novoAcomp.loading = true;
+      if (!this.novoAcomp.trim()) { showToast('Texto obrigatório', 'error'); return; }
+      this.acompLoading = true;
       const token = localStorage.getItem('access_token');
       const user = Alpine.store('app');
-
-      const payload = {
-        descricao: this.novoAcomp.descricao,
-        idsolicitante: this.novoAcomp.solicitante,
-        idprivado: this.novoAcomp.privado,
-        interno_user_id: parseInt(user.userId) || null,
-        interno_user_nome: user.userName || null,
-      };
+      const descricao = this.novoAcomp;
 
       // UI otimista: mostra o comentário imediatamente
       const optId = -Date.now();
       const optEntry = {
         id: optId,
         tipo: 'Acompanhamento',
-        descricao: payload.descricao,
+        descricao,
         usuario: user.userName || '',
         interno_user_nome: user.userName || null,
         data: new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }),
         is_solucao: false,
-        is_privado: payload.idprivado === 'S',
-        is_solicitante: payload.idsolicitante === 'S',
+        is_privado: false,
+        is_solicitante: false,
         subsituacao: null,
         duracao: null,
       };
       this.history = [...this.history, optEntry];
-      this.novoAcomp.descricao = '';
-      this.novoAcomp.solicitante = 'N';
-      this.novoAcomp.privado = 'N';
+      this.novoAcomp = '';
 
       try {
         const res = await fetch(`/api/qualitor/tickets/${this.ticket.id}/history`, {
           method: 'POST',
           headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({
+            descricao,
+            idsolicitante: 'N',
+            idprivado: 'N',
+            interno_user_id: parseInt(user.userId) || null,
+            interno_user_nome: user.userName || null,
+          }),
         });
         const data = await res.json();
         if (!res.ok) {
           this.history = this.history.filter(h => h.id !== optId);
-          this.novoAcomp.descricao = payload.descricao;
+          this.novoAcomp = descricao;
           showToast(data.detail || 'Erro ao enviar acompanhamento', 'error');
           return;
         }
-        // Usa o histórico do servidor só se trouxer mais entradas que o atual (inclui o novo)
+        // Usa histórico do servidor só se trouxer mais entradas (incluiu o novo comentário)
         if (data.history?.length > this.history.filter(h => h.id !== optId).length) {
           this.history = data.history;
         }
         showToast('Acompanhamento enviado!', 'success');
       } catch {
         this.history = this.history.filter(h => h.id !== optId);
-        this.novoAcomp.descricao = payload.descricao;
+        this.novoAcomp = descricao;
         showToast('Erro inesperado', 'error');
       }
-      finally { this.novoAcomp.loading = false; }
+      finally { this.acompLoading = false; }
     },
 
     // ── Transferir equipe ────────────────────────────────────────────────────
