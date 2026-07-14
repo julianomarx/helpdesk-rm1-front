@@ -102,6 +102,22 @@ function qualitorTicketModal() {
       if (hRes.ok) { const d = await hRes.json(); this.history = d.history || []; }
     },
 
+    historyLoading: false,
+
+    async abrirHistorico() {
+      this.tab = 'historico';
+      if (!this.ticket?.id) return;
+      this.historyLoading = true;
+      const token = localStorage.getItem('access_token');
+      const h = { Authorization: 'Bearer ' + token };
+      try {
+        await fetch(`/api/qualitor/tickets/${this.ticket.id}/refresh`, { method: 'POST', headers: h });
+        const hRes = await fetch(`/api/qualitor/tickets/${this.ticket.id}/history`, { headers: h });
+        if (hRes.ok) { const d = await hRes.json(); this.history = d.history || []; }
+      } catch { /* mantém histórico anterior em caso de falha */ }
+      finally { this.historyLoading = false; }
+    },
+
     // ── Iniciar atendimento ──────────────────────────────────────────────────
     async iniciarAtendimento() {
       this.actionLoading = true;

@@ -65,13 +65,14 @@
               : 'text-gray-400 hover:text-white hover:bg-white/5'">
             Detalhes
           </button>
-          <button @click="tab = 'historico'"
+          <button @click="abrirHistorico()"
             class="px-4 py-2 rounded-xl text-sm transition-all duration-200 flex items-center gap-2"
             :class="tab === 'historico'
               ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30'
               : 'text-gray-400 hover:text-white hover:bg-white/5'">
             Histórico
-            <span x-show="history.length > 0"
+            <span x-show="historyLoading" class="inline-block w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+            <span x-show="history.length > 0 && !historyLoading"
                   class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px]"
                   :class="tab === 'historico' ? 'bg-blue-500/40 text-blue-100' : 'bg-white/10 text-gray-400'"
                   x-text="history.length"></span>
