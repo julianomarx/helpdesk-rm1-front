@@ -182,13 +182,15 @@ function qualitorTicketModal() {
 
       // UI otimista: mostra o comentário imediatamente
       const optId = -Date.now();
+      const _now = new Date();
+      const _p = n => String(n).padStart(2, '0');
       const optEntry = {
         id: optId,
         tipo: 'Acompanhamento',
         descricao,
         usuario: user.userName || '',
         interno_user_nome: user.userName || null,
-        data: new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }),
+        data: `${_now.getFullYear()}-${_p(_now.getMonth()+1)}-${_p(_now.getDate())} ${_p(_now.getHours())}:${_p(_now.getMinutes())}:${_p(_now.getSeconds())}`,
         is_solucao: false,
         is_privado: false,
         is_solicitante: false,
@@ -471,7 +473,11 @@ function qualitorTicketModal() {
 
     formatDate(val) {
       if (!val) return '—';
-      try { return dayjs(val).format('DD/MM/YYYY HH:mm'); } catch { return val; }
+      try {
+        // Remove trailing dot from Qualitor timestamps ("2026-07-14 18:35:18." → parse ok)
+        const d = dayjs(String(val).replace(/\.$/, ''));
+        return d.isValid() ? d.format('DD/MM/YYYY HH:mm') : String(val);
+      } catch { return String(val); }
     },
 
     get isClosed() {
