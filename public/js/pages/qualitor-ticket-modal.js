@@ -178,27 +178,58 @@ function qualitorTicketModal() {
       this.novoAcomp.loading = true;
       const token = localStorage.getItem('access_token');
       const user = Alpine.store('app');
+
+      const payload = {
+        descricao: this.novoAcomp.descricao,
+        idsolicitante: this.novoAcomp.solicitante,
+        idprivado: this.novoAcomp.privado,
+        interno_user_id: parseInt(user.userId) || null,
+        interno_user_nome: user.userName || null,
+      };
+
+      // UI otimista: mostra o comentário imediatamente
+      const optId = -Date.now();
+      const optEntry = {
+        id: optId,
+        tipo: 'Acompanhamento',
+        descricao: payload.descricao,
+        usuario: user.userName || '',
+        interno_user_nome: user.userName || null,
+        data: new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }),
+        is_solucao: false,
+        is_privado: payload.idprivado === 'S',
+        is_solicitante: payload.idsolicitante === 'S',
+        subsituacao: null,
+        duracao: null,
+      };
+      this.history = [...this.history, optEntry];
+      this.novoAcomp.descricao = '';
+      this.novoAcomp.solicitante = 'N';
+      this.novoAcomp.privado = 'N';
+
       try {
         const res = await fetch(`/api/qualitor/tickets/${this.ticket.id}/history`, {
           method: 'POST',
           headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            descricao: this.novoAcomp.descricao,
-            idsolicitante: this.novoAcomp.solicitante,
-            idprivado: this.novoAcomp.privado,
-            interno_user_id: parseInt(user.userId) || null,
-            interno_user_nome: user.userName || null,
-          }),
+          body: JSON.stringify(payload),
         });
         const data = await res.json();
-        if (!res.ok) { showToast(data.detail || 'Erro ao enviar acompanhamento', 'error'); return; }
-        this.novoAcomp.descricao = '';
-        this.novoAcomp.solicitante = 'N';
-        this.novoAcomp.privado = 'N';
-        if (data.history?.length) this.history = data.history;
-        else await this._refresh();
+        if (!res.ok) {
+          this.history = this.history.filter(h => h.id !== optId);
+          this.novoAcomp.descricao = payload.descricao;
+          showToast(data.detail || 'Erro ao enviar acompanhamento', 'error');
+          return;
+        }
+        // Usa o histórico do servidor só se trouxer mais entradas que o atual (inclui o novo)
+        if (data.history?.length > this.history.filter(h => h.id !== optId).length) {
+          this.history = data.history;
+        }
         showToast('Acompanhamento enviado!', 'success');
-      } catch { showToast('Erro inesperado', 'error'); }
+      } catch {
+        this.history = this.history.filter(h => h.id !== optId);
+        this.novoAcomp.descricao = payload.descricao;
+        showToast('Erro inesperado', 'error');
+      }
       finally { this.novoAcomp.loading = false; }
     },
 
