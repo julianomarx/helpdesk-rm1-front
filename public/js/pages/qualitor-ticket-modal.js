@@ -111,11 +111,16 @@ function qualitorTicketModal() {
       const token = localStorage.getItem('access_token');
       const h = { Authorization: 'Bearer ' + token };
       try {
-        await fetch(`/api/qualitor/tickets/${this.ticket.id}/refresh`, { method: 'POST', headers: h });
-        const hRes = await fetch(`/api/qualitor/tickets/${this.ticket.id}/history`, { headers: h });
-        if (hRes.ok) { const d = await hRes.json(); this.history = d.history || []; }
-      } catch { /* mantém histórico anterior em caso de falha */ }
-      finally { this.historyLoading = false; }
+        const res = await fetch(`/api/qualitor/tickets/${this.ticket.id}/refresh`, {
+          method: 'POST', headers: h,
+        });
+        if (res.ok) {
+          const d = await res.json();
+          if (d.history?.length) this.history = d.history;
+          if (d.ticket) this.ticket = d.ticket;
+        }
+      } catch { /* mantém dados locais em caso de falha */ }
+      this.historyLoading = false;
     },
 
     // ── Iniciar atendimento ──────────────────────────────────────────────────
