@@ -224,6 +224,22 @@ function qualitorTicketModal() {
           this.history = data.history;
         }
         showToast('Acompanhamento enviado!', 'success');
+        // Safety net: re-busca histórico do DB após 5s (cobre casos de retry no backend)
+        const _tid = this.ticket?.id;
+        setTimeout(async () => {
+          if (!this.open || this.ticket?.id !== _tid) return;
+          try {
+            const _h = await fetch(`/api/qualitor/tickets/${_tid}/history`, {
+              headers: { Authorization: 'Bearer ' + token }
+            });
+            if (_h.ok) {
+              const _d = await _h.json();
+              const _fresh = _d.history || [];
+              const _realCount = this.history.filter(h => h.id > 0).length;
+              if (_fresh.length >= _realCount) this.history = _fresh;
+            }
+          } catch { /* silent */ }
+        }, 5000);
       } catch {
         this.history = this.history.filter(h => h.id !== optId);
         this.novoAcomp = descricao;
