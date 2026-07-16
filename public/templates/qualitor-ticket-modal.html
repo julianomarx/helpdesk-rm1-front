@@ -92,7 +92,7 @@
               <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
                 <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-3 font-semibold">Ações</p>
                 <template x-if="actionMode !== 'iniciar'">
-                  <button @click="actionMode = 'iniciar'; actionNota = ''"
+                  <button @click="actionMode = 'iniciar'"
                     class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold
                            bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-900/30 transition-all">
                     ▶ Iniciar Atendimento
@@ -100,12 +100,9 @@
                 </template>
                 <template x-if="actionMode === 'iniciar'">
                   <div class="space-y-3">
-                    <p class="text-sm text-gray-300">Confirma iniciar o atendimento deste chamado?</p>
-                    <textarea x-model="actionNota" placeholder="Nota inicial (opcional)..." rows="2"
-                      class="w-full px-3 py-2.5 rounded-xl text-sm text-gray-200
-                             bg-gray-800/60 border border-white/10 resize-none placeholder-gray-600
-                             focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50
-                             transition-colors"></textarea>
+                    <p class="text-sm text-gray-300">
+                      Você será registrado como <span class="text-blue-400 font-semibold" x-text="$store.app.userName"></span> responsável por este chamado.
+                    </p>
                     <div class="flex gap-2">
                       <button @click="iniciarAtendimento()" :disabled="actionLoading"
                         class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold
@@ -114,7 +111,7 @@
                              class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                         <span x-text="actionLoading ? 'Iniciando...' : 'Confirmar'"></span>
                       </button>
-                      <button @click="actionMode = null; actionNota = ''" :disabled="actionLoading"
+                      <button @click="actionMode = null" :disabled="actionLoading"
                         class="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white
                                bg-white/5 border border-white/10 hover:bg-white/10 transition-all disabled:opacity-50">
                         Cancelar

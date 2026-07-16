@@ -137,14 +137,17 @@ function qualitorTicketModal() {
           method: 'POST',
           headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            nota: this.actionNota,
             responsavel_interno_id: parseInt(user.userId) || null,
             responsavel_interno_nome: user.userName || null,
           }),
         });
         const data = await res.json();
-        if (!res.ok) { showToast(data.detail || 'Erro ao iniciar', 'error'); return; }
-        this.actionMode = null; this.actionNota = '';
+        if (!res.ok) {
+          this.actionMode = null;
+          showToast(data.detail || 'Erro ao iniciar', 'error');
+          return;
+        }
+        this.actionMode = null;
         await this._refresh();
         showToast('Atendimento iniciado!', 'success');
       } catch { showToast('Erro inesperado', 'error'); }
