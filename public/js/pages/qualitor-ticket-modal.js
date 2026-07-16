@@ -115,10 +115,14 @@ function qualitorTicketModal() {
       try {
         await fetch(`/api/qualitor/tickets/${this.ticket.id}/refresh`, { method: 'POST', headers: h });
       } catch { /* ignora falha do refresh */ }
-      // Sempre busca do banco local (fonte confiável)
+      // Busca do banco local (fonte confiável), mas não sobrescreve enquanto
+      // há um comentário sendo enviado (acompLoading) para não apagar o entry otimista.
       try {
         const hRes = await fetch(`/api/qualitor/tickets/${this.ticket.id}/history`, { headers: h });
-        if (hRes.ok) { const d = await hRes.json(); this.history = d.history || []; }
+        if (hRes.ok && !this.acompLoading) {
+          const d = await hRes.json();
+          this.history = d.history || [];
+        }
       } catch { /* mantém histórico atual */ }
       this.historyLoading = false;
     },
@@ -236,7 +240,10 @@ function qualitorTicketModal() {
               const _d = await _h.json();
               const _fresh = _d.history || [];
               const _realCount = this.history.filter(h => h.id > 0).length;
-              if (_fresh.length >= _realCount) this.history = _fresh;
+              // Só substitui se o servidor trouxe MAIS entradas (inclui o novo comentário).
+              // Com >= substituiria mesmo quando o DB não tem o novo comentário ainda,
+              // removendo o entry otimista que está visível.
+              if (_fresh.length > _realCount) this.history = _fresh;
             }
           } catch { /* silent */ }
         }, 5000);
