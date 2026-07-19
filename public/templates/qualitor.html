@@ -568,11 +568,13 @@
                     x-model="novoAcomp.descricao"
                     @input="onAcompInput($event)"
                     @keydown.escape="showMentionDropdown = false"
-                    placeholder="Descreva o acompanhamento... (use @Nome para mencionar)" rows="3"
+                    :disabled="selectedTicket.situacao !== 'Em atendimento'"
+                    :placeholder="selectedTicket.situacao === 'Em atendimento' ? 'Descreva o acompanhamento... (use @Nome para mencionar)' : 'Inicie o atendimento antes de comentar'"
+                    rows="3"
                     class="w-full px-3 py-2.5 rounded-xl text-sm text-gray-200
                            bg-gray-800/60 border border-white/10 resize-none placeholder-gray-600
                            focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50
-                           transition-colors"></textarea>
+                           transition-colors disabled:opacity-40 disabled:cursor-not-allowed"></textarea>
                   <!-- Dropdown de @menção -->
                   <div
                     x-show="showMentionDropdown"
@@ -630,7 +632,7 @@
                       Interno (privado)
                     </label>
                   </div>
-                  <button type="submit" :disabled="novoAcomp.loading || !novoAcomp.descricao.trim()"
+                  <button type="submit" :disabled="selectedTicket.situacao !== 'Em atendimento' || novoAcomp.loading || !novoAcomp.descricao.trim()"
                     class="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium
                            transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed
                            bg-blue-600 hover:bg-blue-700 text-white">

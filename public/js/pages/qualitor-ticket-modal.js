@@ -181,6 +181,7 @@ function qualitorTicketModal() {
 
     // ── Acompanhamento ───────────────────────────────────────────────────────
     async enviarAcompanhamento() {
+      if (this.ticket.situacao !== 'Em atendimento') { showToast('Inicie o atendimento antes de comentar', 'error'); return; }
       if (!this.novoAcomp.trim()) { showToast('Texto obrigatório', 'error'); return; }
       this.acompLoading = true;
       const token = localStorage.getItem('access_token');

@@ -464,6 +464,10 @@ function qualitorPage() {
     },
 
     async enviarAcompanhamento() {
+      if (this.selectedTicket.situacao !== 'Em atendimento') {
+        showToast('Inicie o atendimento antes de comentar', 'error');
+        return;
+      }
       if (!this.novoAcomp.descricao.trim()) {
         showToast('Texto do acompanhamento é obrigatório', 'error');
         return;
