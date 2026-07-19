@@ -1,0 +1,171 @@
+<div x-data="adminHealth()" x-init="load()" class="flex-1 overflow-y-auto custom-scroll p-5 space-y-5">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-lg font-bold text-gray-100">Status do Sistema</h1>
+      <p class="text-xs text-gray-500 mt-0.5" x-text="generatedAt ? 'Atualizado em ' + formatDate(generatedAt) : ''"></p>
+    </div>
+    <button @click="load()" :disabled="loading"
+      class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm text-gray-400 hover:text-white
+             bg-white/5 border border-white/10 hover:bg-white/10 transition-all disabled:opacity-40">
+      <svg class="w-3.5 h-3.5" :class="loading ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      Atualizar
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <template x-if="loading && !data">
+    <div class="flex items-center justify-center py-20">
+      <div class="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  </template>
+
+  <template x-if="data">
+    <div class="space-y-5">
+
+      <!-- ── SERVIÇOS ── -->
+      <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+        <p class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold mb-3">Serviços</p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <template x-for="[name, status] in Object.entries(data.services)" :key="name">
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+              <div class="relative shrink-0">
+                <div class="w-2.5 h-2.5 rounded-full"
+                  :class="status === 'active' ? 'bg-green-400' : status === 'inactive' ? 'bg-yellow-400' : 'bg-red-400'"></div>
+                <div x-show="status === 'active'" class="absolute inset-0 w-2.5 h-2.5 rounded-full bg-green-400 animate-ping opacity-60"></div>
+              </div>
+              <div>
+                <p class="text-xs font-medium text-gray-200" x-text="serviceLabel(name)"></p>
+                <p class="text-[10px] mt-0.5"
+                  :class="status === 'active' ? 'text-green-400' : status === 'inactive' ? 'text-yellow-400' : 'text-red-400'"
+                  x-text="status === 'active' ? 'Online' : status === 'inactive' ? 'Parado' : status === 'failed' ? 'Erro' : 'Desconhecido'"></p>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- ── INTEGRAÇÃO QUALITOR ── -->
+      <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+        <div class="flex items-center gap-2 mb-3">
+          <p class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">Integração Qualitor</p>
+          <template x-if="data.qualitor.error">
+            <span class="text-[10px] bg-red-900/30 border border-red-600/30 text-red-300 px-1.5 py-0.5 rounded-md" x-text="'Erro: ' + data.qualitor.error"></span>
+          </template>
+        </div>
+
+        <template x-if="!data.qualitor.error">
+          <div>
+            <!-- Stats grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+              <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-center">
+                <p class="text-xl font-bold text-blue-400" x-text="data.qualitor.total_tickets ?? '—'"></p>
+                <p class="text-[10px] text-gray-500 mt-0.5">Total de tickets</p>
+              </div>
+              <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-center">
+                <p class="text-xl font-bold text-cyan-400" x-text="data.qualitor.tickets_synced_today ?? '—'"></p>
+                <p class="text-[10px] text-gray-500 mt-0.5">Tickets sync hoje</p>
+              </div>
+              <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-center">
+                <p class="text-xl font-bold text-violet-400" x-text="data.qualitor.history_synced_today ?? '—'"></p>
+                <p class="text-[10px] text-gray-500 mt-0.5">Acomp. sync hoje</p>
+              </div>
+              <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-center">
+                <div class="flex items-center justify-center gap-1.5">
+                  <div class="w-2 h-2 rounded-full"
+                    :class="data.qualitor.scraper_logged_in ? 'bg-green-400' : 'bg-red-400'"></div>
+                  <p class="text-sm font-semibold"
+                    :class="data.qualitor.scraper_logged_in ? 'text-green-400' : 'text-red-400'"
+                    x-text="data.qualitor.scraper_logged_in ? 'Ativa' : 'Expirada'"></p>
+                </div>
+                <p class="text-[10px] text-gray-500 mt-0.5">Sessão scraper</p>
+              </div>
+            </div>
+
+            <!-- Último sync -->
+            <div class="flex flex-wrap gap-4 text-xs text-gray-500">
+              <span>Último ticket sync: <span class="text-gray-300" x-text="data.qualitor.last_ticket_sync ? formatDate(data.qualitor.last_ticket_sync) : '—'"></span></span>
+              <template x-if="data.qualitor.last_sync_log">
+                <span>Último ciclo: <span class="text-gray-300" x-text="data.qualitor.last_sync_log?.finished_at ? formatDate(data.qualitor.last_sync_log.finished_at) : '—'"></span>
+                  <template x-if="data.qualitor.last_sync_log?.tickets_updated != null">
+                    <span class="text-gray-400"> · <span x-text="data.qualitor.last_sync_log.tickets_updated"></span> atualiz.</span>
+                  </template>
+                  <template x-if="data.qualitor.last_sync_log?.error">
+                    <span class="text-red-400 ml-1" x-text="'⚠ ' + data.qualitor.last_sync_log.error"></span>
+                  </template>
+                </span>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- ── BACKUPS ── -->
+      <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+        <p class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold mb-3">Histórico de Backups</p>
+
+        <template x-if="data.backups.length === 0">
+          <div class="flex flex-col items-center justify-center py-8 text-gray-600">
+            <svg class="w-8 h-8 opacity-30 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375"/>
+            </svg>
+            <p class="text-sm">Nenhum backup registrado ainda</p>
+            <p class="text-xs mt-1 text-gray-700">O script de backup enviará o status após a próxima execução</p>
+          </div>
+        </template>
+
+        <template x-if="data.backups.length > 0">
+          <div class="space-y-2">
+            <template x-for="b in data.backups" :key="b.id">
+              <div class="rounded-xl border overflow-hidden"
+                :class="b.status === 'ok' ? 'border-green-500/20 bg-green-500/[0.03]' : 'border-red-500/20 bg-red-500/[0.03]'">
+                <!-- Header da linha -->
+                <div class="flex items-center gap-3 px-4 py-2.5 cursor-pointer"
+                  @click="b._expanded = !b._expanded">
+                  <!-- Ícone status -->
+                  <span class="text-base shrink-0" x-text="b.status === 'ok' ? '✅' : '❌'"></span>
+                  <!-- Data + hora -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="text-sm font-medium text-gray-200" x-text="formatDateOnly(b.date)"></span>
+                      <span class="text-xs text-gray-500" x-text="b.time"></span>
+                      <template x-if="b.errors_count > 0">
+                        <span class="text-[10px] bg-red-900/30 border border-red-600/30 text-red-300 px-1.5 py-0.5 rounded-md"
+                          x-text="b.errors_count + ' erro(s)'"></span>
+                      </template>
+                    </div>
+                  </div>
+                  <!-- Tamanho + disco -->
+                  <div class="text-right shrink-0">
+                    <p class="text-xs text-gray-300" x-text="b.total_size || '—'"></p>
+                    <p class="text-[10px] text-gray-600" x-text="b.disk_free ? b.disk_free + ' livres' : ''"></p>
+                  </div>
+                  <!-- Chevron -->
+                  <svg class="w-3.5 h-3.5 text-gray-600 transition-transform shrink-0"
+                    :class="b._expanded ? 'rotate-180' : ''"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </div>
+                <!-- Detalhe expandível -->
+                <div x-show="b._expanded" x-transition class="px-4 pb-3 border-t border-white/[0.05]">
+                  <div class="pt-2 space-y-1">
+                    <template x-for="line in b.report_lines" :key="line">
+                      <p class="text-xs text-gray-400" x-text="line"></p>
+                    </template>
+                    <p class="text-[10px] text-gray-700 mt-2" x-text="'Recebido em: ' + formatDate(b.received_at)"></p>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </template>
+      </div>
+
+    </div>
+  </template>
+
+</div>

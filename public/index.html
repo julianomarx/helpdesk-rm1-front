@@ -33,17 +33,18 @@
   <script src="/js/pages/analytics-page.js"></script>
   <script src="/js/pages/helpdesk-ticket-modal.js"></script>
   <script src="/js/pages/qualitor-ticket-modal.js"></script>
+  <script src="/js/pages/admin-health-page.js"></script>
 
   <!-- Shell e bootstrap -->
   <script src="/js/shell.js"></script>
   <script src="/js/main.js"></script>
   <script src="/js/login.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/locale/pt-br.js"></script>
+  <script src="/vendor/alpine.min.js" defer></script>
+  <script src="/vendor/tailwind-browser.js"></script>
+  <script src="/vendor/chart.umd.min.js"></script>
+  <script src="/vendor/dayjs.min.js"></script>
+  <script src="/vendor/dayjs-pt-br.js"></script>
   <script>
     dayjs.locale('pt-br')
   </script>
@@ -125,6 +126,22 @@
               <span x-show="todoPendingCount > 0"
                 class="text-[10px] bg-blue-500 text-white font-bold px-1.5 py-0.5 rounded-full min-w-5 text-center leading-tight"
                 x-text="todoPendingCount > 9 ? '9+' : todoPendingCount">
+              </span>
+            </button>
+          </template>
+
+          <!-- STATUS DO SISTEMA (admin only) -->
+          <template x-if="$store.app.role === 'admin'">
+            <button
+              @click="$store.app.navigate('admin-health')"
+              class="mt-1 w-full flex items-center justify-between px-3 py-2.5 rounded-xl
+                     hover:bg-white/[0.06] transition text-left group"
+              :class="$store.app.currentPage === 'admin-health' ? 'bg-white/[0.06] text-white' : ''">
+              <span class="flex items-center gap-2.5 text-sm text-gray-300 group-hover:text-white transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 17a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                Status do Sistema
               </span>
             </button>
           </template>
