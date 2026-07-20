@@ -97,6 +97,7 @@ function dashboardPage() {
     bottlenecksLoaded: false,
     bottlenecksLoading: false,
     bottlenecks: { by_team: [], by_category: [], by_hotel: [] },
+    qtBottlenecks: { by_subcategory: [], by_hotel: [] },
 
     // ── Volume ─────────────────────────────────────────────────────
     volumeLoaded: false,
@@ -379,14 +380,25 @@ function dashboardPage() {
           if (!res.ok) throw new Error();
           this.bottlenecks = await res.json();
           this.unifiedTeams = [];
+          this.qtBottlenecks = { by_subcategory: [], by_hotel: [] };
         } else {
-          const res = await fetch(`/api/dashboard/unified/by-team?source=${this.source}&period=${this.period}`, {
-            headers: { "Authorization": "Bearer " + token }
-          });
-          if (!res.ok) throw new Error();
-          const data = await res.json();
+          const [teamsRes, qtBRes] = await Promise.all([
+            fetch(`/api/dashboard/unified/by-team?source=${this.source}&period=${this.period}`,
+              { headers: { "Authorization": "Bearer " + token } }),
+            fetch(`/api/dashboard/qualitor/stats/bottlenecks?period=${this.period}`,
+              { headers: { "Authorization": "Bearer " + token } }),
+          ]);
+          if (!teamsRes.ok) throw new Error();
+          const data = await teamsRes.json();
           this.unifiedTeams = data.equipes || [];
           this.bottlenecks = { by_team: [], by_category: [], by_hotel: [] };
+          if (qtBRes.ok) {
+            const qtb = await qtBRes.json();
+            this.qtBottlenecks = {
+              by_subcategory: qtb.by_subcategory || [],
+              by_hotel:       qtb.by_hotel       || [],
+            };
+          }
         }
         this.bottlenecksLoaded = true;
       } catch {

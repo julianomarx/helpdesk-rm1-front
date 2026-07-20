@@ -887,16 +887,64 @@
             </div>
           </div>
 
-          <!-- Notices for unavailable sections -->
-          <div class="bg-gray-900/40 border border-white/5 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-2">
-            <svg class="w-8 h-8 text-gray-600 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10"/></svg>
-            <p class="text-xs text-gray-500">Tempo médio por categoria</p>
-            <p class="text-[11px] text-gray-600">Disponível apenas para Helpdesk</p>
+          <!-- Tempo médio por Subcategoria (Qualitor) -->
+          <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+              <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10"/></svg>
+              <h3 class="text-sm font-semibold">Tempo médio por Subcategoria</h3>
+              <span class="ml-auto text-[11px] px-1.5 py-0.5 rounded border border-purple-500/30 text-purple-300 bg-purple-500/10">Qualitor</span>
+            </div>
+            <div x-show="!qtBottlenecks.by_subcategory.length" class="px-4 py-6 text-sm text-gray-600 text-center">Sem dados no período</div>
+            <div x-show="qtBottlenecks.by_subcategory.length" class="overflow-x-auto">
+              <table class="w-full text-xs">
+                <thead><tr class="border-b border-white/5 text-gray-500">
+                  <th class="text-left px-4 py-2">Subcategoria</th>
+                  <th class="text-right px-4 py-2">Tempo médio</th>
+                  <th class="text-right px-4 py-2">Chamados</th>
+                </tr></thead>
+                <tbody>
+                  <template x-for="item in qtBottlenecks.by_subcategory" :key="item.name">
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td class="px-4 py-2.5 text-gray-200 max-w-[160px] truncate" x-text="item.name"></td>
+                      <td class="px-4 py-2.5 text-right font-medium"
+                          :class="item.avg_hours > 48 ? 'text-red-400' : item.avg_hours > 24 ? 'text-amber-400' : 'text-emerald-400'"
+                          x-text="hoursLabel(item.avg_hours)"></td>
+                      <td class="px-4 py-2.5 text-right text-gray-400" x-text="item.ticket_count"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div class="bg-gray-900/40 border border-white/5 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-2">
-            <svg class="w-8 h-8 text-gray-600 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16"/></svg>
-            <p class="text-xs text-gray-500">Gargalos por Hotel</p>
-            <p class="text-[11px] text-gray-600">Disponível apenas para Helpdesk</p>
+
+          <!-- Tempo médio por Hotel (Qualitor) -->
+          <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+              <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              <h3 class="text-sm font-semibold">Tempo médio por Hotel</h3>
+              <span class="ml-auto text-[11px] px-1.5 py-0.5 rounded border border-purple-500/30 text-purple-300 bg-purple-500/10">Qualitor</span>
+            </div>
+            <div x-show="!qtBottlenecks.by_hotel.length" class="px-4 py-6 text-sm text-gray-600 text-center">Sem dados no período</div>
+            <div x-show="qtBottlenecks.by_hotel.length" class="overflow-x-auto">
+              <table class="w-full text-xs">
+                <thead><tr class="border-b border-white/5 text-gray-500">
+                  <th class="text-left px-4 py-2">Hotel</th>
+                  <th class="text-right px-4 py-2">Tempo médio</th>
+                  <th class="text-right px-4 py-2">Chamados</th>
+                </tr></thead>
+                <tbody>
+                  <template x-for="item in qtBottlenecks.by_hotel" :key="item.name">
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td class="px-4 py-2.5 text-gray-200 max-w-[160px] truncate" x-text="item.name"></td>
+                      <td class="px-4 py-2.5 text-right font-medium"
+                          :class="item.avg_hours > 48 ? 'text-red-400' : item.avg_hours > 24 ? 'text-amber-400' : 'text-emerald-400'"
+                          x-text="hoursLabel(item.avg_hours)"></td>
+                      <td class="px-4 py-2.5 text-right text-gray-400" x-text="item.ticket_count"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
           </div>
 
         </div>
@@ -1146,6 +1194,27 @@
               </div>
             </div>
 
+          </div>
+
+          <!-- Volume por Hotel (Qualitor) -->
+          <div x-show="volume.by_hotel?.length" class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+              <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              <h3 class="text-sm font-semibold">Volume por Hotel</h3>
+              <span class="ml-auto text-[11px] px-1.5 py-0.5 rounded-full border border-purple-500/30 text-purple-300 bg-purple-500/10">Qualitor</span>
+            </div>
+            <div class="p-4 space-y-2.5">
+              <template x-for="item in (volume.by_hotel || [])" :key="item.name">
+                <div class="flex items-center gap-3">
+                  <span class="text-xs text-gray-300 w-44 truncate shrink-0" x-text="item.name"></span>
+                  <div class="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
+                    <div class="h-full rounded-full bg-purple-500 transition-all"
+                         :style="`width:${Math.round(item.count / (volume.by_hotel[0]?.count || 1) * 100)}%`"></div>
+                  </div>
+                  <span class="text-xs font-bold text-purple-300 w-8 text-right tabular-nums shrink-0" x-text="item.count"></span>
+                </div>
+              </template>
+            </div>
           </div>
 
         </div>
