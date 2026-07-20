@@ -1,99 +1,130 @@
 <div
   x-data="qualitorPage()"
   x-init="init()"
-  class="flex flex-col flex-1 min-h-0 overflow-hidden text-gray-200 relative">
+  class="flex flex-col flex-1 min-h-0 overflow-x-hidden gap-5 p-3 text-gray-200 relative">
 
   <!-- HEADER -->
-  <div class="shrink-0 px-5 pt-5 pb-4 border-b border-white/5">
-    <div class="flex items-center justify-between flex-wrap gap-3">
+  <div class="shrink-0 flex items-center justify-between gap-3 flex-wrap">
 
-      <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
-          <svg class="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+    <div class="flex items-center gap-3 flex-wrap">
+      <h1 class="text-xl font-bold text-gray-100 whitespace-nowrap mr-1">Qualitor</h1>
+
+      <!-- Busca -->
+      <div class="relative min-w-[220px] max-w-[340px]">
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
-        </div>
-        <div>
-          <h1 class="text-lg font-bold text-gray-100 leading-tight">Qualitor</h1>
-          <p class="text-[11px] text-gray-500">Chamados externos</p>
-        </div>
+        </span>
+        <input type="text" x-model="filters.search" placeholder="Buscar por ID, título, contato..."
+          @keydown.enter="fetchTickets(true)"
+          class="w-full h-10 pl-10 pr-3 rounded-2xl bg-gray-800/50 border border-white/10 text-sm">
       </div>
-
-      <template x-if="status">
-        <div class="flex items-center gap-2 flex-wrap">
-          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs
-                       bg-white/[0.04] border border-white/10 text-gray-300">
-            <span class="w-2 h-2 rounded-full bg-blue-400"></span>
-            <span x-text="status.total_tickets + ' tickets'"></span>
-          </span>
-          <template x-for="(count, sit) in status.por_situacao" :key="sit">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs border"
-                  :class="situacaoBadge(sit)">
-              <span x-text="sit + ': ' + count"></span>
-            </span>
-          </template>
-          <span class="text-[10px] text-gray-600">
-            Sync: <span x-text="lastSyncRelative()"></span>
-          </span>
-        </div>
-      </template>
     </div>
 
-    <!-- FILTROS -->
-    <div class="mt-4 flex flex-wrap gap-2">
-      <div class="relative flex-1 min-w-[220px] max-w-xs">
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-        <input type="text" x-model="filters.search" placeholder="Buscar por ID, título, contato..."
-          class="w-full pl-9 pr-3 py-2 rounded-xl bg-white/[0.04] border border-white/10
-                 text-sm text-gray-200 placeholder-gray-600
-                 focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50">
+    <!-- Badges de situação -->
+    <template x-if="status">
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs
+                     bg-white/[0.04] border border-white/10 text-gray-300">
+          <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+          <span x-text="status.total_tickets + ' tickets'"></span>
+        </span>
+        <template x-for="(count, sit) in status.por_situacao" :key="sit">
+          <span class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs border"
+                :class="situacaoBadge(sit)">
+            <span x-text="sit + ': ' + count"></span>
+          </span>
+        </template>
+        <span class="text-[10px] text-gray-600 ml-1">
+          Sync: <span x-text="lastSyncRelative()"></span>
+        </span>
       </div>
-      <select x-model="filters.situacao" @change="fetchTickets(); fetchStatus()"
-        class="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10
-               text-sm text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500/50">
-        <template x-for="opt in situacaoOptions" :key="opt.value">
-          <option :value="opt.value" x-text="opt.label"></option>
-        </template>
-      </select>
-      <select x-show="equipeOptions.length > 1" x-model="filters.equipe" @change="fetchTickets(); fetchStatus()"
-        class="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10
-               text-sm text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500/50">
-        <template x-for="opt in equipeOptions" :key="opt.value">
-          <option :value="opt.value" x-text="opt.label"></option>
-        </template>
-      </select>
+    </template>
+
+  </div>
+
+  <!-- FILTROS -->
+  <div class="shrink-0 px-4 py-3 bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl">
+    <div class="flex flex-wrap items-end gap-3">
+
+      <!-- Situação -->
+      <div class="flex flex-col min-w-[160px] flex-1">
+        <label class="text-[11px] text-gray-400 mb-1">Situação</label>
+        <select x-model="filters.situacao" @change="fetchTickets(); fetchStatus()"
+          class="h-10 px-3 rounded-xl bg-gray-800/90 border border-white/10 text-sm text-gray-300 focus:outline-none">
+          <template x-for="opt in situacaoOptions" :key="opt.value">
+            <option :value="opt.value" x-text="opt.label"></option>
+          </template>
+        </select>
+      </div>
+
+      <!-- Equipe -->
+      <div class="flex flex-col min-w-[140px] flex-1" x-show="equipeOptions.length > 1">
+        <label class="text-[11px] text-gray-400 mb-1">Equipe</label>
+        <select x-model="filters.equipe" @change="fetchTickets(); fetchStatus()"
+          class="h-10 px-3 rounded-xl bg-gray-800/90 border border-white/10 text-sm text-gray-300 focus:outline-none">
+          <template x-for="opt in equipeOptions" :key="opt.value">
+            <option :value="opt.value" x-text="opt.label"></option>
+          </template>
+        </select>
+      </div>
+
+      <!-- Meus tickets -->
       <button @click="toggleMine()"
-        :class="filters.mine
-          ? 'bg-blue-600/80 border-blue-500/60 text-white'
-          : 'bg-white/[0.04] border-white/10 text-gray-400 hover:text-white hover:bg-white/[0.08]'"
-        class="px-3 py-2 rounded-xl border text-sm transition flex items-center gap-1.5">
-        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        :class="filters.mine ? 'bg-blue-600 border-blue-500/60 text-white' : 'input-class text-gray-400 hover:text-white'"
+        class="h-10 px-4 rounded-xl border border-white/10 text-sm transition shrink-0 flex items-center gap-1.5">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
         </svg>
         Meus tickets
       </button>
+
+      <!-- Atualizar -->
       <button @click="fetchTickets(true); fetchStatus()"
-        class="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10
-               text-sm text-gray-400 hover:text-white hover:bg-white/[0.08] transition flex items-center gap-1.5">
-        <svg class="w-3.5 h-3.5" :class="loading ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        class="h-10 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm transition shrink-0 flex items-center gap-1.5">
+        <svg class="w-4 h-4" :class="loading ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
         </svg>
         Atualizar
       </button>
+
     </div>
   </div>
 
   <!-- LISTA DE TICKETS -->
-  <div class="flex-1 overflow-y-auto custom-scroll">
+  <div class="flex flex-col flex-1 min-h-0 overflow-hidden rounded-2xl border border-white/10">
 
+    <!-- Skeleton -->
     <template x-if="loading">
-      <div class="flex items-center justify-center py-20">
-        <div class="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      <div class="flex flex-col flex-1 min-h-0">
+        <div class="shrink-0 grid grid-cols-[56px_1fr_160px_110px_140px_120px] gap-3 px-4 py-2
+                    bg-gray-900/95 backdrop-blur-sm border-b border-white/5
+                    text-[10px] uppercase tracking-widest text-gray-600 font-semibold">
+          <span>#</span><span>Título / Contato</span><span>Situação</span>
+          <span>Severidade</span><span>Equipe</span><span>Responsável</span>
+        </div>
+        <div class="flex-1 overflow-y-auto">
+          <template x-for="i in 8" :key="i">
+            <div class="grid grid-cols-[56px_1fr_160px_110px_140px_120px] gap-3 px-4 py-3
+                        border-b border-white/[0.04] animate-pulse">
+              <div class="h-3.5 w-8 bg-gray-700/60 rounded self-center"></div>
+              <div class="self-center space-y-1.5">
+                <div class="h-3.5 w-48 bg-gray-700/60 rounded"></div>
+                <div class="h-2.5 w-32 bg-gray-700/40 rounded"></div>
+                <div class="h-2 w-56 bg-gray-700/30 rounded"></div>
+              </div>
+              <div class="h-5 w-20 bg-gray-700/50 rounded-lg self-center"></div>
+              <div class="h-5 w-16 bg-gray-700/50 rounded-lg self-center"></div>
+              <div class="h-3 w-20 bg-gray-700/40 rounded self-center"></div>
+              <div class="h-3 w-20 bg-gray-700/40 rounded self-center"></div>
+            </div>
+          </template>
+        </div>
       </div>
     </template>
 
+    <!-- Vazio -->
     <template x-if="!loading && filteredTickets.length === 0">
       <div class="flex flex-col items-center justify-center py-20 text-gray-600">
         <svg class="w-10 h-10 mb-3 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -103,9 +134,11 @@
       </div>
     </template>
 
+    <!-- Lista -->
     <template x-if="!loading && filteredTickets.length > 0">
-      <div>
-        <div class="sticky top-0 grid grid-cols-[56px_1fr_160px_110px_140px_120px] gap-3 px-4 py-2
+      <div class="flex flex-col flex-1 min-h-0">
+
+        <div class="shrink-0 grid grid-cols-[56px_1fr_160px_110px_140px_120px] gap-3 px-4 py-2
                     bg-gray-900/95 backdrop-blur-sm border-b border-white/5
                     text-[10px] uppercase tracking-widest text-gray-600 font-semibold">
           <span>#</span>
@@ -116,61 +149,75 @@
           <span>Responsável</span>
         </div>
 
-        <template x-for="ticket in filteredTickets" :key="ticket.id">
-          <div @click="openTicket(ticket)"
-            class="grid grid-cols-[56px_1fr_160px_110px_140px_120px] gap-3 px-4 py-3
-                   border-b border-white/[0.04] hover:bg-white/[0.06] cursor-pointer transition group">
-            <span class="text-xs font-mono text-gray-500 group-hover:text-gray-400 transition self-center"
-                  x-text="'#' + ticket.id"></span>
-            <div class="min-w-0 self-center">
-              <p class="text-sm font-medium text-gray-200 truncate group-hover:text-white transition"
-                 x-text="ticket.titulo || '—'"></p>
-              <p class="text-[11px] text-gray-500 truncate mt-0.5" x-text="ticket.contato || ''"></p>
-            </div>
-            <div class="self-center">
-              <span class="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-medium border"
-                    :class="situacaoBadge(ticket.situacao)" x-text="ticket.situacao || '—'"></span>
-            </div>
-            <div class="self-center">
-              <span class="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-medium border"
-                    :class="severidadeBadge(ticket.severidade)"
-                    x-text="(ticket.severidade || '—').split('-')[0].trim()"></span>
-            </div>
-            <span class="text-[11px] text-gray-500 truncate self-center" x-text="ticket.equipe || '—'"></span>
-            <span class="text-[11px] text-gray-500 truncate self-center" x-text="ticket.responsavel || 'Sem responsável'"></span>
-          </div>
-        </template>
+        <div class="flex-1 overflow-y-auto custom-scroll">
+          <template x-for="ticket in filteredTickets" :key="ticket.id">
+            <div @click="openTicket(ticket)"
+              class="grid grid-cols-[56px_1fr_160px_110px_140px_120px] gap-3 px-4 py-2.5
+                     border-b border-white/[0.04] hover:bg-white/[0.06] cursor-pointer transition group">
 
-        <!-- Rodapé: total + paginação -->
-        <div class="relative flex items-center justify-center px-4 py-3 border-t border-white/[0.04]">
-          <span class="absolute left-4 text-[11px] text-gray-600"
-                x-text="pagination.total + ' ticket(s)'"></span>
-          <div class="flex items-center gap-2">
-            <button @click="previousPage()" :disabled="pagination.page <= 1 || loading"
-              class="w-8 h-8 rounded-xl bg-white/[0.04] border border-white/10
-                     text-gray-400 hover:text-white hover:bg-white/[0.08] transition
-                     disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center">
-              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-              </svg>
-            </button>
-            <span class="text-sm text-gray-400 min-w-[60px] text-center">
-              <span x-text="pagination.page"></span>
-              <span class="text-gray-600"> / </span>
-              <span x-text="pagination.pages || 1"></span>
-            </span>
-            <button @click="nextPage()" :disabled="pagination.page >= pagination.pages || loading"
-              class="w-8 h-8 rounded-xl bg-white/[0.04] border border-white/10
-                     text-gray-400 hover:text-white hover:bg-white/[0.08] transition
-                     disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center">
-              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-              </svg>
-            </button>
-          </div>
+              <span class="text-xs font-mono text-blue-400 group-hover:text-blue-300 transition self-center"
+                    x-text="'#' + ticket.id"></span>
+
+              <div class="min-w-0 self-center">
+                <p class="text-sm font-medium text-gray-200 truncate group-hover:text-white transition"
+                   x-text="ticket.titulo || '—'"></p>
+                <p class="text-[11px] text-gray-500 truncate mt-0.5" x-text="ticket.contato || ''"></p>
+                <p x-show="ticket.descricao"
+                   class="text-[10px] text-gray-600 truncate mt-0.5"
+                   x-text="ticket.descricao ? cleanText(ticket.descricao).slice(0, 120) : ''"></p>
+              </div>
+
+              <div class="self-center">
+                <span class="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-medium border"
+                      :class="situacaoBadge(ticket.situacao)" x-text="ticket.situacao || '—'"></span>
+              </div>
+              <div class="self-center">
+                <span class="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-medium border"
+                      :class="severidadeBadge(ticket.severidade)"
+                      x-text="(ticket.severidade || '—').split('-')[0].trim()"></span>
+              </div>
+              <span class="text-[11px] text-gray-500 truncate self-center" x-text="ticket.equipe || '—'"></span>
+              <span class="text-[11px] text-gray-500 truncate self-center" x-text="ticket.responsavel || 'Sem responsável'"></span>
+
+            </div>
+          </template>
+
+          <p class="text-[10px] text-gray-700 text-center py-3"
+             x-text="filteredTickets.length + ' chamado(s) nesta página'"></p>
         </div>
+
       </div>
     </template>
+
+  </div>
+
+  <!-- PAGINAÇÃO -->
+  <div class="shrink-0 relative border-t border-white/10 pt-3">
+
+    <div class="absolute left-0 top-3 text-sm text-gray-500">
+      <span x-text="pagination.total"></span> tickets
+    </div>
+
+    <div class="flex justify-center items-center gap-2">
+      <button @click="previousPage()" :disabled="pagination.page <= 1 || loading"
+        class="w-9 h-9 rounded-xl bg-gray-800 hover:bg-gray-700 transition disabled:opacity-30 flex items-center justify-center">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <span class="text-sm text-gray-400">
+        <span x-text="pagination.page"></span>
+        <span class="text-gray-600"> / </span>
+        <span x-text="pagination.pages || 1"></span>
+      </span>
+      <button @click="nextPage()" :disabled="pagination.page >= pagination.pages || loading"
+        class="w-9 h-9 rounded-xl bg-gray-800 hover:bg-gray-700 transition disabled:opacity-30 flex items-center justify-center">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+
   </div>
 
   <!-- MODAL DE DETALHE -->
