@@ -1091,11 +1091,11 @@
             </div>
           </div>
 
-          <!-- Categoria (Qualitor) + Subcategoria (Helpdesk, visível em Ambos) -->
+          <!-- Categoria (somente Ambos) + Subcategoria -->
           <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
 
-            <!-- Por Categoria -->
-            <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+            <!-- Por Categoria — oculto quando source=qualitor (dados são redundantes com subcategoria) -->
+            <div x-show="source !== 'qualitor'" class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
               <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
                 <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
                 <h3 class="text-sm font-semibold">Volume por Categoria</h3>
@@ -1116,8 +1116,9 @@
               </div>
             </div>
 
-            <!-- Por Subcategoria -->
-            <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+            <!-- Por Subcategoria — full-width quando source=qualitor -->
+            <div :class="source === 'qualitor' ? 'xl:col-span-2' : ''"
+                 class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
               <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
                 <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10a2 2 0 012-2h3.586a1 1 0 01.707.293l1.414 1.414A1 1 0 0011.414 10H19a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-9z"/></svg>
                 <h3 class="text-sm font-semibold">Volume por Subcategoria</h3>
