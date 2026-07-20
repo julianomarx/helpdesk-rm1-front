@@ -251,8 +251,9 @@
       <template x-if="source !== 'helpdesk'">
         <div>
           <p class="text-xs text-gray-500 font-medium uppercase tracking-wider mb-2">Por equipe</p>
-          <div x-show="teamsBreakdownLoading" class="grid grid-cols-1 md:grid-cols-2 gap-3 animate-pulse">
-            <template x-for="i in 2" :key="i">
+          <div x-show="teamsBreakdownLoading" class="grid gap-3 animate-pulse"
+               :class="source === 'all' ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'">
+            <template x-for="i in (source === 'all' ? 3 : 2)" :key="i">
               <div class="bg-gray-900/40 border border-white/10 rounded-2xl p-4 space-y-3">
                 <div class="h-4 w-24 rounded bg-gray-700/60"></div>
                 <div class="h-8 w-16 rounded bg-gray-700/50"></div>
@@ -265,7 +266,8 @@
               </div>
             </template>
           </div>
-          <div x-show="!teamsBreakdownLoading" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div x-show="!teamsBreakdownLoading" class="grid gap-3"
+               :class="source === 'all' ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'">
             <template x-for="team in teamsBreakdown" :key="team.nmequipe">
               <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex flex-col gap-3"
                    x-data="{ pct(v) { return team.total_abertos > 0 ? Math.round(v / team.total_abertos * 100) : 0 } }">
@@ -356,7 +358,82 @@
                 </div>
               </div>
             </template>
-            <div x-show="teamsBreakdown.length === 0" class="md:col-span-2 text-center text-sm text-gray-600 py-6">
+            <!-- Card Helpdesk — visível apenas em "Ambos" -->
+            <div x-show="source === 'all'"
+                 class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-semibold text-gray-200">Helpdesk</span>
+                <span class="text-[11px] px-1.5 py-0.5 rounded border border-indigo-500/30 text-indigo-300 bg-indigo-500/10">HD</span>
+              </div>
+              <div class="flex items-end gap-2">
+                <span class="text-4xl font-bold text-white" x-text="hdQueue.open"></span>
+                <span class="text-xs text-gray-500 mb-1">em aberto</span>
+              </div>
+              <div class="space-y-2.5 border-t border-white/5 pt-3">
+
+                <div class="space-y-1">
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-400">Em atendimento</span>
+                    <span class="font-medium text-blue-300" x-text="hdQueue.in_progress + ' (' + hdPct(hdQueue.in_progress) + '%)'"></span>
+                  </div>
+                  <div class="h-1 w-full rounded-full bg-white/5">
+                    <div class="h-1 rounded-full bg-blue-400/70 transition-all duration-500" :style="`width:${hdPct(hdQueue.in_progress)}%`"></div>
+                  </div>
+                </div>
+
+                <div class="space-y-1">
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-400">Sem responsável</span>
+                    <span class="font-medium" :class="hdQueue.unassigned > 0 ? 'text-orange-400' : 'text-gray-500'"
+                          x-text="hdQueue.unassigned + ' (' + hdPct(hdQueue.unassigned) + '%)'"></span>
+                  </div>
+                  <div class="h-1 w-full rounded-full bg-white/5">
+                    <div class="h-1 rounded-full transition-all duration-500"
+                         :class="hdQueue.unassigned > 0 ? 'bg-orange-400/70' : 'bg-gray-600/40'"
+                         :style="`width:${hdPct(hdQueue.unassigned)}%`"></div>
+                  </div>
+                </div>
+
+                <div class="space-y-1">
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-400">Alta prioridade</span>
+                    <span class="font-medium" :class="hdQueue.high_priority > 0 ? 'text-red-400' : 'text-gray-500'"
+                          x-text="hdQueue.high_priority + ' (' + hdPct(hdQueue.high_priority) + '%)'"></span>
+                  </div>
+                  <div class="h-1 w-full rounded-full bg-white/5">
+                    <div class="h-1 rounded-full transition-all duration-500"
+                         :class="hdQueue.high_priority > 0 ? 'bg-red-400/70' : 'bg-gray-600/40'"
+                         :style="`width:${hdPct(hdQueue.high_priority)}%`"></div>
+                  </div>
+                </div>
+
+                <div class="space-y-1 border-t border-white/5 pt-2">
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-400">Abertos hoje</span>
+                    <span class="font-medium text-emerald-400" x-text="hdQueue.created_today + ' (' + hdPct(hdQueue.created_today) + '%)'"></span>
+                  </div>
+                  <div class="h-1 w-full rounded-full bg-white/5">
+                    <div class="h-1 rounded-full bg-emerald-400/70 transition-all duration-500" :style="`width:${hdPct(hdQueue.created_today)}%`"></div>
+                  </div>
+                </div>
+
+                <div class="space-y-1">
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-400">Parados +48h</span>
+                    <span class="font-medium" :class="hdQueue.stale > 0 ? 'text-amber-400' : 'text-gray-500'"
+                          x-text="hdQueue.stale + ' (' + hdPct(hdQueue.stale) + '%)'"></span>
+                  </div>
+                  <div class="h-1 w-full rounded-full bg-white/5">
+                    <div class="h-1 rounded-full transition-all duration-500"
+                         :class="hdQueue.stale > 0 ? 'bg-amber-400/70' : 'bg-gray-600/40'"
+                         :style="`width:${hdPct(hdQueue.stale)}%`"></div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <div x-show="teamsBreakdown.length === 0" class="md:col-span-3 text-center text-sm text-gray-600 py-6">
               Nenhum dado de equipe disponível
             </div>
           </div>
@@ -1014,15 +1091,56 @@
             </div>
           </div>
 
-          <!-- Notices for helpdesk-only sections -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <template x-for="lbl in ['Por Categoria', 'Por Hotel', 'Por Subcategoria']" :key="lbl">
-              <div class="bg-gray-900/40 border border-white/5 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-2">
-                <svg class="w-8 h-8 text-gray-600 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
-                <p class="text-xs text-gray-500" x-text="lbl"></p>
-                <p class="text-[11px] text-gray-600">Disponível apenas para Helpdesk</p>
+          <!-- Categoria (Qualitor) + Subcategoria (Helpdesk, visível em Ambos) -->
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+
+            <!-- Por Categoria -->
+            <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
+                <h3 class="text-sm font-semibold">Volume por Categoria</h3>
+                <span class="ml-auto text-[11px] px-1.5 py-0.5 rounded-full border border-purple-500/30 text-purple-300 bg-purple-500/10">Qualitor</span>
               </div>
-            </template>
+              <div x-show="!volume.by_category.length" class="px-4 py-6 text-sm text-gray-600 text-center">Sem dados de categoria</div>
+              <div x-show="volume.by_category.length" class="p-4 space-y-2.5">
+                <template x-for="item in volume.by_category" :key="item.name">
+                  <div class="flex items-center gap-3">
+                    <span class="text-xs text-gray-300 w-44 truncate shrink-0" x-text="item.name"></span>
+                    <div class="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
+                      <div class="h-full rounded-full bg-purple-500 transition-all"
+                           :style="`width:${Math.round(item.count / (volume.by_category[0]?.count || 1) * 100)}%`"></div>
+                    </div>
+                    <span class="text-xs font-bold text-purple-300 w-8 text-right tabular-nums" x-text="item.count"></span>
+                  </div>
+                </template>
+              </div>
+            </div>
+
+            <!-- Por Subcategoria (Helpdesk — aparece em Ambos) -->
+            <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
+                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10a2 2 0 012-2h3.586a1 1 0 01.707.293l1.414 1.414A1 1 0 0011.414 10H19a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-9z"/></svg>
+                <h3 class="text-sm font-semibold">Volume por Subcategoria</h3>
+                <span class="ml-auto text-[11px] px-1.5 py-0.5 rounded-full border border-indigo-500/30 text-indigo-300 bg-indigo-500/10">Helpdesk</span>
+              </div>
+              <div x-show="!volume.by_subcategory.length" class="px-4 py-6 text-sm text-gray-600 text-center">
+                <template x-if="source === 'qualitor'"><span>Selecione "Ambos" para ver subcategorias</span></template>
+                <template x-if="source !== 'qualitor'"><span>Sem dados de subcategoria</span></template>
+              </div>
+              <div x-show="volume.by_subcategory.length" class="p-4 space-y-2.5">
+                <template x-for="item in volume.by_subcategory" :key="item.name">
+                  <div class="flex items-center gap-3">
+                    <span class="text-xs text-gray-300 w-44 truncate shrink-0" x-text="item.name"></span>
+                    <div class="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
+                      <div class="h-full rounded-full bg-indigo-500 transition-all"
+                           :style="`width:${Math.round(item.count / (volume.by_subcategory[0]?.count || 1) * 100)}%`"></div>
+                    </div>
+                    <span class="text-xs font-bold text-indigo-300 w-8 text-right tabular-nums" x-text="item.count"></span>
+                  </div>
+                </template>
+              </div>
+            </div>
+
           </div>
 
         </div>

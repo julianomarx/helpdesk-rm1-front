@@ -441,8 +441,13 @@ function dashboardPage() {
             headers: { "Authorization": "Bearer " + token }
           });
           if (!res.ok) throw new Error();
-          this.volumeTimeseries = await res.json();
-          this.volume = { by_category: [], by_subcategory: [], by_hotel: [] };
+          const data = await res.json();
+          this.volumeTimeseries = data;
+          this.volume = {
+            by_category:    data.by_category    || [],
+            by_subcategory: data.by_subcategory || [],
+            by_hotel:       [],
+          };
           this.volumeLoaded = true;
           await this.$nextTick();
           this._renderVolumeTimeseries();
@@ -850,6 +855,10 @@ function dashboardPage() {
     // ── Formatters / helpers ─────────────────────────────────────────
     get qtTotalOpen() {
       return this.teamsBreakdown.reduce((sum, t) => sum + Math.max(0, (t.total_abertos || 0) - (t.ag_confirmacao || 0)), 0);
+    },
+
+    hdPct(v) {
+      return this.hdQueue.open > 0 ? Math.round((v || 0) / this.hdQueue.open * 100) : 0;
     },
 
     get overviewCards() {
