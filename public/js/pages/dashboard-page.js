@@ -33,6 +33,10 @@ function dashboardPage() {
       high_priority_tickets: 0
     },
 
+    // ── Queue cards (sempre visíveis, independente do toggle de fonte) ─
+    hdQueue: { open: 0, in_progress: 0, unassigned: 0, stale: 0, high_priority: 0, feedback: 0, created_today: 0, closed_today: 0 },
+    queuesLoading: false,
+
     // ── Teams breakdown (Qualitor) ─────────────────────────────────
     teamsBreakdown: [],
     teamsBreakdownLoading: false,
@@ -142,6 +146,7 @@ function dashboardPage() {
       this.dashboardTab = tab;
       await this.$nextTick();
       if (tab === 'operational'  && !this.operationalLoaded)   await this.loadOperational();
+      if (tab === 'desempenho'   && !this.productivityLoaded)  await this.loadProductivity();
       if (tab === 'productivity' && !this.productivityLoaded)  await this.loadProductivity();
       if (tab === 'bottlenecks'  && !this.bottlenecksLoaded)   await this.loadBottlenecks();
       if (tab === 'volume'       && !this.volumeLoaded)        await this.loadVolume();
@@ -197,6 +202,37 @@ function dashboardPage() {
     },
 
     // ── Loaders ─────────────────────────────────────────────────────
+
+    async loadQueues() {
+      if (!validateToken()) return;
+      this.queuesLoading = true;
+      const token = localStorage.getItem('access_token');
+      try {
+        const [hdRes, qtRes] = await Promise.all([
+          fetch('/api/dashboard/overview',                              { headers: { Authorization: 'Bearer ' + token } }),
+          fetch('/api/dashboard/qualitor/stats/teams-breakdown',       { headers: { Authorization: 'Bearer ' + token } }),
+        ]);
+        if (hdRes.ok) {
+          const d = await hdRes.json();
+          this.hdQueue = {
+            open:          d.open_tickets                ?? 0,
+            in_progress:   d.in_progress_tickets         ?? 0,
+            unassigned:    d.unassigned_tickets           ?? 0,
+            stale:         d.stale_48h_tickets            ?? 0,
+            high_priority: d.high_priority_tickets        ?? 0,
+            feedback:      d.feedback_tickets             ?? 0,
+            created_today: d.created_today_tickets        ?? 0,
+            closed_today:  d.closed_today_tickets         ?? 0,
+          };
+        }
+        if (qtRes.ok) {
+          const d = await qtRes.json();
+          this.teamsBreakdown = d.equipes || [];
+        }
+      } catch {}
+      finally { this.queuesLoading = false; }
+    },
+
     async loadDashboardOverview() {
       if (!validateToken()) return;
       const token = localStorage.getItem("access_token");
