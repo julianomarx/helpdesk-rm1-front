@@ -431,7 +431,12 @@ function dashboardPage() {
             headers: { "Authorization": "Bearer " + token }
           });
           if (!res.ok) throw new Error();
-          this.volume = await res.json();
+          const data = await res.json();
+          this.volume = {
+            by_category:    data.by_category    || [],
+            by_subcategory: data.by_subcategory || [],
+            by_hotel:       data.by_hotel       || [],
+          };
           this.volumeTimeseries = { abertos: [], fechados: [] };
           this.volumeLoaded = true;
           await this.$nextTick();

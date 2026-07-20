@@ -1116,26 +1116,30 @@
               </div>
             </div>
 
-            <!-- Por Subcategoria (Helpdesk — aparece em Ambos) -->
+            <!-- Por Subcategoria -->
             <div class="bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
               <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
                 <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10a2 2 0 012-2h3.586a1 1 0 01.707.293l1.414 1.414A1 1 0 0011.414 10H19a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-9z"/></svg>
                 <h3 class="text-sm font-semibold">Volume por Subcategoria</h3>
-                <span class="ml-auto text-[11px] px-1.5 py-0.5 rounded-full border border-indigo-500/30 text-indigo-300 bg-indigo-500/10">Helpdesk</span>
+                <span class="ml-auto text-[11px] px-1.5 py-0.5 rounded-full border"
+                  :class="source === 'qualitor' ? 'border-purple-500/30 text-purple-300 bg-purple-500/10' : 'border-indigo-500/30 text-indigo-300 bg-indigo-500/10'"
+                  x-text="source === 'qualitor' ? 'Qualitor' : 'Helpdesk'"></span>
               </div>
               <div x-show="!volume.by_subcategory.length" class="px-4 py-6 text-sm text-gray-600 text-center">
-                <template x-if="source === 'qualitor'"><span>Selecione "Ambos" para ver subcategorias</span></template>
-                <template x-if="source !== 'qualitor'"><span>Sem dados de subcategoria</span></template>
+                Sem dados de subcategoria
               </div>
               <div x-show="volume.by_subcategory.length" class="p-4 space-y-2.5">
                 <template x-for="item in volume.by_subcategory" :key="item.name">
                   <div class="flex items-center gap-3">
                     <span class="text-xs text-gray-300 w-44 truncate shrink-0" x-text="item.name"></span>
                     <div class="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
-                      <div class="h-full rounded-full bg-indigo-500 transition-all"
+                      <div class="h-full rounded-full transition-all"
+                           :class="source === 'qualitor' ? 'bg-purple-500' : 'bg-indigo-500'"
                            :style="`width:${Math.round(item.count / (volume.by_subcategory[0]?.count || 1) * 100)}%`"></div>
                     </div>
-                    <span class="text-xs font-bold text-indigo-300 w-8 text-right tabular-nums" x-text="item.count"></span>
+                    <span class="text-xs font-bold w-8 text-right tabular-nums"
+                          :class="source === 'qualitor' ? 'text-purple-300' : 'text-indigo-300'"
+                          x-text="item.count"></span>
                   </div>
                 </template>
               </div>
@@ -1171,35 +1175,25 @@
             </div>
           </div>
 
-          <!-- Tabela: subcategorias -->
+          <!-- Volume por Subcategoria -->
           <div class="xl:col-span-2 bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
             <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
               <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10a2 2 0 012-2h3.586a1 1 0 01.707.293l1.414 1.414A1 1 0 0011.414 10H19a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-9z"/></svg>
               <h3 class="text-sm font-semibold">Volume por Subcategoria</h3>
+              <span class="ml-auto text-[11px] px-1.5 py-0.5 rounded-full border border-indigo-500/30 text-indigo-300 bg-indigo-500/10">Helpdesk</span>
             </div>
-            <div x-show="!volume.by_subcategory.length" class="px-4 py-6 text-sm text-gray-600 text-center">Sem dados</div>
-            <div x-show="volume.by_subcategory.length" class="overflow-x-auto">
-              <table class="w-full text-xs">
-                <thead><tr class="border-b border-white/5 text-gray-500">
-                  <th class="text-left px-4 py-2">Subcategoria</th>
-                  <th class="text-right px-4 py-2">Chamados</th>
-                  <th class="px-4 py-2 w-40"></th>
-                </tr></thead>
-                <tbody>
-                  <template x-for="item in volume.by_subcategory" :key="item.name">
-                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
-                      <td class="px-4 py-2.5 text-gray-200" x-text="item.name"></td>
-                      <td class="px-4 py-2.5 text-right font-bold text-purple-400" x-text="item.count"></td>
-                      <td class="px-4 py-2.5">
-                        <div class="h-1.5 rounded-full bg-white/5 overflow-hidden">
-                          <div class="h-full rounded-full bg-purple-500"
-                            :style="`width:${Math.round((item.count/maxCount(volume.by_subcategory))*100)}%`"></div>
-                        </div>
-                      </td>
-                    </tr>
-                  </template>
-                </tbody>
-              </table>
+            <div x-show="!volume.by_subcategory.length" class="px-4 py-6 text-sm text-gray-600 text-center">Sem dados de subcategoria</div>
+            <div x-show="volume.by_subcategory.length" class="p-4 space-y-2.5 columns-1 xl:columns-2 gap-x-8">
+              <template x-for="item in volume.by_subcategory" :key="item.name">
+                <div class="flex items-center gap-3 break-inside-avoid mb-2">
+                  <span class="text-xs text-gray-300 w-48 truncate shrink-0" x-text="item.name"></span>
+                  <div class="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
+                    <div class="h-full rounded-full bg-indigo-500 transition-all"
+                      :style="`width:${Math.round(item.count / (volume.by_subcategory[0]?.count || 1) * 100)}%`"></div>
+                  </div>
+                  <span class="text-xs font-bold text-indigo-300 w-8 text-right tabular-nums shrink-0" x-text="item.count"></span>
+                </div>
+              </template>
             </div>
           </div>
 
