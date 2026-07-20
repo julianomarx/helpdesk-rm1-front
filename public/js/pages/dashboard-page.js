@@ -848,6 +848,10 @@ function dashboardPage() {
     },
 
     // ── Formatters / helpers ─────────────────────────────────────────
+    get qtTotalOpen() {
+      return this.teamsBreakdown.reduce((sum, t) => sum + Math.max(0, (t.total_abertos || 0) - (t.ag_confirmacao || 0)), 0);
+    },
+
     get overviewCards() {
       if (this.source !== 'helpdesk') {
         const pl = this.periodLabel();
