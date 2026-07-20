@@ -212,6 +212,58 @@
       </div>
     </div>
 
+    <!-- VOLUME POR CATEGORIA + SUBCATEGORIA -->
+    <template x-if="volume?.by_category?.length > 0 || volume?.by_subcategory?.length > 0">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        <!-- Por categoria -->
+        <div class="bg-gray-900/40 backdrop-blur border border-white/[0.07] rounded-2xl p-5"
+             x-show="volume?.by_category?.length > 0">
+          <p class="text-sm font-medium text-gray-300 mb-4">Volume por categoria</p>
+          <div class="space-y-2">
+            <template x-for="c in (volume?.by_category || []).slice(0, 12)" :key="c.name">
+              <div class="flex items-center gap-3">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between mb-0.5">
+                    <span class="text-xs text-gray-400 truncate" x-text="c.name"></span>
+                    <span class="text-xs font-semibold text-gray-100 ml-2 shrink-0" x-text="c.count"></span>
+                  </div>
+                  <div class="h-1 bg-gray-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-indigo-500 rounded-full transition-all"
+                         :style="'width:' + barWidth(c.count, volume.by_category[0]?.count || 1) "></div>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Por subcategoria (Helpdesk) -->
+        <div class="bg-gray-900/40 backdrop-blur border border-white/[0.07] rounded-2xl p-5"
+             x-show="volume?.by_subcategory?.length > 0">
+          <p class="text-sm font-medium text-gray-300 mb-1">Volume por subcategoria</p>
+          <p class="text-xs text-gray-600 mb-4">Helpdesk · Movidesk</p>
+          <div class="space-y-2">
+            <template x-for="s in (volume?.by_subcategory || []).slice(0, 12)" :key="s.name">
+              <div class="flex items-center gap-3">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between mb-0.5">
+                    <span class="text-xs text-gray-400 truncate" x-text="s.name"></span>
+                    <span class="text-xs font-semibold text-gray-100 ml-2 shrink-0" x-text="s.count"></span>
+                  </div>
+                  <div class="h-1 bg-gray-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-violet-500 rounded-full transition-all"
+                         :style="'width:' + barWidth(s.count, volume.by_subcategory[0]?.count || 1) "></div>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+      </div>
+    </template>
+
     <!-- TOP TÉCNICOS + POR EQUIPE -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
