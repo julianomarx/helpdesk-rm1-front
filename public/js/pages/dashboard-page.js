@@ -129,7 +129,8 @@ function dashboardPage() {
     // ── History ────────────────────────────────────────────────────
     historyLoaded: false,
     historyLoading: false,
-    history: { monthly: [] },
+    history:   { monthly: [] },
+    qtHistory: { monthly: [] },
 
     // ── Bottleneck hotels modal ─────────────────────────────────────
     showBottleneckHotelsModal: false,
@@ -154,7 +155,7 @@ function dashboardPage() {
       if (tab === 'sla'          && !this.slaLoaded)           await this.loadSLA();
       if (tab === 'sla'          && this.slaLoaded)            this.initSLACharts();
       if (tab === 'history'      && !this.historyLoaded)       await this.loadHistory();
-      if (tab === 'history'      && this.historyLoaded)        this.initHistoryChart();
+      if (tab === 'history'      && this.historyLoaded)        { this.initHistoryChart(); this.initQtHistoryChart(); }
       if (tab === 'volume'       && this.volumeLoaded)         this.initVolumeCharts();
     },
 
@@ -162,7 +163,7 @@ function dashboardPage() {
     async refreshChartsForTheme() {
       await this.$nextTick();
       if (this.dashboardTab === 'sla'     && this.slaLoaded)     this.initSLACharts();
-      if (this.dashboardTab === 'history' && this.historyLoaded) this.initHistoryChart();
+      if (this.dashboardTab === 'history' && this.historyLoaded) { this.initHistoryChart(); this.initQtHistoryChart(); }
       if (this.dashboardTab === 'volume'  && this.volumeLoaded)  this.initVolumeCharts();
     },
 
@@ -516,14 +517,18 @@ function dashboardPage() {
       this.historyLoading = true;
       const token = localStorage.getItem("access_token");
       try {
-        const res = await fetch("/api/dashboard/history", {
-          headers: { "Authorization": "Bearer " + token }
-        });
-        if (!res.ok) throw new Error();
-        this.history = await res.json();
+        const needHd = this.source === 'helpdesk' || this.source === 'all';
+        const needQt = this.source === 'qualitor'  || this.source === 'all';
+        const [hdRes, qtRes] = await Promise.all([
+          needHd ? fetch("/api/dashboard/history", { headers: { "Authorization": "Bearer " + token } }) : Promise.resolve(null),
+          needQt ? fetch("/api/dashboard/qualitor/stats/history", { headers: { "Authorization": "Bearer " + token } }) : Promise.resolve(null),
+        ]);
+        if (hdRes && hdRes.ok) this.history   = await hdRes.json();
+        if (qtRes && qtRes.ok) this.qtHistory = await qtRes.json();
         this.historyLoaded = true;
         await this.$nextTick();
         this.initHistoryChart();
+        this.initQtHistoryChart();
       } catch {
         showToast("Erro ao carregar histórico", "error");
       } finally {
@@ -760,6 +765,43 @@ function dashboardPage() {
             {
               label: 'Encerrados',
               data: this.history.monthly.map(p => p.closed),
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16,185,129,0.10)',
+              tension: 0.4, fill: true, pointRadius: 4,
+            }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: th.text, font: { size: 12 } } } },
+          scales: {
+            x: { ticks: { color: th.muted }, grid: { color: th.grid } },
+            y: { ticks: { color: th.muted }, grid: { color: th.grid }, beginAtZero: true }
+          }
+        }
+      });
+    },
+
+    initQtHistoryChart() {
+      destroyChart('qtHistory');
+      const canvas = document.getElementById('qtHistoryChart');
+      if (!canvas || !this.qtHistory.monthly.length) return;
+      const th = _chartTheme();
+      _charts['qtHistory'] = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: this.qtHistory.monthly.map(p => p.month),
+          datasets: [
+            {
+              label: 'Criados',
+              data: this.qtHistory.monthly.map(p => p.created),
+              borderColor: '#a855f7',
+              backgroundColor: 'rgba(168,85,247,0.15)',
+              tension: 0.4, fill: true, pointRadius: 4,
+            },
+            {
+              label: 'Encerrados',
+              data: this.qtHistory.monthly.map(p => p.closed),
               borderColor: '#10b981',
               backgroundColor: 'rgba(16,185,129,0.10)',
               tension: 0.4, fill: true, pointRadius: 4,
