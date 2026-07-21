@@ -694,69 +694,36 @@
 
         </div>
 
-        <!-- Prioridade + Hotel -->
-        <div class="grid grid-cols-2 gap-4">
+        <!-- Hotel -->
+        <div>
 
-          <div>
+          <label class="block text-xs mb-1 text-gray-300">
+            Hotel *
+          </label>
 
-            <label class="block text-xs mb-1 text-gray-300">
-              Prioridade *
-            </label>
+          <select
+            x-model="newTicket.hotelId"
+            class="w-full p-3 rounded-2xl
+                  bg-gray-800/90 border border-white/10
+                  focus:ring-1 focus:ring-blue-500
+                  focus:outline-none">
 
-            <select
-              x-model="newTicket.priority"
-              class="w-full p-3 rounded-2xl
-                    bg-gray-800/90 border border-white/10
-                    focus:ring-1 focus:ring-blue-500
-                    focus:outline-none">
+            <option value="">
+              Selecione um hotel
+            </option>
 
-              <option value="low">
-                Baixa
+            <template
+              x-for="hotel in $store.app.hotels"
+              :key="hotel.id">
+
+              <option
+                :value="hotel.id"
+                x-text="hotel.code + ' - ' + hotel.name">
               </option>
 
-              <option value="medium">
-                Média
-              </option>
+            </template>
 
-              <option value="high">
-                Alta
-              </option>
-
-            </select>
-
-          </div>
-
-          <div>
-
-            <label class="block text-xs mb-1 text-gray-300">
-              Hotel *
-            </label>
-
-            <select
-              x-model="newTicket.hotelId"
-              class="w-full p-3 rounded-2xl
-                    bg-gray-800/90 border border-white/10
-                    focus:ring-1 focus:ring-blue-500
-                    focus:outline-none">
-
-              <option value="">
-                Selecione um hotel
-              </option>
-
-              <template
-                x-for="hotel in $store.app.hotels"
-                :key="hotel.id">
-
-                <option
-                  :value="hotel.id"
-                  x-text="hotel.code + ' - ' + hotel.name">
-                </option>
-
-              </template>
-
-            </select>
-
-          </div>
+          </select>
 
         </div>
 
