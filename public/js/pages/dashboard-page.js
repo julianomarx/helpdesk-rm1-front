@@ -55,6 +55,22 @@ function dashboardPage() {
       feedback_tickets: []
     },
 
+    // ── Operational list modal ──────────────────────────────────────
+    opListModal: {
+      show: false, title: '', tickets: [], page: 1, pageSize: 10,
+      col3Label: 'Hotel', col4Label: 'Responsável', col4Key: 'assignee_name',
+      timeLabel: 'Aberto há', timeKey: 'created_at', timeColor: 'text-red-400',
+      portal: 'helpdesk',
+    },
+
+    get opModalPages() {
+      return Math.max(1, Math.ceil(this.opListModal.tickets.length / this.opListModal.pageSize));
+    },
+    get opModalItems() {
+      const { page, pageSize, tickets } = this.opListModal;
+      return tickets.slice((page - 1) * pageSize, page * pageSize);
+    },
+
     get stalledShown() {
       return (this.operational?.stale_tickets || []).slice(0, this.stalledVisible);
     },
@@ -86,6 +102,33 @@ function dashboardPage() {
         this.stalledVisible = Infinity;
       } catch {}
       finally { this.stalledLoadingAll = false; }
+    },
+
+    openOpModal(title, tickets, opts = {}) {
+      this.opListModal = {
+        show: true, title, tickets, page: 1, pageSize: 10,
+        col3Label: opts.col3Label || 'Hotel',
+        col4Label: opts.col4Label || 'Responsável',
+        col4Key:   opts.col4Key   || 'assignee_name',
+        timeLabel: opts.timeLabel || 'Aberto há',
+        timeKey:   opts.timeKey   || 'created_at',
+        timeColor: opts.timeColor || 'text-red-400',
+        portal:    opts.portal    || 'helpdesk',
+      };
+    },
+
+    async openStalledModal() {
+      if (this.stalledHasMore) await this.loadAllStalled();
+      const isHd = this.source === 'helpdesk';
+      this.openOpModal('Tickets Parados', this.operational.stale_tickets, {
+        col3Label: isHd ? 'Hotel' : 'Equipe',
+        col4Label: isHd ? 'Equipe' : 'Responsável',
+        col4Key:   isHd ? 'team_name' : 'assignee_name',
+        timeLabel: 'Parado há',
+        timeKey:   'updated_at',
+        timeColor: 'text-amber-400',
+        portal:    isHd ? 'helpdesk' : (this.source === 'qualitor' ? 'qualitor' : 'helpdesk'),
+      });
     },
 
     // ── Productivity ───────────────────────────────────────────────
@@ -321,6 +364,8 @@ function dashboardPage() {
 
           let critical_tickets = [], awaiting_confirmation_tickets = [], feedback_tickets = [];
 
+          let unassigned_tickets = [];
+
           if (this.source === 'qualitor') {
             try {
               const opRes = await fetch('/api/dashboard/qualitor/stats/operational', {
@@ -329,23 +374,25 @@ function dashboardPage() {
               if (opRes.ok) {
                 const op = await opRes.json();
                 const _norm = (t) => ({
-                  id:           t.id,
-                  title:        t.titulo || '',
-                  hotel_name:   t.hotel || t.equipe || '—',
+                  id:            t.id,
+                  title:         t.titulo || '',
+                  hotel_name:    t.hotel || t.equipe || '—',
+                  team_name:     t.equipe || '—',
                   assignee_name: t.responsavel || '—',
-                  created_at:   t.dtabertura,
-                  updated_at:   t.dtabertura,
+                  created_at:    t.dtabertura,
+                  updated_at:    t.dtabertura,
                 });
                 critical_tickets              = (op.critical_tickets || []).map(_norm);
                 awaiting_confirmation_tickets = (op.awaiting_confirmation_tickets || []).map(_norm);
                 feedback_tickets              = (op.suspended_tickets || []).map(_norm);
+                unassigned_tickets            = (op.unassigned_tickets || []).map(_norm);
               }
             } catch {}
           }
 
           this.operational = {
             stale_tickets,
-            unassigned_tickets:            [],
+            unassigned_tickets,
             critical_tickets,
             awaiting_confirmation_tickets,
             feedback_tickets,
