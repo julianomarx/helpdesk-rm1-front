@@ -42,8 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
       store.subcategories = payload.subcategories || [];
       store.tokenExpire   = payload.exp;
       const landingPage = ["admin", "agent"].includes(payload.role) ? "dashboard" : "tickets";
-      store.currentPage   = landingPage;
-      store.currentView = landingPage;
+      store.currentPage = landingPage;
+      store.currentView = "dashboard";
       await store.navigate(landingPage);
       sessionWatcher.start();
       store.startHeartbeat();
