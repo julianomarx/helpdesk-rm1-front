@@ -396,56 +396,53 @@
     x-show="showUserModal"
     x-transition.opacity
     class="fixed inset-0 z-50
-           bg-black/40 backdrop-blur-sm
-           flex items-center justify-center">
+           bg-black/60 backdrop-blur-sm
+           flex items-center justify-center px-3 py-4">
 
     <div
       @click.outside="showUserModal = false"
-      class="bg-gray-800/40 backdrop-blur-2xl
+      class="bg-gray-900/95 backdrop-blur-xl
              border border-white/10
-             rounded-[32px]
+             rounded-2xl
              shadow-2xl
-             w-[94vw]
-             max-w-7xl
-             h-[82vh]
-             p-6
+             w-full
+             max-w-6xl
              flex flex-col
-             backdrop-saturate-150">
+             overflow-hidden"
+      style="height:min(90vh,860px)">
 
       <!-- HEADER -->
-      <div class="flex items-center justify-between mb-5 shrink-0">
+      <div class="flex items-center gap-3 px-6 py-4 border-b border-white/10 shrink-0">
 
-        <div>
-
-          <h2 class="font-bold text-xl">
-            Editar usuário
-          </h2>
-
-          <p class="text-xs text-gray-400">
-            Atualize informações do usuário
-          </p>
-
+        <div class="w-8 h-8 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
         </div>
 
-        <div class="flex gap-3">
+        <div class="flex-1 min-w-0">
+          <h2 class="font-semibold text-base text-gray-100">Editar usuário</h2>
+          <p class="text-[11px] text-gray-500 mt-0.5">Atualize informações e permissões</p>
+        </div>
 
+        <div class="flex items-center gap-2 shrink-0">
           <template x-if="!editor.enabled">
             <button
               @click="editor.enabled = !editor.enabled"
-              class="bg-blue-600 hover:bg-blue-700
-                    px-4 py-2 rounded-xl input-class
-                    text-sm font-semibold">
-
-              <span>
-                <p>Editar usuário</p>
-              </span>
+              class="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828a4 4 0 01-1.414.828l-3.536.708.708-3.536A4 4 0 019 13z"/></svg>
+              Editar
             </button>
           </template>
-
-
+          <button @click="showUserModal = false"
+            class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-gray-200 transition">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
         </div>
 
       </div>
+
+      <div class="flex flex-col flex-1 min-h-0 p-6 overflow-y-auto">
 
       <template x-if="editor.user">
 
@@ -866,29 +863,24 @@
 </div>
 
             <!-- FOOTER -->
-            <div
-              class="flex justify-end gap-3
-                     pt-5 mt-5 shrink-0">
+            <div class="flex justify-end gap-2 pt-4 mt-4 shrink-0 border-t border-white/10">
 
               <button
                 @click="showUserModal = false"
-                class="px-5 py-3 rounded-xl input-class
-                       bg-gray-700 hover:bg-gray-600
+                class="px-4 py-2 rounded-xl text-sm font-medium text-gray-300
+                       bg-white/5 hover:bg-white/10 border border-white/10
                        transition">
-
                 Cancelar
-
               </button>
 
               <button
                 x-show="editor.enabled"
                 @click="saveUser()"
-                class="px-6 py-3 rounded-xl input-class
-                       bg-green-600 hover:bg-green-700
-                       font-semibold transition">
-
+                class="flex items-center gap-1.5 px-5 py-2 rounded-xl text-sm font-semibold
+                       bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/30
+                       transition">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                 Salvar alterações
-
               </button>
 
             </div>
@@ -920,46 +912,55 @@
 
       </template>
 
-    </div>
+    </div><!-- /scrollable body -->
 
-  </div>
+    </div><!-- /modal container -->
+
+  </div><!-- /overlay -->
 
   <!--Modal create user-->
   <div
     x-show="showCreateUserModal"
     x-transition.opacity
     class="fixed inset-0 z-50
-          bg-black/40 backdrop-blur-sm
-          flex items-center justify-center">
+          bg-black/60 backdrop-blur-sm
+          flex items-center justify-center px-3 py-4">
 
     <div
       @click.outside="showCreateUserModal = false"
-      class="bg-gray-800/40 backdrop-blur-2xl
+      class="bg-gray-900/95 backdrop-blur-xl
             border border-white/10
-            rounded-[32px]
+            rounded-2xl
             shadow-2xl
-            w-[94vw]
-            max-w-7xl
-            h-[82vh]
-            p-6 flex flex-col">
+            w-full
+            max-w-6xl
+            flex flex-col
+            overflow-hidden"
+      style="height:min(90vh,860px)">
 
       <!-- HEADER -->
-      <div class="mb-5">
+      <div class="flex items-center gap-3 px-6 py-4 border-b border-white/10 shrink-0">
 
-        <h2 class="font-bold text-xl">
-          Criar usuário
-        </h2>
+        <div class="w-8 h-8 rounded-xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+          </svg>
+        </div>
 
-        <p class="text-xs text-gray-400">
-          Adicione um novo usuário
-        </p>
+        <div class="flex-1 min-w-0">
+          <h2 class="font-semibold text-base text-gray-100">Criar usuário</h2>
+          <p class="text-[11px] text-gray-500 mt-0.5">Preencha os dados e defina as permissões</p>
+        </div>
+
+        <button @click="showCreateUserModal = false"
+          class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-gray-200 transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
 
       </div>
 
-
-      <!-- Daqui pra baixo -->
       <!-- FORM -->
-      <div class="flex flex-col flex-1 min-h-0">
+      <div class="flex flex-col flex-1 min-h-0 p-6 overflow-y-auto custom-scroll">
 
         <!-- ROW 1 -->
         <div class="flex gap-4 mb-4 shrink-0">
@@ -1394,28 +1395,23 @@
         </div>
 
         <!-- FOOTER -->
-        <div
-          class="flex justify-end gap-3
-                pt-5 mt-5 shrink-0">
+        <div class="flex justify-end gap-2 pt-4 mt-4 shrink-0 border-t border-white/10">
 
           <button
             @click="showCreateUserModal = false"
-            class="px-5 py-3 rounded-xl input-class
-                  bg-gray-700 hover:bg-gray-600
+            class="px-4 py-2 rounded-xl text-sm font-medium text-gray-300
+                  bg-white/5 hover:bg-white/10 border border-white/10
                   transition">
-
             Cancelar
-
           </button>
 
           <button
             @click="submitUserCreation()"
-            class="px-6 py-3 text-white rounded-xl input-class
-                  bg-green-600 hover:bg-green-700
-                  font-semibold transition">
-
+            class="flex items-center gap-1.5 px-5 py-2 rounded-xl text-sm font-semibold
+                  bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/30
+                  transition">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
             Criar usuário
-
           </button>
 
         </div>

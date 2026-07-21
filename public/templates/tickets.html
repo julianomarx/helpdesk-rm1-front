@@ -528,37 +528,44 @@
     x-show="showCreateTicketModal"
     x-transition.opacity
     class="fixed inset-0 z-50
-          bg-black/50 backdrop-blur-sm
-          flex items-center justify-center">
+          bg-black/60 backdrop-blur-sm
+          flex items-center justify-center px-3 py-4">
 
     <div
       @click.outside="showCreateTicketModal = false"
-      class="bg-gray-800/40 backdrop-blur-2xl
+      class="bg-gray-900/95 backdrop-blur-xl
             border border-white/10
-            rounded-[32px]
+            rounded-2xl
             shadow-2xl
-            w-[94vw]
-            max-w-7xl
-            h-[82vh]
-            p-6
+            w-full
+            max-w-2xl
             flex flex-col
-            backdrop-saturate-150">
+            overflow-hidden"
+      style="height:min(90vh,760px)">
 
       <!-- Header -->
-      <div class="mb-6 shrink-0">
+      <div class="flex items-center gap-3 px-6 py-4 border-b border-white/10 shrink-0">
 
-        <h2 class="text-xl font-bold text-gray-100">
-          Abrir chamado
-        </h2>
+        <div class="w-8 h-8 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+          </svg>
+        </div>
 
-        <p class="text-sm text-gray-400 mt-1">
-          Registre uma nova solicitação.
-        </p>
+        <div class="flex-1 min-w-0">
+          <h2 class="font-semibold text-base text-gray-100">Abrir chamado</h2>
+          <p class="text-[11px] text-gray-500 mt-0.5">Registre uma nova solicitação</p>
+        </div>
+
+        <button @click="showCreateTicketModal = false"
+          class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-gray-200 transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
 
       </div>
 
       <!-- Body -->
-      <div class="flex-1 overflow-y-auto pr-2 custom-scroll">
+      <div class="flex-1 overflow-y-auto px-6 py-5 custom-scroll">
 
         <!-- Título -->
         <div class="mb-5">
@@ -756,31 +763,21 @@
       </div>
 
       <!-- Footer -->
-      <div
-        class="flex justify-end gap-3
-              pt-5 mt-5
-              border-t border-white/10
-              shrink-0">
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-white/10 shrink-0">
 
         <button
           @click="showCreateTicketModal = false"
-          class="px-5 py-3 rounded-xl input-class
-                bg-gray-700 hover:bg-gray-600
-                transition">
-
+          class="px-4 py-2 rounded-xl text-sm font-medium text-gray-300
+                bg-white/5 hover:bg-white/10 border border-white/10 transition">
           Cancelar
-
         </button>
 
         <button
           @click="submitCreateTicket()"
-          class="px-6 py-3 rounded-xl input-class
-                bg-blue-600 hover:bg-blue-700
-                text-white font-semibold
-                shadow-lg transition">
-
+          class="flex items-center gap-1.5 px-5 py-2 rounded-xl text-sm font-semibold
+                bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/30 transition">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
           Abrir chamado
-
         </button>
 
       </div>
