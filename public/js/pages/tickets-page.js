@@ -32,6 +32,7 @@ function ticketsPage() {
       categoryId: '',
       subcategoryId: ''
     },
+    pendingFiles: [],
 
     get progressBadges() {
       const p = this.ticketStats?.por_progress || {};
@@ -196,6 +197,23 @@ function ticketsPage() {
         categoryId: '',
         subcategoryId: ''
       };
+      this.pendingFiles = [];
+    },
+
+    addPendingFiles(files) {
+      const allowed = new Set(['.jpg','.jpeg','.png','.gif','.webp','.pdf','.doc','.docx','.xls','.xlsx','.txt','.csv','.zip']);
+      const maxSize = 10 * 1024 * 1024;
+      for (const f of Array.from(files)) {
+        const ext = '.' + f.name.split('.').pop().toLowerCase();
+        if (!allowed.has(ext)) { showToast(`Tipo não permitido: ${f.name}`, 'error'); continue; }
+        if (f.size > maxSize) { showToast(`Arquivo muito grande (máx 10 MB): ${f.name}`, 'error'); continue; }
+        if (this.pendingFiles.some(p => p.name === f.name && p.size === f.size)) continue;
+        this.pendingFiles.push(f);
+      }
+    },
+
+    removePendingFile(index) {
+      this.pendingFiles.splice(index, 1);
     },
 
     async submitCreateTicket() {
@@ -226,7 +244,31 @@ function ticketsPage() {
           })
         });
         if (!res.ok) { showToast("Erro ao criar chamado", "error"); return; }
-        showToast("Chamado aberto com sucesso!", "success");
+
+        const created = await res.json();
+
+        if (this.pendingFiles.length > 0) {
+          let uploaded = 0, failed = 0;
+          for (const file of this.pendingFiles) {
+            const fd = new FormData();
+            fd.append('file', file);
+            try {
+              const ar = await fetch(`/api/tickets/${created.id}/attachments`, {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token },
+                body: fd
+              });
+              if (ar.ok) uploaded++; else failed++;
+            } catch { failed++; }
+          }
+          if (failed > 0)
+            showToast(`Chamado aberto. ${uploaded} anexo(s) enviado(s), ${failed} falhou.`, 'warning');
+          else
+            showToast(`Chamado aberto com ${uploaded} anexo(s)!`, 'success');
+        } else {
+          showToast("Chamado aberto com sucesso!", "success");
+        }
+
         this.resetNewTicketModal();
         this.showCreateTicketModal = false;
         await this.getTickets();
