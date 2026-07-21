@@ -309,20 +309,46 @@ function dashboardPage() {
           if (!res.ok) throw new Error();
           const data = await res.json();
           this.stalledHasMore = data.has_more || false;
+          const stale_tickets = (data.tickets || []).map(t => ({
+            id:           t.id,
+            title:        t.titulo || t.title || '',
+            hotel_name:   t.equipe || '—',
+            priority:     null,
+            updated_at:   t.ultimo_acomp,
+            assignee_name: t.responsavel || '—',
+            portal:       t.portal,
+          }));
+
+          let critical_tickets = [], awaiting_confirmation_tickets = [], feedback_tickets = [];
+
+          if (this.source === 'qualitor') {
+            try {
+              const opRes = await fetch('/api/dashboard/qualitor/stats/operational', {
+                headers: { "Authorization": "Bearer " + token }
+              });
+              if (opRes.ok) {
+                const op = await opRes.json();
+                const _norm = (t) => ({
+                  id:           t.id,
+                  title:        t.titulo || '',
+                  hotel_name:   t.hotel || t.equipe || '—',
+                  assignee_name: t.responsavel || '—',
+                  created_at:   t.dtabertura,
+                  updated_at:   t.dtabertura,
+                });
+                critical_tickets              = (op.critical_tickets || []).map(_norm);
+                awaiting_confirmation_tickets = (op.awaiting_confirmation_tickets || []).map(_norm);
+                feedback_tickets              = (op.suspended_tickets || []).map(_norm);
+              }
+            } catch {}
+          }
+
           this.operational = {
-            stale_tickets: (data.tickets || []).map(t => ({
-              id:          t.id,
-              title:       t.titulo || t.title || '',
-              hotel_name:  t.equipe || '—',
-              priority:    null,
-              updated_at:  t.ultimo_acomp,
-              assignee_name: t.responsavel || '—',
-              portal:      t.portal,
-            })),
-            unassigned_tickets:           [],
-            critical_tickets:             [],
-            awaiting_confirmation_tickets: [],
-            feedback_tickets:             [],
+            stale_tickets,
+            unassigned_tickets:            [],
+            critical_tickets,
+            awaiting_confirmation_tickets,
+            feedback_tickets,
           };
         }
         this.operationalLoaded = true;

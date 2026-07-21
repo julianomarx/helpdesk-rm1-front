@@ -586,23 +586,23 @@
             <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
               <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
               <h3 class="text-sm font-semibold">Tickets Críticos <span class="text-[11px] text-gray-500 font-normal">(prioridade alta)</span></h3>
-              <span class="ml-auto text-xs text-gray-500" x-text="source === 'helpdesk' ? operational.critical_tickets.length + ' itens' : '—'"></span>
+              <span class="ml-auto text-xs text-gray-500" x-text="source !== 'all' ? operational.critical_tickets.length + ' itens' : '—'"></span>
             </div>
-            <div x-show="source !== 'helpdesk'" class="px-4 py-6 text-sm text-gray-600 text-center">Disponível apenas para Helpdesk</div>
-            <div x-show="source === 'helpdesk' && !operational.critical_tickets.length" class="px-4 py-6 text-sm text-gray-600 text-center">Nenhum ticket crítico</div>
-            <div x-show="source === 'helpdesk' && operational.critical_tickets.length" class="overflow-x-auto">
+            <div x-show="source === 'all'" class="px-4 py-6 text-sm text-gray-600 text-center">Disponível apenas para Helpdesk ou Qualitor</div>
+            <div x-show="source !== 'all' && !operational.critical_tickets.length" class="px-4 py-6 text-sm text-gray-600 text-center">Nenhum ticket crítico</div>
+            <div x-show="source !== 'all' && operational.critical_tickets.length" class="overflow-x-auto">
               <table class="w-full text-xs">
                 <thead><tr class="border-b border-white/5 text-gray-500">
                   <th class="text-left px-4 py-2">#</th>
                   <th class="text-left px-4 py-2">Título</th>
-                  <th class="text-left px-4 py-2">Hotel</th>
+                  <th class="text-left px-4 py-2" x-text="source === 'helpdesk' ? 'Hotel' : 'Hotel / Equipe'"></th>
                   <th class="text-left px-4 py-2">Atendente</th>
                   <th class="text-left px-4 py-2">Aberto há</th>
                 </tr></thead>
                 <tbody>
                   <template x-for="t in operational.critical_tickets" :key="t.id">
                     <tr class="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
-                        @click="window.openHelpdeskTicket(t.id)">
+                        @click="source === 'helpdesk' ? window.openHelpdeskTicket(t.id) : window.openQualitorTicket(t.id)">
                       <td class="px-4 py-2.5 text-gray-500" x-text="'#' + t.id"></td>
                       <td class="px-4 py-2.5 text-gray-200 max-w-[180px] truncate" x-text="t.title"></td>
                       <td class="px-4 py-2.5 text-gray-400" x-text="t.hotel_name"></td>
@@ -620,23 +620,23 @@
             <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
               <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               <h3 class="text-sm font-semibold">Aguardando Confirmação</h3>
-              <span class="ml-auto text-xs text-gray-500" x-text="source === 'helpdesk' ? operational.awaiting_confirmation_tickets.length + ' itens' : '—'"></span>
+              <span class="ml-auto text-xs text-gray-500" x-text="source !== 'all' ? operational.awaiting_confirmation_tickets.length + ' itens' : '—'"></span>
             </div>
-            <div x-show="source !== 'helpdesk'" class="px-4 py-6 text-sm text-gray-600 text-center">Disponível apenas para Helpdesk</div>
-            <div x-show="source === 'helpdesk' && !operational.awaiting_confirmation_tickets.length" class="px-4 py-6 text-sm text-gray-600 text-center">Nenhum pendente de confirmação</div>
-            <div x-show="source === 'helpdesk' && operational.awaiting_confirmation_tickets.length" class="overflow-x-auto">
+            <div x-show="source === 'all'" class="px-4 py-6 text-sm text-gray-600 text-center">Disponível apenas para Helpdesk ou Qualitor</div>
+            <div x-show="source !== 'all' && !operational.awaiting_confirmation_tickets.length" class="px-4 py-6 text-sm text-gray-600 text-center">Nenhum pendente de confirmação</div>
+            <div x-show="source !== 'all' && operational.awaiting_confirmation_tickets.length" class="overflow-x-auto">
               <table class="w-full text-xs">
                 <thead><tr class="border-b border-white/5 text-gray-500">
                   <th class="text-left px-4 py-2">#</th>
                   <th class="text-left px-4 py-2">Título</th>
-                  <th class="text-left px-4 py-2">Hotel</th>
+                  <th class="text-left px-4 py-2" x-text="source === 'helpdesk' ? 'Hotel' : 'Hotel / Equipe'"></th>
                   <th class="text-left px-4 py-2">Atendente</th>
                   <th class="text-left px-4 py-2">Aguardando há</th>
                 </tr></thead>
                 <tbody>
                   <template x-for="t in operational.awaiting_confirmation_tickets" :key="t.id">
                     <tr class="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
-                        @click="window.openHelpdeskTicket(t.id)">
+                        @click="source === 'helpdesk' ? window.openHelpdeskTicket(t.id) : window.openQualitorTicket(t.id)">
                       <td class="px-4 py-2.5 text-gray-500" x-text="'#' + t.id"></td>
                       <td class="px-4 py-2.5 text-gray-200 max-w-[180px] truncate" x-text="t.title"></td>
                       <td class="px-4 py-2.5 text-gray-400" x-text="t.hotel_name"></td>
@@ -649,33 +649,33 @@
             </div>
           </div>
 
-          <!-- Retorno Solicitante (feedback) — full width -->
+          <!-- Retorno Solicitante (feedback / suspenso) — full width -->
           <div class="xl:col-span-2 bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
             <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10">
               <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-              <h3 class="text-sm font-semibold">Retorno do Solicitante</h3>
-              <span class="ml-auto text-xs text-gray-500" x-text="source === 'helpdesk' ? operational.feedback_tickets.length + ' itens' : '—'"></span>
+              <h3 class="text-sm font-semibold">Retorno do Solicitante <span x-show="source === 'qualitor'" class="text-[11px] text-gray-500 font-normal">(Suspenso)</span></h3>
+              <span class="ml-auto text-xs text-gray-500" x-text="source !== 'all' ? operational.feedback_tickets.length + ' itens' : '—'"></span>
             </div>
-            <div x-show="source !== 'helpdesk'" class="px-4 py-6 text-sm text-gray-600 text-center">Disponível apenas para Helpdesk</div>
-            <div x-show="source === 'helpdesk' && !operational.feedback_tickets.length" class="px-4 py-6 text-sm text-gray-600 text-center">Nenhum ticket aguardando retorno</div>
-            <div x-show="source === 'helpdesk' && operational.feedback_tickets.length" class="overflow-x-auto">
+            <div x-show="source === 'all'" class="px-4 py-6 text-sm text-gray-600 text-center">Disponível apenas para Helpdesk ou Qualitor</div>
+            <div x-show="source !== 'all' && !operational.feedback_tickets.length" class="px-4 py-6 text-sm text-gray-600 text-center">Nenhum ticket aguardando retorno</div>
+            <div x-show="source !== 'all' && operational.feedback_tickets.length" class="overflow-x-auto">
               <table class="w-full text-xs">
                 <thead><tr class="border-b border-white/5 text-gray-500">
                   <th class="text-left px-4 py-2">#</th>
                   <th class="text-left px-4 py-2">Título</th>
-                  <th class="text-left px-4 py-2">Hotel</th>
-                  <th class="text-left px-4 py-2">Categoria</th>
+                  <th class="text-left px-4 py-2" x-text="source === 'helpdesk' ? 'Hotel' : 'Hotel / Equipe'"></th>
+                  <th x-show="source === 'helpdesk'" class="text-left px-4 py-2">Categoria</th>
                   <th class="text-left px-4 py-2">Atendente</th>
                   <th class="text-left px-4 py-2">Aguardando há</th>
                 </tr></thead>
                 <tbody>
                   <template x-for="t in operational.feedback_tickets" :key="t.id">
                     <tr class="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
-                        @click="window.openHelpdeskTicket(t.id)">
+                        @click="source === 'helpdesk' ? window.openHelpdeskTicket(t.id) : window.openQualitorTicket(t.id)">
                       <td class="px-4 py-2.5 text-gray-500" x-text="'#' + t.id"></td>
                       <td class="px-4 py-2.5 text-gray-200 max-w-[200px] truncate" x-text="t.title"></td>
                       <td class="px-4 py-2.5 text-gray-400" x-text="t.hotel_name"></td>
-                      <td class="px-4 py-2.5 text-gray-400" x-text="t.category_name || '—'"></td>
+                      <td x-show="source === 'helpdesk'" class="px-4 py-2.5 text-gray-400" x-text="t.category_name || '—'"></td>
                       <td class="px-4 py-2.5 text-gray-400" x-text="t.assignee_name || '—'"></td>
                       <td class="px-4 py-2.5 text-amber-400" x-text="timeAgo(t.updated_at)"></td>
                     </tr>
