@@ -512,11 +512,11 @@
                          bg-gray-800/50 border border-white/10
                          disabled:opacity-50">
 
-                  <option value="admin">
+                  <option value="admin" x-show="$store.app.role === 'admin'">
                     Admin
                   </option>
 
-                  <option value="agent">
+                  <option value="agent" x-show="$store.app.role === 'admin'">
                     Suporte
                   </option>
 
