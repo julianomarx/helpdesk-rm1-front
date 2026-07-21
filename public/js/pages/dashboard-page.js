@@ -464,7 +464,7 @@ function dashboardPage() {
           this.volume = {
             by_category:    data.by_category    || [],
             by_subcategory: data.by_subcategory || [],
-            by_hotel:       [],
+            by_hotel:       data.by_hotel       || [],
           };
           this.volumeLoaded = true;
           await this.$nextTick();
