@@ -352,6 +352,9 @@
                    x-text="ticket.title"></p>
                 <p class="text-[11px] text-gray-500 truncate mt-0.5"
                    x-text="(ticket.hotel?.code || '') + (ticket.hotel?.name ? ' · ' + ticket.hotel.name : '')"></p>
+                <p x-show="ticket.description"
+                   class="text-[10px] text-gray-600 truncate mt-0.5"
+                   x-text="ticket.description ? ticket.description.slice(0, 120) : ''"></p>
               </div>
 
               <div class="self-center">
