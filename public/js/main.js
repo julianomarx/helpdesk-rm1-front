@@ -92,7 +92,8 @@ document.addEventListener("alpine:init", () => {
         this.tokenExpire   = payload.exp;
 
         this.currentView = "dashboard";
-        await this.navigate(this.currentPage);
+        const landingPage = ["admin", "agent"].includes(this.role) ? "dashboard" : "tickets";
+        await this.navigate(landingPage);
 
         // Modais globais já estão embutidos em index.html e inicializados pelo Alpine.
 

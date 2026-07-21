@@ -41,10 +41,10 @@ document.addEventListener("DOMContentLoaded", () => {
       store.categories    = payload.categories    || [];
       store.subcategories = payload.subcategories || [];
       store.tokenExpire   = payload.exp;
-      store.currentPage   = "dashboard";
-
-      store.currentView = "dashboard";
-      await store.navigate("dashboard");
+      const landingPage = ["admin", "agent"].includes(payload.role) ? "dashboard" : "tickets";
+      store.currentPage   = landingPage;
+      store.currentView = landingPage;
+      await store.navigate(landingPage);
       sessionWatcher.start();
       store.startHeartbeat();
       window.dispatchEvent(new CustomEvent('auth:login'));
