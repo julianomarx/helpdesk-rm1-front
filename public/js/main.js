@@ -33,6 +33,7 @@ document.addEventListener("alpine:init", () => {
     theme:         'dark',
     users:         [],
     _heartbeatInterval: null,
+    _navigating: false,
 
     setTheme(t) {
       this.theme = t;
@@ -47,9 +48,11 @@ document.addEventListener("alpine:init", () => {
     },
 
     async navigate(page) {
+      if (this._navigating) return;
+      this._navigating = true;
       this.currentPage = page;
       const container = document.getElementById("page-container");
-      if (!container) return;
+      if (!container) { this._navigating = false; return; }
       try {
         const res = await fetch(`/templates/${page}.html`, { cache: 'no-store' });
         if (!res.ok) throw new Error("Template não encontrado");
@@ -57,6 +60,8 @@ document.addEventListener("alpine:init", () => {
         Alpine.initTree(container);
       } catch (err) {
         container.innerHTML = `<p class="text-red-500 p-4">Erro ao carregar página: ${err.message}</p>`;
+      } finally {
+        this._navigating = false;
       }
     },
 

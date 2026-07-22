@@ -4,8 +4,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!loginForm) return;
 
+  let submitting = false;
+
   loginForm.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (submitting) return;
+
+    const btn = document.getElementById("login-btn");
+    const errEl = document.getElementById("login-error");
+    submitting = true;
+    btn.disabled = true;
+    btn.textContent = "Entrando...";
+    errEl.textContent = "";
 
     const email    = document.getElementById("email").value;
     const password = document.getElementById("password").value;
@@ -18,7 +28,10 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (!res.ok) {
-        document.getElementById("login-error").textContent = "Email e/ou senha inválidos!";
+        errEl.textContent = "Email e/ou senha inválidos!";
+        btn.disabled = false;
+        btn.textContent = "Entrar";
+        submitting = false;
         return;
       }
 
@@ -52,6 +65,9 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (e) {
       console.error("Erro no login:", e);
       document.getElementById("login-error").textContent = "Erro de conexão..";
+      btn.disabled = false;
+      btn.textContent = "Entrar";
+      submitting = false;
     }
   });
 });
