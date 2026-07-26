@@ -148,8 +148,9 @@ function qualitorPage() {
       } else if (this.filters.situacao) {
         params.set('situacao', this.filters.situacao);
       }
-      if (this.filters.equipe)   params.set('equipe', this.filters.equipe);
-      if (this.filters.mine)     params.set('responsavel_interno_id', Alpine.store('app').userId);
+      if (this.filters.equipe)             params.set('equipe', this.filters.equipe);
+      if (this.filters.mine)               params.set('responsavel_interno_id', Alpine.store('app').userId);
+      if (this.filters.search?.trim())     params.set('search', this.filters.search.trim());
       for (const [k, v] of Object.entries(extra)) params.set(k, v);
       return params;
     },
@@ -666,15 +667,7 @@ function qualitorPage() {
     },
 
     get filteredTickets() {
-      const q = (this.filters.search || '').toLowerCase().trim();
-      if (!q) return this.tickets;
-      return this.tickets.filter(t =>
-        String(t.id).includes(q) ||
-        (t.titulo      || '').toLowerCase().includes(q) ||
-        (t.contato     || '').toLowerCase().includes(q) ||
-        (t.responsavel || '').toLowerCase().includes(q) ||
-        (t.categoria   || '').toLowerCase().includes(q)
-      );
+      return this.tickets;
     },
 
     situacaoBadge(s) {
