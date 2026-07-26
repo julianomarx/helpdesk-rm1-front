@@ -17,9 +17,9 @@
           </svg>
         </span>
         <input type="text" x-model="filters.search" placeholder="Buscar por ID, título, contato..."
-          @keydown.enter="fetchTickets(true)"
+          @input.debounce.400ms="fetchTickets(true)"
+          @keydown.enter.prevent="fetchTickets(true)"
           @keydown.escape="filters.search = ''; fetchTickets(true)"
-          @input="if (!filters.search) fetchTickets(true)"
           class="w-full h-10 pl-10 pr-3 rounded-2xl bg-gray-800/50 border border-white/10 text-sm">
       </div>
     </div>
