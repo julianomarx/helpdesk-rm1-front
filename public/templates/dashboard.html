@@ -354,6 +354,19 @@
                     </div>
                   </div>
 
+                  <div x-show="team.nmequipe === 'RM1 SAP'" class="space-y-1 border-t border-white/5 pt-2">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="text-gray-400">Suspenso</span>
+                      <span class="font-medium" :class="(team.suspenso||0) > 0 ? 'text-orange-300' : 'text-gray-500'"
+                            x-text="(team.suspenso||0) + ' (' + pct(team.suspenso||0) + '%)'"></span>
+                    </div>
+                    <div class="h-1 w-full rounded-full bg-white/5">
+                      <div class="h-1 rounded-full transition-all duration-500"
+                           :class="(team.suspenso||0) > 0 ? 'bg-orange-400/70' : 'bg-gray-600/40'"
+                           :style="`width:${pct(team.suspenso||0)}%`"></div>
+                    </div>
+                  </div>
+
 
                 </div>
               </div>
