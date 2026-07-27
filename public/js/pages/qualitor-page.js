@@ -23,9 +23,10 @@ function qualitorPage() {
     detailTab: 'detalhes',
 
     // Estado de ações
-    actionMode: null,   // null | 'iniciar' | 'encerrar'
+    actionMode: null,   // null | 'iniciar' | 'encerrar' | 'suspender' | 'retomar'
     actionNota: '',
     actionLoading: false,
+    suspendLoading: false,
     refreshLoading: false,
     transferMode: false,
     transferEquipe: '',
@@ -56,6 +57,7 @@ function qualitorPage() {
       { value: '', label: 'Todas as situações' },
       { value: 'Aguardando atendimento', label: 'Aguardando atendimento' },
       { value: 'Em atendimento', label: 'Em atendimento' },
+      { value: 'Suspenso', label: 'Suspensos' },
       { value: 'Encerrado', label: 'Encerradas' },
       { value: 'Cancelado', label: 'Canceladas' },
     ],
@@ -416,6 +418,56 @@ function qualitorPage() {
       }
     },
 
+    async suspenderChamado() {
+      this.suspendLoading = true;
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch(`/api/qualitor/tickets/${this.selectedTicket.id}/suspend`, {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nota: this.actionNota }),
+        });
+        const data = await res.json();
+        if (!res.ok) { showToast(data.detail || 'Erro ao suspender chamado', 'error'); return; }
+        this.selectedTicket.situacao = 'Suspenso';
+        const idx = this.tickets.findIndex(t => t.id === this.selectedTicket.id);
+        if (idx !== -1) this.tickets[idx].situacao = 'Suspenso';
+        this.actionMode = null;
+        this.actionNota = '';
+        showToast('Chamado suspenso com sucesso', 'success');
+        await this.reloadHistory();
+      } catch {
+        showToast('Erro ao suspender chamado', 'error');
+      } finally {
+        this.suspendLoading = false;
+      }
+    },
+
+    async retomarChamado() {
+      this.suspendLoading = true;
+      const token = localStorage.getItem('access_token');
+      try {
+        const res = await fetch(`/api/qualitor/tickets/${this.selectedTicket.id}/resume`, {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nota: this.actionNota }),
+        });
+        const data = await res.json();
+        if (!res.ok) { showToast(data.detail || 'Erro ao retomar chamado', 'error'); return; }
+        this.selectedTicket.situacao = 'Em atendimento';
+        const idx = this.tickets.findIndex(t => t.id === this.selectedTicket.id);
+        if (idx !== -1) this.tickets[idx].situacao = 'Em atendimento';
+        this.actionMode = null;
+        this.actionNota = '';
+        showToast('Atendimento retomado com sucesso', 'success');
+        await this.reloadHistory();
+      } catch {
+        showToast('Erro ao retomar chamado', 'error');
+      } finally {
+        this.suspendLoading = false;
+      }
+    },
+
     get equipeDestinoOptions() {
       // Matriz espelhando a configuração categoria×equipe do Qualitor (extraída dos dialogs)
       const matrix = {
@@ -604,6 +656,10 @@ function qualitorPage() {
         const m = sysText.match(/iniciado em:\s*[\d/]+\s*(\d{2}:\d{2})?,?\s*finalizado em:\s*[\d/]+\s*(\d{2}:\d{2})?/i);
         const st = m?.[1], en = m?.[2];
         systemLabel = st && en ? `Tempo registrado: ${st} → ${en}` : 'Tempo registrado';
+      } else if (/^Chamado suspenso/i.test(sysText)) {
+        eventType = 'status-suspended'; systemLabel = 'Suspenso';
+      } else if (/^Chamado retomado/i.test(sysText) || /^Atendimento retomado/i.test(sysText)) {
+        eventType = 'status-active';    systemLabel = 'Atendimento retomado';
       } else if (/^Chamado reaberto/i.test(sysText)) {
         eventType = 'reopen';
         const m = sysText.match(/reaberto por:\s*(.+?)(?:\s*Motivo:\s*(.+))?$/i);
@@ -623,6 +679,7 @@ function qualitorPage() {
       const map = {
         'status-active':  { dot: 'bg-blue-500/20 border border-blue-500/40 text-blue-400',   label: 'text-blue-300' },
         'status-waiting': { dot: 'bg-amber-500/20 border border-amber-500/40 text-amber-400', label: 'text-amber-300' },
+        'status-suspended':{ dot: 'bg-orange-500/20 border border-orange-500/40 text-orange-400', label: 'text-orange-300' },
         'status-closing': { dot: 'bg-violet-500/20 border border-violet-500/40 text-violet-400',   label: 'text-violet-300' },
         'status-closed':  { dot: 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400', label: 'text-emerald-300' },
         'transfer':       { dot: 'bg-violet-500/20 border border-violet-500/40 text-violet-400', label: 'text-violet-300' },
@@ -674,6 +731,7 @@ function qualitorPage() {
       const map = {
         'Aguardando atendimento': 'bg-amber-500/15 text-amber-300 border-amber-500/30',
         'Em atendimento':         'bg-blue-500/15  text-blue-300  border-blue-500/30',
+        'Suspenso':               'bg-orange-500/15 text-orange-300 border-orange-500/30',
         'Encerrado':              'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
         'Cancelado':              'bg-red-500/15   text-red-300   border-red-500/30',
       };
